@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\core\GameApp.hpp" />
+    <ClInclude Include="src\core\GameConstants.hpp" />
+    <ClInclude Include="src\core\GameUtils.hpp" />
+    <ClInclude Include="src\core\IEventHandler.hpp" />
+    <ClInclude Include="src\core\IRenderable.hpp" />
+    <ClInclude Include="src\core\IResource.hpp" />
+    <ClInclude Include="src\core\manager\FontManager.hpp" />
+    <ClInclude Include="src\core\manager\IManager.hpp" />
+    <ClInclude Include="src\core\manager\Managers.hpp" />
+    <ClInclude Include="src\core\manager\MapManager.hpp" />
+    <ClInclude Include="src\core\manager\ParticleManager.hpp" />
+    <ClInclude Include="src\core\manager\ResourceManager.hpp" />
+    <ClInclude Include="src\core\system\BlockMatcher.hpp" />
+    <ClInclude Include="src\core\system\GameSynchronizer.h" />
+    <ClInclude Include="src\game\AnimatedObject.hpp" />
+    <ClInclude Include="src\game\block\GameGroupBlock.hpp" />
+    <ClInclude Include="src\game\block\GroupBlock.hpp" />
+    <ClInclude Include="src\game\block\IBlock.hpp" />
+    <ClInclude Include="src\game\effect\BulletEffect.hpp" />
+    <ClInclude Include="src\game\effect\ParticleContainer.hpp" />
+    <ClInclude Include="src\game\map\BackgroundTypes.hpp" />
+    <ClInclude Include="src\game\map\GameBackground.hpp" />
+    <ClInclude Include="src\game\map\GrasslandBackground.hpp" />
+    <ClInclude Include="src\game\map\IcelandBackground.hpp" />
+    <ClInclude Include="src\game\particles\Particle.hpp" />
+    <ClInclude Include="src\game\particles\ParticleSystem.hpp" />
+    <ClInclude Include="src\game\RenderableObject.hpp" />
+    <ClInclude Include="src\texture\StringTexture.hpp" />
+    <ClInclude Include="src\resource\GameResources.hpp" />
+    <ClInclude Include="src\texture\ImageTexture.hpp" />
+    <ClInclude Include="src\resource\ObjectPool.hpp" />
+    <ClInclude Include="src\resource\ResourceCache.hpp" />
+    <ClInclude Include="src\states\BaseState.hpp" />
+    <ClInclude Include="src\states\CharacterSelectState.hpp" />
+    <ClInclude Include="src\states\GameState.hpp" />
+    <ClInclude Include="src\states\GameStateTransition.hpp" />
+    <ClInclude Include="src\states\LoginState.hpp" />
+    <ClInclude Include="src\states\RoomState.hpp" />
+    <ClInclude Include="src\core\manager\StateManager.hpp" />
+    <ClInclude Include="src\ui\GameUI.h" />
+    <ClInclude Include="src\utils\Logger.hpp" />
+    <ClInclude Include="src\utils\MathConstants.hpp" />
+    <ClInclude Include="src\utils\Random.hpp" />
+    <ClInclude Include="src\utils\Timer.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\core\GameApp.cpp" />
+    <ClCompile Include="src\core\GameUtils.cpp" />
+    <ClCompile Include="src\core\manager\FontManager.cpp" />
+    <ClCompile Include="src\core\manager\Managers.cpp" />
+    <ClCompile Include="src\core\manager\MapManager.cpp" />
+    <ClCompile Include="src\core\manager\ResourceManager.cpp" />
+    <ClCompile Include="src\core\system\BlockMatcher.cpp" />
+    <ClCompile Include="src\core\system\GameSynchronizer.cpp" />
+    <ClCompile Include="src\game\AnimatedObject.cpp" />
+    <ClCompile Include="src\game\block\Block.hpp" />
+    <ClCompile Include="src\game\effect\BulletEffect.cpp" />
+    <ClCompile Include="src\game\effect\Particle.cpp" />
+    <ClCompile Include="src\game\map\GameBackground.cpp" />
+    <ClCompile Include="src\game\map\GrasslandBackground.cpp" />
+    <ClCompile Include="src\game\map\IcelandBackground.cpp" />
+    <ClCompile Include="src\game\particles\ParticleSystem.cpp" />
+    <ClCompile Include="src\game\RenderableObject.cpp" />
+    <ClCompile Include="src\texture\ImageTexture.cpp" />
+    <ClCompile Include="src\texture\StringTexture.cpp" />
+    <ClCompile Include="src\states\CharacterSelectState.cpp" />
+    <ClCompile Include="src\states\GameState.cpp" />
+    <ClCompile Include="src\states\LoginState.cpp" />
+    <ClCompile Include="src\states\RoomState.cpp" />
+    <ClCompile Include="src\core\manager\StateManager.cpp" />
+    <ClCompile Include="src\utils\Logger.cpp" />
+    <ClCompile Include="src\utils\Timer.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{85a7bd41-affa-44c7-8487-f7465b4b2aa5}</ProjectGuid>
+    <RootNamespace>puzzlepuyopuyo</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\SDL3-x64\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\SDL3-x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;SDL3_net.lib;SDL3_rtf.lib;SDL3_shadercross.lib;SDL3_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
