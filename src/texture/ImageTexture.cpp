@@ -1,9 +1,10 @@
 #include "ImageTexture.hpp"
 #include "../core/manager/ResourceManager.hpp"
+#include "../core/GameApp.hpp"
+
 #include <SDL3/SDL_image.h>
 #include <stdexcept>
 #include <format>
-#include "../core/GameApp.hpp"
 
 ImageTexture::~ImageTexture() 
 {
@@ -37,6 +38,11 @@ ImageTexture& ImageTexture::operator=(ImageTexture&& other) noexcept
     return *this;
 }
 
+std::shared_ptr<ImageTexture> ImageTexture::Create(const std::string& path)
+{
+    return GAME_APP.GetResourceManager().GetResource<ImageTexture>(path);
+}
+
 bool ImageTexture::Load(const std::string& path) 
 {
     ReleaseTexture();
@@ -47,9 +53,8 @@ bool ImageTexture::Load(const std::string& path)
     {
         throw std::runtime_error(std::format("Unable to load image {}: {}", path, SDL_GetError()));
     }
-
-    auto formatDetail = SDL_GetPixelFormatDetails(loadedSurface->format);    
-    if (formatDetail != nullptr)
+        
+    if (auto formatDetail = SDL_GetPixelFormatDetails(loadedSurface->format); formatDetail != nullptr)
     {
         auto colorKey = SDL_MapRGB(formatDetail, NULL, 0, 0, 0);
         SDL_SetSurfaceColorKey(loadedSurface, true, colorKey);
@@ -62,16 +67,14 @@ bool ImageTexture::Load(const std::string& path)
         throw std::runtime_error("No renderer available");
     }
 
-    texture_ = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-    
-    if (texture_) 
+    if (texture_ = SDL_CreateTextureFromSurface(renderer, loadedSurface); texture_ == nullptr)
     {
         SDL_DestroySurface(loadedSurface);
         throw std::runtime_error(std::format("Unable to create texture: {}", SDL_GetError()));
     }
 
-    width_ = loadedSurface->w;
-    height_ = loadedSurface->h;
+    width_ = static_cast<float>(loadedSurface->w);
+    height_ = static_cast<float>(loadedSurface->h);
 
     SDL_DestroySurface(loadedSurface);
     return true;
@@ -117,7 +120,7 @@ void ImageTexture::SetAlpha(uint8_t alpha)
     }
 }
 
-void ImageTexture::Render(int x, int y, const SDL_FRect* sourceRect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) const 
+void ImageTexture::Render(float x, float y, const SDL_FRect* sourceRect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) const
 {
     if (texture_ == nullptr)
     {
@@ -130,19 +133,14 @@ void ImageTexture::Render(int x, int y, const SDL_FRect* sourceRect, double angl
         return;
     }
 
-    SDL_FRect destRect{
-        static_cast<float>(x),
-        static_cast<float>(y),
-        static_cast<float>(sourceRect ? sourceRect->w : width_),
-        static_cast<float>(sourceRect ? sourceRect->h : height_)
-    };
+    SDL_FRect destRect{ x, y,
+        sourceRect ? sourceRect->w : width_,
+        sourceRect ? sourceRect->h : height_ };
 
     SDL_RenderTextureRotated(renderer, texture_, sourceRect, &destRect, angle, center, flip);
 }
 
-void ImageTexture::RenderScaled(const SDL_FRect* sourceRect, const SDL_FRect* destRect,
-    double angle, const SDL_FPoint* center,
-    SDL_FlipMode flip) const 
+void ImageTexture::RenderScaled(const SDL_FRect* sourceRect, const SDL_FRect* destRect, double angle, const SDL_FPoint* center, SDL_FlipMode flip) const 
 {
     if (texture_ == nullptr)
     {

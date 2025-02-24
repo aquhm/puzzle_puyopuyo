@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,8 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\common\constants\Constants.hpp" />
+    <ClInclude Include="src\core\common\types\GameTypes.hpp" />
     <ClInclude Include="src\core\GameApp.hpp" />
-    <ClInclude Include="src\core\GameConstants.hpp" />
     <ClInclude Include="src\core\GameUtils.hpp" />
     <ClInclude Include="src\core\IEventHandler.hpp" />
     <ClInclude Include="src\core\IRenderable.hpp" />
@@ -31,26 +32,54 @@
     <ClInclude Include="src\core\manager\MapManager.hpp" />
     <ClInclude Include="src\core\manager\ParticleManager.hpp" />
     <ClInclude Include="src\core\manager\ResourceManager.hpp" />
-    <ClInclude Include="src\core\system\BlockMatcher.hpp" />
     <ClInclude Include="src\core\system\GameSynchronizer.h" />
+    <ClInclude Include="src\core\WindowsMessageHandler.hpp" />
     <ClInclude Include="src\game\AnimatedObject.hpp" />
+    <ClInclude Include="src\game\block\Block.hpp" />
     <ClInclude Include="src\game\block\GameGroupBlock.hpp" />
     <ClInclude Include="src\game\block\GroupBlock.hpp" />
-    <ClInclude Include="src\game\block\IBlock.hpp" />
+    <ClInclude Include="src\game\block\IceBlock.hpp" />
     <ClInclude Include="src\game\effect\BulletEffect.hpp" />
+    <ClInclude Include="src\game\effect\ExplosionEffect.hpp" />
+    <ClInclude Include="src\game\effect\Particle.hpp" />
     <ClInclude Include="src\game\effect\ParticleContainer.hpp" />
-    <ClInclude Include="src\game\map\BackgroundTypes.hpp" />
+    <ClInclude Include="src\game\map\BackgroundParticleSystem.hpp" />
     <ClInclude Include="src\game\map\GameBackground.hpp" />
     <ClInclude Include="src\game\map\GrasslandBackground.hpp" />
     <ClInclude Include="src\game\map\IcelandBackground.hpp" />
-    <ClInclude Include="src\game\particles\Particle.hpp" />
-    <ClInclude Include="src\game\particles\ParticleSystem.hpp" />
+    <ClInclude Include="src\game\particles\BgParticle.hpp" />
+    <ClInclude Include="src\game\particles\BgParticleSystem.hpp" />
     <ClInclude Include="src\game\RenderableObject.hpp" />
+    <ClInclude Include="src\game\view\ComboView.hpp" />
+    <ClInclude Include="src\game\system\GameBoard.hpp" />
+    <ClInclude Include="src\game\system\GamePlayer.hpp" />
+    <ClInclude Include="src\game\view\InterruptBlockView.hpp" />
+    <ClInclude Include="src\game\view\ResultView.hpp" />
+    <ClInclude Include="src\math\Vector2.h" />
+    <ClInclude Include="src\network\CriticalSection.hpp" />
+    <ClInclude Include="src\network\GameClient.hpp" />
+    <ClInclude Include="src\network\GameServer.hpp" />
+    <ClInclude Include="src\network\NetworkController.hpp" />
+    <ClInclude Include="src\network\packets\GamePackets.hpp" />
+    <ClInclude Include="src\network\packets\IPacket.hpp" />
+    <ClInclude Include="src\network\NetClient.hpp" />
+    <ClInclude Include="src\network\NetCommon.hpp" />
+    <ClInclude Include="src\network\NetServer.hpp" />
+    <ClInclude Include="src\network\packets\PacketBase.hpp" />
+    <ClInclude Include="src\network\packets\PacketType.hpp" />
+    <ClInclude Include="src\network\packets\processors\BlockPacketProcessors.hpp" />
+    <ClInclude Include="src\network\packets\processors\CharacterSelectPacketProcessors.hpp" />
+    <ClInclude Include="src\network\packets\processors\CombatPacketProcessors.hpp" />
+    <ClInclude Include="src\network\packets\processors\GameInitPacketProcessors.hpp" />
+    <ClInclude Include="src\network\packets\processors\IPacketProcessor.hpp" />
+    <ClInclude Include="src\network\packets\processors\LobbyPacketProcessors.hpp" />
+    <ClInclude Include="src\network\player\Player.hpp" />
+    <ClInclude Include="src\core\manager\PlayerManager.hpp" />
+    <ClInclude Include="src\network\RingBuffer.hpp" />
+    <ClInclude Include="src\resource\ResourcePathTrait.hpp" />
     <ClInclude Include="src\texture\StringTexture.hpp" />
-    <ClInclude Include="src\resource\GameResources.hpp" />
     <ClInclude Include="src\texture\ImageTexture.hpp" />
     <ClInclude Include="src\resource\ObjectPool.hpp" />
-    <ClInclude Include="src\resource\ResourceCache.hpp" />
     <ClInclude Include="src\states\BaseState.hpp" />
     <ClInclude Include="src\states\CharacterSelectState.hpp" />
     <ClInclude Include="src\states\GameState.hpp" />
@@ -58,30 +87,52 @@
     <ClInclude Include="src\states\LoginState.hpp" />
     <ClInclude Include="src\states\RoomState.hpp" />
     <ClInclude Include="src\core\manager\StateManager.hpp" />
+    <ClInclude Include="src\ui\Button.hpp" />
+    <ClInclude Include="src\ui\EditBox.hpp" />
     <ClInclude Include="src\ui\GameUI.h" />
+    <ClInclude Include="src\ui\TextBox.hpp" />
     <ClInclude Include="src\utils\Logger.hpp" />
-    <ClInclude Include="src\utils\MathConstants.hpp" />
-    <ClInclude Include="src\utils\Random.hpp" />
+    <ClInclude Include="src\utils\PathUtil.hpp" />
+    <ClInclude Include="src\utils\StringUtils.hpp" />
     <ClInclude Include="src\utils\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\core\GameApp.cpp" />
-    <ClCompile Include="src\core\GameUtils.cpp" />
     <ClCompile Include="src\core\manager\FontManager.cpp" />
     <ClCompile Include="src\core\manager\Managers.cpp" />
     <ClCompile Include="src\core\manager\MapManager.cpp" />
+    <ClCompile Include="src\core\manager\ParticleManager.cpp" />
     <ClCompile Include="src\core\manager\ResourceManager.cpp" />
-    <ClCompile Include="src\core\system\BlockMatcher.cpp" />
     <ClCompile Include="src\core\system\GameSynchronizer.cpp" />
+    <ClCompile Include="src\core\WindowsMessageHandler.cpp" />
     <ClCompile Include="src\game\AnimatedObject.cpp" />
-    <ClCompile Include="src\game\block\Block.hpp" />
+    <ClCompile Include="src\game\block\Block.cpp" />
+    <ClCompile Include="src\game\block\GameGroupBlock.cpp" />
+    <ClCompile Include="src\game\block\GroupBlock.cpp" />
+    <ClCompile Include="src\game\block\IceBlock.cpp" />
     <ClCompile Include="src\game\effect\BulletEffect.cpp" />
-    <ClCompile Include="src\game\effect\Particle.cpp" />
+    <ClCompile Include="src\game\effect\ExplosionEffect.cpp" />
+    <ClCompile Include="src\game\effect\ParticleContainer.cpp" />
+    <ClCompile Include="src\game\map\BackgroundParticleSystem.cpp" />
     <ClCompile Include="src\game\map\GameBackground.cpp" />
     <ClCompile Include="src\game\map\GrasslandBackground.cpp" />
     <ClCompile Include="src\game\map\IcelandBackground.cpp" />
-    <ClCompile Include="src\game\particles\ParticleSystem.cpp" />
+    <ClCompile Include="src\game\particles\BgParticleSystem.cpp" />
     <ClCompile Include="src\game\RenderableObject.cpp" />
+    <ClCompile Include="src\game\view\ComboView.cpp" />
+    <ClCompile Include="src\game\system\GameBoard.cpp" />
+    <ClCompile Include="src\game\system\GamePlayer.cpp" />
+    <ClCompile Include="src\game\view\InterruptBlockView.cpp" />
+    <ClCompile Include="src\game\view\ResultView.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\network\GameClient.cpp" />
+    <ClCompile Include="src\network\GameServer.cpp" />
+    <ClCompile Include="src\network\NetClient.cpp" />
+    <ClCompile Include="src\network\NetServer.cpp" />
+    <ClCompile Include="src\network\NetworkController.cpp" />
+    <ClCompile Include="src\network\player\Player.cpp" />
+    <ClCompile Include="src\core\manager\PlayerManager.cpp" />
+    <ClCompile Include="src\network\RingBuffer.cpp" />
     <ClCompile Include="src\texture\ImageTexture.cpp" />
     <ClCompile Include="src\texture\StringTexture.cpp" />
     <ClCompile Include="src\states\CharacterSelectState.cpp" />
@@ -89,6 +140,9 @@
     <ClCompile Include="src\states\LoginState.cpp" />
     <ClCompile Include="src\states\RoomState.cpp" />
     <ClCompile Include="src\core\manager\StateManager.cpp" />
+    <ClCompile Include="src\ui\Button.cpp" />
+    <ClCompile Include="src\ui\EditBox.cpp" />
+    <ClCompile Include="src\ui\TextBox.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
     <ClCompile Include="src\utils\Timer.cpp" />
   </ItemGroup>
@@ -144,6 +198,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>bin\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -176,17 +233,19 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32_LEAN_AND_MEAN;_APP_DEBUG_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\SDL3-x64\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\SDL3-x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;SDL3_net.lib;SDL3_rtf.lib;SDL3_shadercross.lib;SDL3_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;SDL3_net.lib;SDL3_rtf.lib;SDL3_shadercross.lib;SDL3_ttf.lib;ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -1,4 +1,3 @@
-// Timer.h
 #pragma once
 #include <chrono>
 
@@ -7,11 +6,8 @@ class Timer
 
 public:
     Timer();
-
-    // 명시적 기본 소멸자
     ~Timer() = default;
 
-    // 복사/이동 연산 명시적 정의
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
     Timer(Timer&&) noexcept = default;

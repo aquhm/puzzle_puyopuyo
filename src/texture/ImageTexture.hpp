@@ -4,26 +4,41 @@
 #include <SDL3/SDL.h>
 #include <string>
 #include <memory>
+//#include "../core/GameApp.hpp"
+//#include "../core/manager/ResourceManager.hpp"
+
+class ResourceManager;
+class GameApp;
 
 class ImageTexture : public IResource 
 {
 public:
+
+    friend class ResourceManager;
+
     ImageTexture() = default;
     ~ImageTexture() override;
 
-    // IResource interface implementation
-    [[nodiscard]] bool Load(const std::string& path) override;
-    void Unload() override;
+    ImageTexture(const ImageTexture&) = delete;
+    ImageTexture& operator=(const ImageTexture&) = delete;
+    ImageTexture(ImageTexture&&) noexcept;
+    ImageTexture& operator=(ImageTexture&&) noexcept;
+
+    static std::shared_ptr<ImageTexture> Create(const std::string& path);
+    
     [[nodiscard]] bool IsLoaded() const override { return texture_ != nullptr; }
     [[nodiscard]] std::string_view GetResourcePath() const override { return path_; }
 
-    // Color manipulation
+    [[nodiscard]] float GetWidth() const { return width_; }
+    [[nodiscard]] float GetHeight() const { return height_; }
+    [[nodiscard]] SDL_Texture* GetSDLTexture() const { return texture_; }
+
+    void Unload() override;
     void SetColor(uint8_t red, uint8_t green, uint8_t blue);
     void SetBlendMode(SDL_BlendMode blending);
     void SetAlpha(uint8_t alpha);
 
-    // Rendering methods
-    void Render(int x, int y, const SDL_FRect* sourceRect = nullptr,
+    void Render(float x, float y, const SDL_FRect* sourceRect = nullptr,
         double angle = 0.0, const SDL_FPoint* center = nullptr,
         SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
@@ -31,27 +46,14 @@ public:
         double angle = 0.0, const SDL_FPoint* center = nullptr,
         SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
-    // Accessors
-    [[nodiscard]] int GetWidth() const { return width_; }
-    [[nodiscard]] int GetHeight() const { return height_; }
-    [[nodiscard]] SDL_Texture* GetSDLTexture() const { return texture_; }
+protected:
+    [[nodiscard]] bool Load(const std::string& path) override;
+    void ReleaseTexture();
 
-    // Delete copy operations
-    ImageTexture(const ImageTexture&) = delete;
-    ImageTexture& operator=(const ImageTexture&) = delete;
-
-    // Allow move operations
-    ImageTexture(ImageTexture&&) noexcept;
-    ImageTexture& operator=(ImageTexture&&) noexcept;
-
-private:
-
+protected:
 
     SDL_Texture* texture_{ nullptr };
     std::string path_;
-    int width_{ 0 };
-    int height_{ 0 };
-
-    // Helper methods
-    void ReleaseTexture();
+    float width_{ 0 };
+    float height_{ 0 };    
 };

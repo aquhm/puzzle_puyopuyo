@@ -1,4 +1,3 @@
-// Timer.cpp
 #include "Timer.hpp"
 
 Timer::Timer() 

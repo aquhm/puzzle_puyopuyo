@@ -1,4 +1,9 @@
 #pragma once
+/*
+ *
+ * 설명: Frame 별 Sprite 표시하여 애니메이션 효과를 나타내는 Object Class
+ *
+ */
 
 #include "RenderableObject.hpp"
 #include "../texture/ImageTexture.hpp"
@@ -7,9 +12,11 @@
 
 class ImgTexture;
 
-class AnimatedObject : public RenderableObject {
+class AnimatedObject : public RenderableObject 
+{
 public:
-    struct AnimationInfo {
+    struct AnimationInfo 
+    {
         int frame_count{ 0 };          // Total number of frames
         int current_frame{ 0 };        // Current frame index
         int columns{ 0 };              // Number of columns in sprite sheet
@@ -20,14 +27,15 @@ public:
         bool is_reverse{ false };      // Whether animation should play in reverse
     };
 
-    struct SpriteSheetInfo {
+    struct SpriteSheetInfo 
+    {
         SDL_FRect view_rect{};        // Rectangle for a single frame
         SDL_FRect source_rect{};      // Rectangle for entire sprite sheet
-        SDL_Point spacing{ 0, 0 };     // Spacing between frames (x, y)
-        SDL_Point offset{ 0, 0 };      // Starting position on texture (x, y)
+        SDL_FPoint spacing{ 0, 0 };     // Spacing between frames (x, y)
+        SDL_FPoint offset{ 0, 0 };      // Starting position on texture (x, y)
     };
 
-    AnimatedObject();
+    AnimatedObject() = default;
     ~AnimatedObject() override = default;
 
     // Core functionality
@@ -44,9 +52,9 @@ public:
 
     // Texture setup
     void SetTextureInfo(std::shared_ptr<ImageTexture> texture,
-        const SDL_Rect& view_rect,
-        const SDL_Rect& source_rect,
-        const SDL_Point& spacing);
+        const SDL_FRect& view_rect,
+        const SDL_FRect& source_rect,
+        const SDL_FPoint& spacing);
 
     // Animation parameters
     void SetFrameTime(float time) { animation_info_.frame_time = time; }

@@ -1,33 +1,32 @@
-// Managers.cpp
-
 #include <format>
 #include <algorithm>
 #include <stdexcept>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_log.h>
 
-#include "Managers.hpp"
 #include "../IRenderable.hpp"
+#include "../IEventHandler.hpp"
+#include "Managers.hpp"
 #include "StateManager.hpp"
-
-//#include "StateManager.h"
-//#include "ResourceManager.h"
-//#include "FontManager.h"
-//#include "ParticleManager.h"
-//#include "NetworkManager.h"
-
+#include "ResourceManager.hpp"
+#include "FontManager.hpp"
+#include "MapManager.hpp"
+#include "ParticleManager.hpp"
+#include "PlayerManager.hpp"
 
 
 bool Managers::CreateManagers() 
 {
     try 
     {
-        // 각 매니저 생성
+        // 각 매니저 생성        
+        createManager<ResourceManager>();
+        createManager<FontManager>();
+        createManager<MapManager>();
+        createManager<ParticleManager>();
+        createManager<PlayerManager>();
         createManager<StateManager>();
-        /*CreateManager<ResourceManager>();
-        CreateManager<FontManager>();
-        CreateManager<ParticleManager>();
-        CreateManager<NetworkManager>();*/
+
 
         // 렌더러블 매니저 목록 한 번만 생성
         renderables_.clear();
@@ -75,16 +74,7 @@ bool Managers::Initialize()
     }
 }
 
-template<typename T>
-[[nodiscard]] T* Managers::GetManager(std::string_view name) const
-{
-    if (auto it = managers_.find(std::string(name)); it != managers_.end())
-    {
-        return dynamic_cast<T*>(it->second.get());
-    }
 
-    return nullptr;
-}
 
 void Managers::Update(float dateTime) 
 {
@@ -119,12 +109,12 @@ void Managers::RenderAll(SDL_Renderer* renderer)
 }
 
 void Managers::HandleEvents(const SDL_Event& event)
-{
-    for (const auto& [name, manager] : managers_)
-    {
-        if (auto* eventHandler = dynamic_cast<IEventHandler*>(manager.get()))
-        {
-            eventHandler->HandleEvent(event);
-        }
-    }
+{    
+   for (const auto& [name, manager] : managers_)
+   {
+       if (auto eventHandler = dynamic_cast<IEventHandler*>(manager.get()))
+       {
+           eventHandler->HandleEvent(event);
+       }
+   }
 }

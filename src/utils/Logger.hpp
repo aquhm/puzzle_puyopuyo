@@ -19,13 +19,11 @@ class Logger {
 public:
     static Logger& GetInstance();
 
-    // Delete copy/move
     Logger(const Logger&) = delete;
     Logger& operator=(const Logger&) = delete;
     Logger(Logger&&) = delete;
     Logger& operator=(Logger&&) = delete;
 
-    // 기본 로깅 함수들
     template<typename... Args>
     void Debug(std::format_string<Args...> fmt, Args&&... args);
 

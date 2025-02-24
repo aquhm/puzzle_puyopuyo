@@ -1,36 +1,45 @@
-// Managers.h
 #pragma once
+/*
+ *
+ * 설명: IManager 구현한 Manager 클래스 생성 및 라이프 사이클 관리
+ *
+ */
 
 #include "IManager.hpp"
 #include <memory>
 #include <unordered_map>
 #include <string_view>
+#include <concepts>
 
 class IRenderable;
 class IEventHandler;
-class SDL_Renderer;
+struct SDL_Renderer;
 
 class Managers 
 {
 
 public:
-    // 싱글톤이 아닌 일반 클래스로 설계 (GameApp에서 생명주기 관리)
     Managers() = default;
     ~Managers() = default;
 
-    // 복사/이동 연산 방지
     Managers(const Managers&) = delete;
     Managers& operator=(const Managers&) = delete;
     Managers(Managers&&) = delete;
     Managers& operator=(Managers&&) = delete;
 
-    // Manager 생성 메서드들
     bool CreateManagers();
 
-    template<typename T>
-    [[nodiscard]] T* GetManager(std::string_view name) const;   
+    template<std::derived_from<IManager> T>
+    [[nodiscard]] T* GetManager(std::string_view name) const
+    {
+        if (auto it = managers_.find(std::string(name)); it != managers_.end())
+        {
+            return dynamic_cast<T*>(it->second.get());
+        }
 
-    // Manager 라이프사이클 관리
+        return nullptr;
+    }
+
     bool Initialize();
     void Update(float deltaTime);
     void Release();
@@ -39,18 +48,17 @@ public:
     
 
 private:
-    
-    // Manager 컨테이너
-    std::unordered_map<std::string, std::unique_ptr<IManager>> managers_;
-    std::vector<IRenderable*> renderables_;
-
-    // Manager 생성 헬퍼 메서드
-    template<typename T>
-    bool createManager() 
+    template<std::derived_from<IManager> T>
+    bool createManager()
     {
         auto manager = std::make_unique<T>();
         auto name = manager->GetName();
         managers_[std::string(name)] = std::move(manager);
         return true;
-    }    
+    }
+
+private:
+    
+    std::unordered_map<std::string, std::unique_ptr<IManager>> managers_;
+    std::vector<IRenderable*> renderables_;   
 };

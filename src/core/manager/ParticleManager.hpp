@@ -1,64 +1,62 @@
 #pragma once
+/*
+ *
+ * 설명: 퍼즐 게임 스테이지별 배경 맵들을 관리하는 클래스
+ *
+ */
 
-#include "../../core/IManager.hpp"
-#include "../../utils/Math.hpp"
-#include <memory>
-#include <string>
+
+#include "IManager.hpp"
+#include "../IRenderable.hpp"
+#include "../../game/effect/ParticleContainer.hpp"
 #include <list>
+#include <string>
 #include <unordered_map>
+#include <memory>
+#include <SDL3/SDL.h> 
 
-class ImgTexture;
+class ImageTexture;
 
-namespace effects {
+class ParticleManager : public IManager, public IRenderable 
+{
+public:
 
-    class ParticleContainer;
+    using ParticleContainerList = std::list<std::unique_ptr<ParticleContainer>>;
+    using TextureMap = std::unordered_map<std::string, std::shared_ptr<ImageTexture>>;
 
-    class ParticleManager final : public IManager {
-    public:
-        // Delete copy/move operations
-        ParticleManager(const ParticleManager&) = delete;
-        ParticleManager& operator=(const ParticleManager&) = delete;
-        ParticleManager(ParticleManager&&) = delete;
-        ParticleManager& operator=(ParticleManager&&) = delete;
+    ParticleManager() = default;
+    ~ParticleManager() override;
+   
 
-        // Singleton access
-        static ParticleManager& GetInstance();
+    ParticleManager(const ParticleManager&) = delete;
+    ParticleManager& operator=(const ParticleManager&) = delete;
+    ParticleManager(ParticleManager&&) = delete;
+    ParticleManager& operator=(ParticleManager&&) = delete;
 
-        // IManager interface implementation
-        [[nodiscard]] bool Initialize() override;
-        void Update(float deltaTime) override;
-        void Release() override;
-        [[nodiscard]] std::string_view GetName() const override { return "ParticleManager"; }
+    [[nodiscard]] bool Initialize() override;
+    [[nodiscard]] std::string_view GetName() const override { return "ParticleManager"; }
+    void Update(float deltaTime) override;
+    void Release() override;
+    void Render() override;
+    [[nodiscard]] int GetRenderPriority() const override { return 100; }
 
-        // Container management
-        void AddContainer(std::unique_ptr<ParticleContainer> container);
-        void AddContainer(std::unique_ptr<ParticleContainer> container, const Vector2f& position);
-        void RemoveContainer(const ParticleContainer& container);
+    
+    void RenderForPlayer(uint8_t playerId);
+    void AddParticleContainer(std::unique_ptr<ParticleContainer> container);
+    void AddParticleContainer(std::unique_ptr<ParticleContainer> container, const SDL_FPoint& position);
+    void RemoveParticleContainer(const ParticleContainer& container);
 
-        // Rendering
-        void Render();
-        void Render(uint8_t playerId);
-        void SetVisible(bool visible) { is_visible_ = visible; }
-        [[nodiscard]] bool IsVisible() const { return is_visible_; }
+    void SetDrawEnabled(bool enabled) { isDrawEnabled_ = enabled; }
+    [[nodiscard]] std::shared_ptr<ImageTexture> FindParticleTexture(const std::string& name);
 
-        // Resource management
-        [[nodiscard]] std::shared_ptr<ImgTexture> GetTexture(const std::string& name) const;
-        void AddTexture(const std::string& name, std::shared_ptr<ImgTexture> texture);
+private:    
 
-    private:
-        ParticleManager() = default;
-        ~ParticleManager() override = default;
+    void ClearAllResources();
 
-        using ContainerList = std::list<std::unique_ptr<ParticleContainer>>;
-        using TextureMap = std::unordered_map<std::string, std::shared_ptr<ImgTexture>>;
+private:    
 
-        ContainerList containers_;
-        TextureMap textures_;
-        bool is_visible_{ true };
-
-        void CleanupInactiveContainers();
-    };
-
-#define PARTICLE_MANAGER effects::ParticleManager::GetInstance()
-
-} // namespace effects
+    ParticleContainerList containers_;
+    TextureMap textures_;
+    bool isDrawEnabled_{ true };
+    bool isInitialized_{ false };
+};

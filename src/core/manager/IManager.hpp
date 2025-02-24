@@ -1,6 +1,15 @@
-// IManager.h
 #pragma once
+/*
+ *
+ * 설명: Manager 추상화 인터페이스
+ *
+ */
+
 #include <string_view>
+
+union SDL_Event;
+struct SDL_Renderer;
+
 
 class IManager 
 {

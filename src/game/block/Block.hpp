@@ -1,33 +1,19 @@
 #pragma once
 
-#include <SDL3/SDL.h>
+/**
+ *
+ * 설명: Game Block 오브젝트 1개를 구성한 Class
+ * 
+ */
+
 #include <memory>
 #include <cstdint>
+#include <array>
 #include "../RenderableObject.hpp"
 #include "../../texture/ImageTexture.hpp"
 
-// Block 관련 상수 정의
-namespace BlockConstants {
-    constexpr float SIZE = 31.0f;                // 블록 기본 크기
-    constexpr float GRAVITY = 9.8f;              // 중력 가속도
-    constexpr float CHANGE_TIME = 0.2f;          // 블록 상태 변경 시간
-
-    constexpr float EFFECT_COMPRESS_TIME = 0.1f; // 압축 이펙트 시간
-    constexpr float EFFECT_EXPAND_TIME = 0.15f;  // 확장 이펙트 시간 
-    constexpr float EFFECT_DESTROY_TIME = 0.5f;  // 파괴 이펙트 시간
-
-    constexpr int DESTROY_DELTA_SIZE = 21;       // 파괴시 크기 변화량
-    constexpr float DESTROY_POS_VELOCITY = (DESTROY_DELTA_SIZE * 0.5f) / EFFECT_DESTROY_TIME;
-
-    constexpr float DESTROY_EXPAND_TIME = 0.5f;  // 파괴 확장 시간
-    constexpr int DESTROY_EXPAND_DELTA_SIZE = 10;// 파괴 확장 크기
-    constexpr float DESTROY_EXPAND_POS_VELOCITY = (DESTROY_EXPAND_DELTA_SIZE * 0.5f) / DESTROY_EXPAND_TIME;
-
-    constexpr int SHATTERING_DOWN_SPEED = 50;    // 파괴 후 낙하 속도
-}
-
 // 블록 타입 enum class
-enum class BlockType : int {
+enum class BlockType {
     Empty,
     Red,
     Green,
@@ -39,7 +25,8 @@ enum class BlockType : int {
 };
 
 // 블록 상태 enum class
-enum class BlockState {
+enum class BlockState
+{
     Playing,    // 플레이어 조작 상태
     Effecting,  // 이펙트 재생 상태
     Stationary, // 고정된 상태
@@ -49,18 +36,21 @@ enum class BlockState {
     Max
 };
 
-// 이펙트 상태 enum class
+
+// 블록 이펙트 상태
 enum class EffectState {
     None = -1,
     Sparkle,
-    Compress,
-    Expand,
-    Destroy,
+    Compress,   // 작아지는 상태
+    Expand,     // 확장 커지는 상태
+    Destroy,    // 삭제중인 상태
     Max
 };
 
-// 기존 링크 상태 유지 (게임 로직상 필요)
-enum class LinkState {
+
+// 주변 블록들의 타입에 따른 블록 상태 갱신 Bit 연산
+enum class LinkState 
+{
     Normal = 0,
     Left = (1 << 0),
     Top = (1 << 1),
@@ -80,59 +70,76 @@ enum class LinkState {
     Max
 };
 
-class Block : public RenderableObject {
+class Block : public RenderableObject 
+{
 public:
     Block();
     virtual ~Block() = default;
 
-    // 복사/이동 연산자 정의
-    Block(const Block& other);
-    Block& operator=(const Block& other);
+    Block(const Block& other);    
     Block(Block&& other) noexcept = default;
     Block& operator=(Block&& other) noexcept = default;
+    Block& operator=(const Block& other);
+    [[nodiscard]] bool operator<(const Block& rhs) const;
 
-    // Core functionality
+    
     void Update(float deltaTime) override;
     void Render() override;
     void Release() override;
 
-    // Block specific functionality
-    void SetBlockType(BlockType type);
-    void SetState(BlockState state);
+    virtual void SetPlayerID(uint8_t id) { playerID_ = id; }
+    virtual void SetState(BlockState state);    
+    void SetBlockType(BlockType type);    
     void SetLinkState(LinkState state = LinkState::Normal);
+
+    void SetBlockTex(const std::shared_ptr<ImageTexture>& tex) { texture_ = tex; }
     void SetEffectState(EffectState state) { effectState_ = state; }
     void SetLevel(uint8_t level) { level_ = level; }
 
-    // Position and Index handling
-    void SetPosIdx(int x, int y);
-    void SetPosIdx_X(int x);
+    void SetPosIdx(int x, int y)
+    {
+		indexX_ = x;
+		indexY_ = y;
+    }
+    void SetPosIdx_X(int x)
+    {
+		indexX_ = x;
+    }
+
+    void SetSize(float width, float height) override;
+
+
     [[nodiscard]] int GetPosIdx_X() const { return indexX_; }
     [[nodiscard]] int GetPosIdx_Y() const { return indexY_; }
-
-    // State queries
     [[nodiscard]] BlockType GetBlockType() const { return blockType_; }
     [[nodiscard]] BlockState GetState() const { return state_; }
     [[nodiscard]] LinkState GetLinkState() const { return linkState_; }
     [[nodiscard]] EffectState GetEffectState() const { return effectState_; }
 
-    // Utility functions
     void SetRecursionCheck(bool check) { isRecursionCheck_ = check; }
     [[nodiscard]] bool IsRecursionCheck() const { return isRecursionCheck_; }
 
     void SetStandard(bool standard) { isStandard_ = standard; }
-    [[nodiscard]] bool IsStandard() const { return isStandard_; }
+    [[nodiscard]] bool IsStandard() const { return isStandard_; }   
 
-    // Scale handling
-    void SetScale(float width, float height);
-    void ChangeScaleDuration(float scale, float time);
+private:
+    void UpdateBlockEffect(float deltaTime);     // 블록 이펙트 업데이트
+    void UpdateDestroying(float deltaTime);      // 파괴 상태 업데이트
+    void UpdateDestroyingExpand(float deltaTime);
+    void UpdateDestroyingRotate(float deltaTime);
 
-    // Comparison operator
-    bool operator<(const Block& rhs) const;
+    void UpdateDownMoving(float deltaTime);      // 낙하 상태 업데이트
+    void UpdatePlayingState(float deltaTime);    // 플레이 상태 업데이트
+    void InitializeEffectPositions();            // 이펙트 위치 초기화
+    void UpdateSourceRectForLinkState();
+    void UpdateLinkStateForDownMoving();
+    
 
 protected:
-    SDL_Rect sourceRect_;                        // 텍스처 소스 영역
-    SDL_Point blockOriginPos_;                   // 블록 원점 위치
-    SDL_Point blockEffectPos_[static_cast<int>(EffectState::Max)]; // 이펙트 위치
+
+    SDL_FRect sourceRect_;                       // 텍스처 소스 영역
+    SDL_FPoint blockOriginPos_;                  // 블록 원점 위치
+    std::array<SDL_FPoint, static_cast<int>(EffectState::Max)> blockEffectPos_; // 이펙트 위치
 
     BlockType blockType_{ BlockType::Max };      // 블록 타입
     BlockState state_{ BlockState::Max };        // 블록 상태
@@ -157,11 +164,4 @@ protected:
     float downVelocity_{ 0.0f };                 // 낙하 속도
 
     uint8_t playerID_{ 0 };                      // 플레이어 ID
-
-private:
-    void UpdateBlockEffect(float deltaTime);     // 블록 이펙트 업데이트
-    void UpdateDestroying(float deltaTime);      // 파괴 상태 업데이트
-    void UpdateDownMoving(float deltaTime);      // 낙하 상태 업데이트
-    void UpdatePlayingState(float deltaTime);    // 플레이 상태 업데이트
-    void InitializeEffectPositions();            // 이펙트 위치 초기화
 };

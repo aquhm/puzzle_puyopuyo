@@ -1,9 +1,13 @@
 #pragma once
+/**
+ *
+ * 설명: Game의 배경 표시 관련 class
+ *
+ */
 
-#include "BackgroundTypes.hpp"
 #include "../RenderableObject.hpp"
 #include "../../texture/ImageTexture.hpp"
-#include "../particles/ParticleSystem.hpp"
+#include "../particles/BgParticleSystem.hpp"
 #include <SDL3/SDL.h>
 #include <array>
 #include <deque>
@@ -13,78 +17,69 @@
 class ImgTexture;
 class GroupBlock;
 
-namespace bg 
+enum class BackgroundType : uint8_t
 {
-    class GameBackground : public RenderableObject 
-    {
-    public:
-        GameBackground();
-        ~GameBackground() override;
+    GrassLand = 0,
+    IceLand = 13
+};
 
-        // Delete copy/move operations
-        GameBackground(const GameBackground&) = delete;
-        GameBackground& operator=(const GameBackground&) = delete;
-        GameBackground(GameBackground&&) = delete;
-        GameBackground& operator=(GameBackground&&) = delete;
+class GameBackground : public RenderableObject 
+{
+public:
+    GameBackground();
+    ~GameBackground() override = default;
 
-        // Core functionality
-        [[nodiscard]] virtual bool Initialize();
-        void Update(float deltaTime) override;
-        void Render() override;
-        void Release() override;
+    GameBackground(const GameBackground&) = delete;
+    GameBackground& operator=(const GameBackground&) = delete;
+    GameBackground(GameBackground&&) = delete;
+    GameBackground& operator=(GameBackground&&) = delete;
 
-        // Block management
-        void Reset();
-        void SetNextBlock(std::shared_ptr<GroupBlock> block);
-        void SetPlayerNextBlock(std::shared_ptr<GroupBlock> block);
+    [[nodiscard]] virtual bool Initialize();
+    void Update(float deltaTime) override;
+    [[nodiscard]] virtual void Render() override;
+    void Release() override;
 
-        // State queries
-        [[nodiscard]] bool IsChangingBlock() const;
-        [[nodiscard]] bool IsChangingPlayerBlock() const;
-        [[nodiscard]] bool IsReadyGame() const;
-        [[nodiscard]] uint8_t GetNewBlockCount() const { return static_cast<uint8_t>(group_blocks_.size()); }
-        [[nodiscard]] int16_t GetMapIndex() const { return map_index_; }
+    void Reset();
+    void SetNextBlock(std::shared_ptr<GroupBlock> block);
+    void SetPlayerNextBlock(std::shared_ptr<GroupBlock> block);
 
-        // State setters
-        void SetChangingBlock(bool state) { is_changing_block_ = state; }
-        void SetChangingPlayerBlock(bool state) { is_player_changing_block_ = state; }
+    [[nodiscard]] bool IsChangingBlock() const;
+    [[nodiscard]] bool IsChangingPlayerBlock() const;
+    [[nodiscard]] bool IsReadyGame() const;
+    [[nodiscard]] uint8_t GetNewBlockCount() const { return static_cast<uint8_t>(group_blocks_.size()); }
+    [[nodiscard]] uint8_t GetMapIndex() const { return map_index_; }
 
-    protected:
-        struct Vector2f 
-        {
-            float x{ 0.0f };
-            float y{ 0.0f };
-        };
+    // Setters 모음
+    void SetChangingBlock(bool state) { is_changing_block_ = state; }
+    void SetChangingPlayerBlock(bool state) { is_player_changing_block_ = state; }
 
-        // Background resources
-        std::array<std::unique_ptr<ImageTexture>, 2> background_textures_;
-        std::array<std::unique_ptr<ImageTexture>, 2> block_preview_textures_;
-        std::array<SDL_Rect, 2> background_rects_;
+ protected:
+     [[nodiscard]] virtual bool LoadBackgroundTextures();
+     [[nodiscard]] bool CreateRenderTarget();
+     void UpdateBlockAnimations(float deltaTime);
+     void UpdatePlayerBlockAnimations(float deltaTime);
 
-        // Render target
-        std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> render_target_;
-        SDL_Rect render_target_rect_{};
+protected:
 
-        // Block management
-        bool is_changing_block_{ false };
-        bool is_player_changing_block_{ false };
-        std::deque<std::shared_ptr<GroupBlock>> group_blocks_;
-        std::deque<std::shared_ptr<GroupBlock>> player_group_blocks_;
 
-        // Movement vectors
-        Vector2f direction_vector_;
-        Vector2f player_direction_vector_;
+    std::array<std::shared_ptr<ImageTexture>, 2> background_textures_;
+    std::array<std::shared_ptr<ImageTexture>, 2> block_preview_textures_;
+    std::array<SDL_FRect, 2> background_rects_;
 
-        // Map properties
-        int16_t map_index_{ -1 };
-        std::string file_path_{ "./Image/BG/BG" };
-        float accumulated_time_{ 0.0f };
-        bool is_initialized_{ false };
+    std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> render_target_;
+    SDL_FRect render_target_rect_{};
 
-        // Helper functions
-        [[nodiscard]] virtual bool LoadBackgroundTextures();
-        [[nodiscard]] bool CreateRenderTarget();
-        void UpdateBlockAnimations(float deltaTime);
-    };
+    bool is_changing_block_{ false };
+    bool is_player_changing_block_{ false };
+    std::deque<std::shared_ptr<GroupBlock>> group_blocks_;
+    std::deque<std::shared_ptr<GroupBlock>> player_group_blocks_;
 
-} // namespace bg
+    SDL_FPoint direction_vector_;
+    SDL_FPoint player_direction_vector_;
+
+    uint8_t map_index_{};
+    std::string file_path_{ "./Image/BG/BG" };
+    float accumulated_time_{ 0.0f };
+    bool is_initialized_{ false };    
+};
+

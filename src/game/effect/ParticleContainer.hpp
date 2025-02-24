@@ -1,68 +1,74 @@
 #pragma once
 
-#include "../../utils/Math.hpp"
+/*
+*
+* 설명: 파티클 생성후 파티클의 Life Cycle을 관리하는 Container
+*
+*/
+
 #include <vector>
 #include <memory>
-#include <chrono>
+#include <algorithm>
+#include <cstdint>
+#include <SDL3/SDL_rect.h>
 
-class ImgTexture;
-struct SDL_Rect;
+class Particle;
+class ImageTexture;
+struct SDL_FRect;
+struct SDL_FPoint;
 
-namespace effects {
 
-    class Particle;
+class ParticleAliveChecker
+{
+public:
+    ParticleAliveChecker() = default;
 
-    struct ParticleConfig {
-        std::chrono::milliseconds initial_lifetime{ 1000 };  // Default 1 second
-        float max_radius{ 100.0f };
-        int max_particles{ 100 };
-        SDL_Rect source_rect{};
-    };
+    void operator()(const std::unique_ptr<Particle>& particle);
+    [[nodiscard]] int GetAliveCount() const { return aliveCount_; }
 
-    class ParticleContainer {
-    public:
-        ParticleContainer() = default;
-        virtual ~ParticleContainer() = default;
+private:
+    int aliveCount_{ 0 };
+};
 
-        // Delete copy/move operations
-        ParticleContainer(const ParticleContainer&) = delete;
-        ParticleContainer& operator=(const ParticleContainer&) = delete;
-        ParticleContainer(ParticleContainer&&) = delete;
-        ParticleContainer& operator=(ParticleContainer&&) = delete;
+class ParticleContainer
+{
+public:
+    ParticleContainer() = default;
+    virtual ~ParticleContainer();
 
-        // Core functionality
-        virtual void Update(float deltaTime) = 0;
-        virtual void Render() = 0;
-        [[nodiscard]] virtual bool Initialize() = 0;
-        virtual void Release();
+    ParticleContainer(const ParticleContainer&) = delete;
+    ParticleContainer& operator=(const ParticleContainer&) = delete;
+    ParticleContainer(ParticleContainer&&) noexcept = default;
+    ParticleContainer& operator=(ParticleContainer&&) noexcept = default;
 
-        // State queries
-        [[nodiscard]] int GetAliveParticleCount() const;
-        [[nodiscard]] bool IsActive() const { return is_active_; }
-        [[nodiscard]] bool IsInitialized() const { return is_initialized_; }
+    virtual void Update(float deltaTime) = 0;
+    virtual void Render() = 0;
+    virtual bool InitializeParticles() = 0;
+    virtual void Release();
 
-        // Position management
-        void SetPosition(const Vector2f& position) { position_ = position; }
-        void SetPosition(float x, float y) { position_ = { x, y }; }
-        [[nodiscard]] const Vector2f& GetPosition() const { return position_; }
+    [[nodiscard]] int GetAliveParticleCount() const;
+    [[nodiscard]] bool IsAlive() const { return initialLifetime_ > accumulatedLifetime_; }
+    [[nodiscard]] uint8_t GetPlayerID() const { return playerID_; }
 
-        // Configuration
-        void SetConfig(const ParticleConfig& config) { config_ = config; }
-        void SetTexture(std::shared_ptr<ImgTexture> texture) { texture_ = texture; }
-        void SetPlayerId(uint8_t id) { player_id_ = id; }
-        [[nodiscard]] uint8_t GetPlayerId() const { return player_id_; }
+    void SetPosition(const SDL_FPoint& pos) { position_ = pos; }
+    void SetTexture(std::shared_ptr<ImageTexture> texture) { sourceTexture_ = texture; }
+    void SetPlayerID(uint8_t id) { playerID_ = id; }
 
-    protected:
-        std::vector<std::unique_ptr<Particle>> particles_;
-        std::shared_ptr<ImgTexture> texture_;
-        ParticleConfig config_;
-        Vector2f position_{ 0.0f, 0.0f };
-        bool is_active_{ false };
-        bool is_initialized_{ false };
-        uint8_t player_id_{ 0 };
+protected:
 
-        virtual void RespawnParticle(Particle& particle) = 0;
-        virtual void UpdateParticle(Particle& particle, float deltaTime) = 0;
-    };
+    void RemoveDeadParticles();
+    void ClearParticles();
 
-} // namespace effects
+protected:
+    SDL_FPoint position_{};
+    float initialLifetime_{ 0.0f };
+    float accumulatedLifetime_{ 0.0f };
+    size_t maxParticles_{ 0 };
+    float limitRadius_{ 0.0f };
+
+    std::vector<std::unique_ptr<Particle>> particles_;
+    std::shared_ptr<ImageTexture> sourceTexture_;
+    SDL_FRect sourceRect_{};
+    uint8_t playerID_{ 0 };
+
+};

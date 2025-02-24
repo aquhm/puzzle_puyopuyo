@@ -3,6 +3,8 @@
 #include <SDL3/SDL_ttf.h>
 #include <format>
 #include <stdexcept>
+#include <cassert>
+#include "../../utils/PathUtil.hpp"
 
 void FontManager::FontDeleter::operator()(TTF_Font* font) const
 {
@@ -21,9 +23,13 @@ bool FontManager::Initialize()
 {
     try 
     {
-        ValidateFontInitialization();
-        InitializeFontContainer();
+        fonts_.resize(static_cast<size_t>(FontType::Count));
+
+        ValidateFontInitialization();        
+
+        LoadFont(FontType::Chat, "NanumGothicBold.ttf", 15);
         return true;
+
     }
     catch (const std::exception& e) 
     {
@@ -56,38 +62,35 @@ TTF_Font* FontManager::GetFont(FontType type) const
     return fonts_[index].get();
 }
 
-bool FontManager::LoadFont(FontType type, const std::filesystem::path& path, int size) 
+void FontManager::LoadFont(FontType type, const std::string& filename, float size) 
 {
     if (!IsValidFontType(type)) 
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid font type");
-        return false;
+        return;
     }
 
-    try {
-        auto* font = TTF_OpenFont(path.string().c_str(), size);
+    try 
+    {
+        std::string exeBasePath = PathUtil::GetExecutableBasePath();
+        std::string fontPath = PathUtil::CombinePaths(exeBasePath, PathUtil::CombinePaths(PathUtil::FONT_DIR, filename));
+        std::string fullPath = PathUtil::CombinePaths(exeBasePath, fontPath);
         
+        auto font = TTF_OpenFont(fullPath.c_str(), size);
         if (font == nullptr) 
         {
-            throw std::runtime_error(std::format("Failed to load font {}: {}", path.string(), SDL_GetError()));
+            throw std::runtime_error(std::format("Failed to load font {}: {}", fullPath, SDL_GetError()));
         }
 
         auto index = static_cast<size_t>(type);
         fonts_[index].reset(font);
-        return true;
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-            "Font loading failed: %s", e.what());
-        return false;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Font loading failed: %s", e.what());
     }
 }
 
-void FontManager::InitializeFontContainer() 
-{
-    fonts_.resize(static_cast<size_t>(FontType::Count));
-}
 
 bool FontManager::IsValidFontType(FontType type) const 
 {
@@ -96,7 +99,7 @@ bool FontManager::IsValidFontType(FontType type) const
 
 void FontManager::ValidateFontInitialization() 
 {
-    if (TTF_Init() < 0) 
+    if (TTF_Init() == false) 
     {
         throw std::runtime_error(std::format("SDL_ttf initialization failed: {}", SDL_GetError()));
     }
