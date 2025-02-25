@@ -26,7 +26,7 @@ bool NetClient::Start(HWND hwnd)
             return false;
         }
 
-        hwnd_ = hwnd; // WSAAsyncSelect 메시지를 받을 윈도우 핸들 설정
+        hwnd_ = hwnd;
 
         if (InitSocket() == false)
         {
@@ -41,6 +41,9 @@ bool NetClient::Start(HWND hwnd)
 
         recv_remain_size_ = 0;
         msg_buffer_.fill(0);
+
+        polling_thread_running_ = true;
+        event_polling_thread_ = std::thread(&NetClient::EventPollingThreadFunc, this);
 
         initialize_ = true;
 
@@ -142,8 +145,14 @@ void NetClient::SendData(std::span<const char> data)
 
 void NetClient::Exit()
 {
-    if (is_connected_)
+    polling_thread_running_ = false;
+    if (event_polling_thread_.joinable()) 
     {
+        event_polling_thread_.join();
+    }
+
+    if (is_connected_)
+    {     
         is_connected_ = false;
 
         if (event_handle_ != WSA_INVALID_EVENT) 
@@ -268,4 +277,60 @@ void NetClient::LogError(std::wstring_view msg) const
 
     OutputDebugString(static_cast<LPCWSTR>(lpMsgBuf));
     LocalFree(lpMsgBuf);
+}
+
+void NetClient::PollSocketEvents() 
+{
+    DWORD result = WSAWaitForMultipleEvents(1, &event_handle_, FALSE, 0, FALSE);
+    if (result == WSA_WAIT_EVENT_0) 
+    {
+        WSANETWORKEVENTS networkEvents;
+        WSAEnumNetworkEvents(socket_.get(), event_handle_, &networkEvents);
+
+        PostMessage(NULL, SDL_USEREVENT_SOCK, (WPARAM)socket_.get(), (LPARAM)networkEvents.lNetworkEvents);
+    }
+}
+
+void NetClient::EventPollingThreadFunc() 
+{
+    while (polling_thread_running_) 
+    {
+        DWORD result = WSAWaitForMultipleEvents(1, &event_handle_, FALSE, 100, FALSE);
+
+        if (result == WSA_WAIT_EVENT_0) 
+        {
+            WSANETWORKEVENTS network_events;
+            if (WSAEnumNetworkEvents(socket_.get(), event_handle_, &network_events) == 0) 
+            {
+                if (network_events.lNetworkEvents & FD_READ) 
+                {
+                    if (network_events.iErrorCode[FD_READ_BIT] == 0) 
+                    {
+                        // 읽기 이벤트 처리
+                        ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_READ));
+                    }
+                }
+
+                if (network_events.lNetworkEvents & FD_CLOSE) 
+                {
+                    // 연결 종료 이벤트 처리
+                    ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_CLOSE));
+                }
+                //// SDL 이벤트 생성
+                //SDL_Event sdl_event;
+                //sdl_event.type = SDL_EVENT_USER;  // SDL3에서는 SDL_EVENT_USER, SDL2에서는 SDL_USEREVENT
+                //sdl_event.user.code = Constants::Network::NETWORK_EVENT_CODE;
+
+                //// 소켓 핸들과 네트워크 이벤트 플래그를 데이터로 전달
+                //sdl_event.user.data1 = reinterpret_cast<void*>(socket_.get());
+                //sdl_event.user.data2 = reinterpret_cast<void*>(static_cast<uintptr_t>(network_events.lNetworkEvents));
+
+                //// SDL 이벤트 큐에 이벤트 추가
+                //SDL_PushEvent(&sdl_event);
+
+                //// 이벤트 재설정
+                //WSAResetEvent(event_handle_);
+            }
+        }
+    }
 }

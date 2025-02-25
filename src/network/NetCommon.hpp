@@ -14,11 +14,11 @@
 // 상수 정의를 enum class로 현대화
 enum class OperationType : uint8_t
 {
+    None,
     Receive,
-    Send
+    Send,
 };
 
-// 네트워크 설정 상수
 struct NetworkConfig
 {
     static constexpr uint16_t DEFAULT_PORT = 9000;
@@ -29,19 +29,27 @@ struct NetworkConfig
     static constexpr size_t MAX_WORKER_THREADS = 1;
 };
 
-// OVERLAPPED 구조체 현대화 
-struct OverlappedEx
+struct OverlappedEx 
 {
-    WSAOVERLAPPED overlapped{};
-    SOCKET socket{ INVALID_SOCKET };
-    WSABUF wsa_buf{};
-    char* begin_buf{ nullptr };
-    OperationType operation{ OperationType::Receive };
-    int packet_size{ 0 };
-    int remain_size{ 0 };
-    int receive_size{ 0 };
+    WSAOVERLAPPED overlapped;
+    WSABUF wsa_buf;
+    OperationType operation;
+    int receive_size;      // 받은 데이터 크기
+    int packet_size;       // 패킷 크기
+    char* begin_buf;       // 시작 버퍼 위치
+    int remain_size;       // 남은 데이터 크기
 
-    OverlappedEx() = default;
+    OverlappedEx() :
+        operation(OperationType::None),
+        receive_size(0),
+        packet_size(0),
+        begin_buf(nullptr),
+        remain_size(0)
+    {
+        ZeroMemory(&overlapped, sizeof(WSAOVERLAPPED));
+        wsa_buf.buf = nullptr;
+        wsa_buf.len = 0;
+    }
 };
 
 // RAII 소켓 래퍼 클래스

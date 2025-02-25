@@ -193,14 +193,15 @@ unsigned int NetServer::WorkerThread()
             continue;
         }
 
-        // 클라이언트 연결 종료 검사
-        if (!result || (result && bytes_transferred == 0)) {
+        if (!result || (result && bytes_transferred == 0)) 
+        {
             DisconnectProcess(client);
             continue;
         }
 
         // 작업 타입에 따른 처리
-        switch (overlapped_ex->operation) {
+        switch (overlapped_ex->operation) 
+        {
         case OperationType::Receive:
             ProcessRecv(client, overlapped_ex, bytes_transferred);
             break;
@@ -245,93 +246,154 @@ unsigned int NetServer::AccepterThread() {
     return 0;
 }
 
-void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes) {
+void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes) 
+{
+    if (!client || !overlapped)
+        return;
+
     overlapped->receive_size += bytes;
 
-    // 패킷 처리
-    const auto process_packet = [this, client](const char* packet, uint32_t size) 
-        {
-            if (size <= 0 || size > NetworkConfig::MAX_PACKET_SIZE) 
-            {
-                return false;
-            }
-            
-            PacketProcess(client, std::span<const char>(packet, size));
-            return true;
-        };
-
-    // 패킷 사이즈 확인
-    if (overlapped->receive_size < NetworkConfig::PACKET_SIZE_LENGTH)
+    char* processed_pos = client->recv_buffer.GetProcessedPos();
+    if (!processed_pos) 
     {
-        if (BindRecv(client, overlapped->receive_size, 0) == false)
-        {
-
-        }
         return;
     }
 
-    while (true) {
-        int packet_size = 0;
-        memcpy(&packet_size, overlapped->begin_buf, NetworkConfig::PACKET_SIZE_LENGTH);
+    // 패킷 크기 정보보다 작은 경우 재수신
+    if (overlapped->receive_size < NetworkConfig::PACKET_SIZE_LENGTH) 
+    {
+        BindRecv(client, processed_pos, overlapped->receive_size);
+        return;
+    }
 
-        if (overlapped->receive_size < packet_size) {
-            break;
-        }
+    // 패킷 크기 확인 및 처리
+    int packet_size = 0;
+    memcpy(&packet_size, processed_pos, NetworkConfig::PACKET_SIZE_LENGTH);
 
-        if (!process_packet(overlapped->begin_buf, packet_size)) {
+    int remain_size = overlapped->receive_size;
+
+    if (packet_size <= remain_size) 
+    {
+        if (!PacketProcess(client, std::span<const char>(overlapped->begin_buf, packet_size))) {
             CloseSocket(client);
             return;
         }
 
-        overlapped->receive_size -= packet_size;
-        if (overlapped->receive_size > 0) {
-            memmove(overlapped->begin_buf,
-                overlapped->begin_buf + packet_size,
-                overlapped->receive_size);
-        }
+        processed_pos = overlapped->begin_buf;
+        remain_size -= packet_size;
+        processed_pos += packet_size;
 
-        if (overlapped->receive_size < NetworkConfig::PACKET_SIZE_LENGTH) {
-            break;
+        while (true) 
+        {
+            if (remain_size >= NetworkConfig::PACKET_SIZE_LENGTH) 
+            {
+                memcpy(&packet_size, processed_pos, NetworkConfig::PACKET_SIZE_LENGTH);
+
+                if (packet_size <= 0 || static_cast<size_t>(packet_size) > client->recv_buffer.GetBufferSize()) 
+                {
+             
+                    LogError(L"Invalid packet size");
+                    CloseSocket(client);
+                    return;
+                }
+
+                overlapped->packet_size = packet_size;
+
+                // 완전한 패킷이 수신된 경우
+                if (packet_size <= remain_size) 
+                {
+                    if (!PacketProcess(client, std::span<const char>(processed_pos, packet_size))) 
+                    {
+                        CloseSocket(client);
+                        return;
+                    }
+
+                    remain_size -= packet_size;
+                    processed_pos += packet_size;
+                }
+                else 
+                {
+                    break;  // 패킷이 완전히 수신되지 않음
+                }
+            }
+            else 
+            {
+                break;  // 패킷 크기 정보가 없음
+            }
         }
     }
 
-    if (BindRecv(client, overlapped->receive_size, 0) == false)
-    {
-
-    }
+    // 다음 수신 작업 등록
+    BindRecv(client, processed_pos, remain_size);
 }
 
 void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes) 
 {
+    if (!client || !overlapped) 
+    {
+        return;
+    }
+
+    // 패킷 타입 확인 (디버깅용)
+    uint16_t packet_type = 0;
+    if (overlapped->wsa_buf.buf && overlapped->wsa_buf.len >= NetworkConfig::PACKET_SIZE_LENGTH + sizeof(uint16_t)) 
+    {
+        memcpy(&packet_type, overlapped->wsa_buf.buf + NetworkConfig::PACKET_SIZE_LENGTH, sizeof(uint16_t));
+    }
+
+    // 전송 완료된 바이트 수를 누적
     overlapped->remain_size += bytes;
 
-    std::vector<char> data;
-    if (client->send_queue.try_pop(data)) 
-    {
-        if (SendMsg(client, std::span<const char>(data.data(), data.size())))
-        {
+    // 디버깅 로그
+    // LogDebug(std::format(L"ProcessSend packetType = {}, remainSize = {}, IoSize = {}, packetSize = {}", 
+    //                      packet_type, overlapped->remain_size, bytes, overlapped->packet_size));
 
+    // 전송 완료된 데이터를 큐에서 제거
+    std::vector<char> temp_buffer;
+    client->send_queue.try_pop(temp_buffer);
+
+    // 다음 전송 데이터가 있으면 처리
+    if (!client->send_queue.empty()) 
+    {
+        std::vector<char> next_data;
+        if (client->send_queue.try_pop(next_data)) 
+        {
+            SendMsg(client, std::span<const char>(next_data.data(), next_data.size()));
         }
     }
 }
 
-bool NetServer::BindRecv(ClientInfo* client, size_t offset, size_t remain_size) 
+bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_size) 
 {
-    if (!client || !client->socket.is_valid()) 
+    if (!client || !client->socket.is_valid())
     {
         return false;
     }
 
+    // 이동 위치 및 처리된 위치 계산
+    int move_pos = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos()) + remain_size;
+    int process_move = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos());
+
+    // 새 버퍼 위치 얻기
+    char* buffer = client->recv_buffer.GetBuffer(move_pos, process_move, NetworkConfig::MAX_PACKET_SIZE);
+    if (!buffer) 
+    {
+        return false;
+    }
+
+    // WSARecv 작업을 위한 설정
+    client->recv_overlapped.wsa_buf.len = static_cast<ULONG>(NetworkConfig::MAX_PACKET_SIZE);
+    client->recv_overlapped.packet_size = NetworkConfig::MAX_PACKET_SIZE;
+    client->recv_overlapped.wsa_buf.buf = buffer;
+    client->recv_overlapped.begin_buf = client->recv_buffer.GetProcessedPos();
+    client->recv_overlapped.receive_size = remain_size;
+
     DWORD flags = 0;
     DWORD recv_bytes = 0;
 
-    client->recv_overlapped.wsa_buf.buf = client->recv_buffer.data() + offset;
-    client->recv_overlapped.wsa_buf.len = static_cast<ULONG>(client->recv_buffer.size() - offset);
-    client->recv_overlapped.receive_size = static_cast<int>(remain_size);
-
     ZeroMemory(&client->recv_overlapped.overlapped, sizeof(OVERLAPPED));
 
-    const int result = WSARecv(
+    int result = WSARecv(
         client->socket.get(),
         &client->recv_overlapped.wsa_buf,
         1,
@@ -341,7 +403,9 @@ bool NetServer::BindRecv(ClientInfo* client, size_t offset, size_t remain_size)
         nullptr
     );
 
-    if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
+    if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) 
+    {
+        LogError(L"WSARecv()");
         return false;
     }
 
@@ -389,7 +453,8 @@ void NetServer::CloseSocket(ClientInfo* client, bool force)
         return;
     }
 
-    linger opt_linger = {
+    linger opt_linger = 
+    {
         force ? 1U : 0U,  // l_onoff
         0U               // l_linger
     };
@@ -403,8 +468,7 @@ void NetServer::CloseSocket(ClientInfo* client, bool force)
         sizeof(opt_linger));
 
     // 버퍼 초기화
-    client->recv_buffer.clear();
-    client->recv_buffer.resize(NetworkConfig::BUFFER_SIZE);
+    client->recv_buffer.Reset();
 
     std::vector<char> dummy;
     while (client->send_queue.try_pop(dummy)) {}
@@ -417,13 +481,14 @@ void NetServer::CloseSocket(ClientInfo* client, bool force)
     --client_count_;
 }
 
-bool NetServer::ExitServer() {
-    // 스레드 종료
+bool NetServer::ExitServer() 
+{
     DestroyThread();
 
-    // 모든 클라이언트 연결 해제
-    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) {
-        if (clients_[i].socket.is_valid()) {
+    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) 
+    {
+        if (clients_[i].socket.is_valid()) 
+        {
             CloseSocket(&clients_[i]);
         }
     }
@@ -468,16 +533,20 @@ void NetServer::DestroyThread() {
     }
 }
 
-ClientInfo* NetServer::GetEmptyClientInfo() {
-    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) {
-        if (!clients_[i].socket.is_valid()) {
+ClientInfo* NetServer::GetEmptyClientInfo() 
+{
+    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) 
+    {
+        if (!clients_[i].socket.is_valid()) 
+        {
             return &clients_[i];
         }
     }
     return nullptr;
 }
 
-bool NetServer::BindIOCP(ClientInfo* client) {
+bool NetServer::BindIOCP(ClientInfo* client) 
+{
     HANDLE handle = CreateIoCompletionPort(
         reinterpret_cast<HANDLE>(client->socket.get()),
         iocp_handle_,
@@ -485,7 +554,8 @@ bool NetServer::BindIOCP(ClientInfo* client) {
         0
     );
 
-    if (!handle || handle != iocp_handle_) {
+    if (!handle || handle != iocp_handle_) 
+    {
         return false;
     }
 

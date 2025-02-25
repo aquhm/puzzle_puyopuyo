@@ -7,6 +7,7 @@
  */
 
 #include "NetCommon.hpp"
+#include "RingBuffer.hpp"
 
 #include <array>
 #include <concurrent_queue.h>
@@ -14,19 +15,21 @@
 #include <span>
 
 
-struct ClientInfo {
+struct ClientInfo 
+{
     Socket socket;
     OverlappedEx recv_overlapped;
     OverlappedEx send_overlapped;
 
-    std::vector<char> recv_buffer;
+    RingBuffer  recv_buffer;
     Concurrency::concurrent_queue<std::vector<char>> send_queue;
 
     ClientInfo() 
     {
         recv_overlapped.operation = OperationType::Receive;
         send_overlapped.operation = OperationType::Send;
-        recv_buffer.resize(NetworkConfig::BUFFER_SIZE);
+
+        recv_buffer.Create(NetworkConfig::BUFFER_SIZE);
     }
 };
 
@@ -70,7 +73,7 @@ private:
     void DestroyThread();
 
     // 单捞磐 价荐脚 贸府
-    [[nodiscard]] bool BindRecv(ClientInfo* client, size_t offset, size_t remain_size);    
+    [[nodiscard]] bool BindRecv(ClientInfo* client, char* processed_pos, int remain_size);
     void ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes);
     void ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes);
 

@@ -13,7 +13,7 @@
 #include "./core/GameApp.hpp"
 
 
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
+SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[])
 {
 	if (!GAME_APP.Initialize()) 
 	{
@@ -22,7 +22,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
+SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
 {
 	if (event->type == SDL_EVENT_QUIT) 
 	{
@@ -34,14 +34,14 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void* appstate)
+SDL_AppResult SDL_AppIterate(void* appState)
 {
 	GAME_APP.MainLoop();
 
 	return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void* appstate, SDL_AppResult result)
+void SDL_AppQuit(void* appState, SDL_AppResult result)
 {
 	GAME_APP.Release();
 }

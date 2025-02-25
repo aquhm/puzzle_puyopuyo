@@ -183,6 +183,8 @@ namespace Constants
 
     inline namespace Network
     {
+        constexpr int NETWORK_EVENT_CODE = 1;
+
         constexpr int NET_PORT = 9000;
 
         constexpr int PACKET_SIZE_LEN = sizeof(unsigned int);

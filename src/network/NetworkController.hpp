@@ -84,7 +84,7 @@ public:
     // Ã¤ÆÃ
     void ChatMessage(std::string_view msg);    
 
-    bool ProcessRecv(WPARAM wParam, LPARAM lParam);
+    bool ProcessRecv(WPARAM wParam, LPARAM lParam);    
 
 private:
     NetworkController() = default;

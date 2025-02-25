@@ -26,6 +26,7 @@
 
 #include <stdexcept>
 #include <format>
+#include "../network/NetworkController.hpp"
 
 
 GameApp& GameApp::GetInstance() 
@@ -177,6 +178,16 @@ void GameApp::HandleEvents(const SDL_Event& event)
             if (event.key.key== SDLK_F11) 
             {
                 SetFullscreen(!is_fullscreen_);
+            }
+            break;
+        case SDL_EVENT_USER:
+            if (event.user.code == Constants::Network::NETWORK_EVENT_CODE) 
+            {
+                SOCKET socket_handle = reinterpret_cast<SOCKET>(event.user.data1);
+                LONG network_events = static_cast<LONG>(reinterpret_cast<uintptr_t>(event.user.data2));
+
+                NETWORK.ProcessRecv(static_cast<WPARAM>(socket_handle), static_cast<LPARAM>(network_events)
+                );
             }
             break;
         }

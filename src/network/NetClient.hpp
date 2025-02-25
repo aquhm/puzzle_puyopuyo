@@ -35,10 +35,14 @@ public:
     [[nodiscard]] bool Connect(std::string_view ip, uint16_t port);
     void Disconnect(bool force = false);
 
-
+    void PollSocketEvents();
+    
 protected:
     virtual void ProcessPacket(std::span<const char> packet) = 0;
     virtual void ProcessConnectExit() {};
+
+    void EventPollingThreadFunc();
+    //void HandleNetworkEvent(SOCKET socket, LONG event_type);
 
 private:
     // 워커 스레드 관련 
@@ -64,4 +68,7 @@ private:
     std::atomic<bool> is_connected_{ false };
 
     WSAEVENT event_handle_{ WSA_INVALID_EVENT };
+
+    std::thread event_polling_thread_;
+    std::atomic<bool> polling_thread_running_{ false };    
 };
