@@ -14,6 +14,7 @@
 #include <array>
 #include <string_view>
 #include <span>
+#include <functional>
 
 #include "BaseState.hpp"
 #include "../core/common/constants/Constants.hpp"
@@ -129,9 +130,7 @@ public:
     // 블록 연결 검사 관련
     void CollectRemoveIceBlocks();
     void UpdateLinkState(Block* block);
-    void UpdateInterruptBlockView();
-
-    
+    void UpdateInterruptBlockView();    
 
     //Setter
     void SetAttackComboState(bool enable) { stateInfo_.isComboAttack = enable; }
@@ -213,6 +212,11 @@ private:
     // 네트워크 관련
     void HandleNetworkCommand(const std::string_view& command);
     bool SendChatMsg();
+
+    void InitializePacketProcessors();
+
+    template<typename T>
+    void ProcessTypedPacket(uint8_t connectionId, std::span<const char> data, void (GameState::* handler)(uint8_t, const T*));
 
     // 렌더링 관련
     void RenderUI();
@@ -297,8 +301,22 @@ private:
     bool isNetworkGame_{ false };
     uint8_t localPlayerId_{ 0 };
 
-
+    std::unordered_map<PacketType, std::function<void(uint8_t, std::span<const char>)>> packet_processors_;
 };
+
+template<typename T>
+void GameState::ProcessTypedPacket(uint8_t connectionId, std::span<const char> data, void (GameState::* handler)(uint8_t, const T*))
+{
+
+    if (data.size() < sizeof(T))
+    {
+        return;
+    }
+
+    T packet;
+    std::memcpy(&packet, data.data(), sizeof(T));
+    (this->*handler)(connectionId, &packet);
+}
 
 
 class BlockComp 

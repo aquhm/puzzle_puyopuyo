@@ -7,6 +7,8 @@
 #include <string_view>
 
 
+#pragma pack(push, 1)
+
 // 채팅 관련
 struct ChatMessagePacket : PacketBase
 {
@@ -14,7 +16,7 @@ struct ChatMessagePacket : PacketBase
     std::array<char, 151> message;
 
     PacketType GetType() const override { return PacketType::ChatMessage; }
-    uint32_t GetSize() const override { return sizeof(ChatMessagePacket); }
+    uint32_t GetBodySize() const override { return sizeof(ChatMessagePacket); }
 
     void SetMessage(std::string_view msg)
     {
@@ -32,7 +34,7 @@ struct ChangeCharSelectPacket : PacketBase
     uint8_t y_pos;
 
     PacketType GetType() const override { return PacketType::ChangeCharSelect; }
-    uint32_t GetSize() const override { return sizeof(ChangeCharSelectPacket); }
+    uint32_t GetBodySize() const override { return sizeof(ChangeCharSelectPacket); }
 };
 
 // 캐릭터 선택 관련
@@ -43,7 +45,7 @@ struct DecideCharacterPacket : PacketBase
     uint8_t y_pos;
 
     PacketType GetType() const override { return PacketType::DecideCharSelect; }
-    uint32_t GetSize() const override { return sizeof(DecideCharacterPacket); }
+    uint32_t GetBodySize() const override { return sizeof(DecideCharacterPacket); }
 };
 
 // 게임 초기화/블록 관련
@@ -56,7 +58,7 @@ struct GameInitPacket : PacketBase
     std::array<uint8_t, 2> block2;
 
     PacketType GetType() const override { return PacketType::InitializeGame; }
-    uint32_t GetSize() const override { return sizeof(GameInitPacket); }
+    uint32_t GetBodySize() const override { return sizeof(GameInitPacket); }
 };
 
 struct MoveBlockPacket : PacketBase 
@@ -66,7 +68,7 @@ struct MoveBlockPacket : PacketBase
     float position;
 
     PacketType GetType() const override { return PacketType::UpdateBlockMove; }
-    uint32_t GetSize() const override { return sizeof(MoveBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(MoveBlockPacket); }
 };
 
 struct RotateBlockPacket : PacketBase 
@@ -76,7 +78,7 @@ struct RotateBlockPacket : PacketBase
     bool is_horizontal_moving;
 
     PacketType GetType() const override { return PacketType::UpdateBlockRotate; }
-    uint32_t GetSize() const override { return sizeof(RotateBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(RotateBlockPacket); }
 };
 
 // 공격/방어 관련
@@ -89,7 +91,7 @@ struct AttackInterruptPacket : PacketBase
     uint8_t block_type;
 
     PacketType GetType() const override { return PacketType::AttackInterruptBlock; }
-    uint32_t GetSize() const override { return sizeof(AttackInterruptPacket); }
+    uint32_t GetBodySize() const override { return sizeof(AttackInterruptPacket); }
 };
 
 struct DefenseInterruptPacket : PacketBase 
@@ -101,7 +103,7 @@ struct DefenseInterruptPacket : PacketBase
     uint8_t block_type;
 
     PacketType GetType() const override { return PacketType::DefenseInterruptBlock; }
-    uint32_t GetSize() const override { return sizeof(DefenseInterruptPacket); }
+    uint32_t GetBodySize() const override { return sizeof(DefenseInterruptPacket); }
 };
 
 struct AddInterruptBlockPacket : PacketBase 
@@ -112,7 +114,7 @@ struct AddInterruptBlockPacket : PacketBase
     std::array<uint8_t, 5> x_indices;
 
     PacketType GetType() const override { return PacketType::AddInterruptBlock; }
-    uint32_t GetSize() const override { return sizeof(AddInterruptBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(AddInterruptBlockPacket); }
 };
 
 
@@ -122,7 +124,7 @@ struct CheckBlockStatePacket : PacketBase
     uint8_t player_id;
 
     PacketType GetType() const override { return PacketType::CheckBlockState; }
-    uint32_t GetSize() const override { return sizeof(CheckBlockStatePacket); }
+    uint32_t GetBodySize() const override { return sizeof(CheckBlockStatePacket); }
 };
 
 struct UpdateBlockPosPacket : PacketBase 
@@ -132,7 +134,7 @@ struct UpdateBlockPosPacket : PacketBase
     float position2;
 
     PacketType GetType() const override { return PacketType::UpdateBlockPos; }
-    uint32_t GetSize() const override { return sizeof(UpdateBlockPosPacket); }
+    uint32_t GetBodySize() const override { return sizeof(UpdateBlockPosPacket); }
 };
 
 struct FallingBlockPacket : PacketBase 
@@ -142,7 +144,7 @@ struct FallingBlockPacket : PacketBase
     bool is_falling;
 
     PacketType GetType() const override { return PacketType::UpdateBlockFalling; }
-    uint32_t GetSize() const override { return sizeof(FallingBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(FallingBlockPacket); }
 };
 
 struct ChangeBlockStatePacket : PacketBase 
@@ -151,7 +153,7 @@ struct ChangeBlockStatePacket : PacketBase
     uint8_t state;
 
     PacketType GetType() const override { return PacketType::ChangeBlockState; }
-    uint32_t GetSize() const override { return sizeof(ChangeBlockStatePacket); }
+    uint32_t GetBodySize() const override { return sizeof(ChangeBlockStatePacket); }
 };
 
 struct PushBlockPacket : PacketBase 
@@ -161,7 +163,7 @@ struct PushBlockPacket : PacketBase
     std::array<float, 2> position2;
 
     PacketType GetType() const override { return PacketType::PushBlockInGame; }
-    uint32_t GetSize() const override { return sizeof(PushBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(PushBlockPacket); }
 };
 
 // 게임 진행/종료 관련
@@ -170,7 +172,7 @@ struct StopComboPacket : PacketBase
     uint8_t player_id;
 
     PacketType GetType() const override { return PacketType::StopComboAttack; }
-    uint32_t GetSize() const override { return sizeof(StopComboPacket); }
+    uint32_t GetBodySize() const override { return sizeof(StopComboPacket); }
 };
 
 struct LoseGamePacket : PacketBase 
@@ -178,13 +180,13 @@ struct LoseGamePacket : PacketBase
     uint8_t player_id;
 
     PacketType GetType() const override { return PacketType::LoseGame; }
-    uint32_t GetSize() const override { return sizeof(LoseGamePacket); }
+    uint32_t GetBodySize() const override { return sizeof(LoseGamePacket); }
 };
 
 struct StartGamePacket : PacketBase
 {      
     PacketType GetType() const override { return PacketType::StartGame; }
-    uint32_t GetSize() const override { return sizeof(StartGamePacket); }
+    uint32_t GetBodySize() const override { return sizeof(StartGamePacket); }
 };
 
 
@@ -196,7 +198,7 @@ struct RestartGamePacket : PacketBase
     std::array<uint8_t, 2> block2;
 
     PacketType GetType() const override { return PacketType::RestartGame; }
-    uint32_t GetSize() const override { return sizeof(RestartGamePacket); }
+    uint32_t GetBodySize() const override { return sizeof(RestartGamePacket); }
 };
 
 struct InitializePlayerPacket : PacketBase 
@@ -207,7 +209,7 @@ struct InitializePlayerPacket : PacketBase
     std::array<uint8_t, 2> block_type2;
 
     PacketType GetType() const override { return PacketType::InitializePlayer; }
-    uint32_t GetSize() const override { return sizeof(InitializePlayerPacket); }
+    uint32_t GetBodySize() const override { return sizeof(InitializePlayerPacket); }
 };
 
 struct AddNewBlockPacket : PacketBase 
@@ -216,7 +218,7 @@ struct AddNewBlockPacket : PacketBase
     std::array<uint8_t, 2> block_type;  // 블록 타입 2개
 
     PacketType GetType() const override { return PacketType::AddNewBlock; }
-    uint32_t GetSize() const override { return sizeof(AddNewBlockPacket); }
+    uint32_t GetBodySize() const override { return sizeof(AddNewBlockPacket); }
 };
 
 struct ComboPacket : PacketBase 
@@ -228,7 +230,7 @@ struct ComboPacket : PacketBase
     bool is_continue;           // 콤보가 계속되는지 여부
 
     PacketType GetType() const override { return PacketType::ComboUpdate; }
-    uint32_t GetSize() const override { return sizeof(ComboPacket); }
+    uint32_t GetBodySize() const override { return sizeof(ComboPacket); }
 };
 
 
@@ -237,13 +239,13 @@ struct GiveIdPacket : PacketBase
     uint8_t player_id;      
 
     PacketType GetType() const override { return PacketType::GiveId; }
-    uint32_t GetSize() const override { return sizeof(PacketBase); }
+    uint32_t GetBodySize() const override { return sizeof(PacketBase); }
 };
 
 struct StartCharSelectPacket : PacketBase
 {
     PacketType GetType() const override { return PacketType::StartCharSelect; }
-    uint32_t GetSize() const override { return sizeof(StartCharSelectPacket); }
+    uint32_t GetBodySize() const override { return sizeof(StartCharSelectPacket); }
 };
 
 struct RemovePlayerPacket : PacketBase 
@@ -251,7 +253,7 @@ struct RemovePlayerPacket : PacketBase
     uint8_t player_id;
 
     PacketType GetType() const override { return PacketType::RemovePlayer; }
-    uint32_t GetSize() const override { return sizeof(RemovePlayerPacket); }
+    uint32_t GetBodySize() const override { return sizeof(RemovePlayerPacket); }
 };
 
 struct PlayerInfoPacket : PacketBase 
@@ -260,7 +262,7 @@ struct PlayerInfoPacket : PacketBase
     uint8_t character_id;
 
     PacketType GetType() const override { return PacketType::PlayerInfo; }
-    uint32_t GetSize() const override { return sizeof(PlayerInfoPacket); }
+    uint32_t GetBodySize() const override { return sizeof(PlayerInfoPacket); }
 };
 
 struct AddPlayerPacket : PacketBase 
@@ -269,7 +271,7 @@ struct AddPlayerPacket : PacketBase
     uint8_t character_id;
 
     PacketType GetType() const override { return PacketType::AddPlayer; }
-    uint32_t GetSize() const override { return sizeof(AddPlayerPacket); }
+    uint32_t GetBodySize() const override { return sizeof(AddPlayerPacket); }
 };
 
 
@@ -278,7 +280,7 @@ struct RemovePlayerInRoomPacket : PacketBase
     uint8_t id;
 
     PacketType GetType() const override { return PacketType::RemovePlayerInRoom; }
-    uint32_t GetSize() const override { return sizeof(RemovePlayerInRoomPacket); }
+    uint32_t GetBodySize() const override { return sizeof(RemovePlayerInRoomPacket); }
 };
 
 struct ConnectLobbyPacket : PacketBase
@@ -286,7 +288,7 @@ struct ConnectLobbyPacket : PacketBase
     uint8_t id;
 
     PacketType GetType() const override { return PacketType::ConnectLobby; }
-    uint32_t GetSize() const override { return sizeof(ConnectLobbyPacket); }
+    uint32_t GetBodySize() const override { return sizeof(ConnectLobbyPacket); }
 };
 
 struct DefenseResultInterruptBlockCountPacket : PacketBase
@@ -295,7 +297,7 @@ struct DefenseResultInterruptBlockCountPacket : PacketBase
     uint16_t count;
 
     PacketType GetType() const override { return PacketType::DefenseResultInterruptBlockCount; }
-    uint32_t GetSize() const override { return sizeof(DefenseResultInterruptBlockCountPacket); }
+    uint32_t GetBodySize() const override { return sizeof(DefenseResultInterruptBlockCountPacket); }
 };
 
 struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
@@ -305,12 +307,7 @@ struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
     uint16_t attackerCount;
 
     PacketType GetType() const override { return PacketType::AttackResultPlayerInterruptBlocCount; }
-    uint32_t GetSize() const override { return sizeof(AttackResultPlayerInterruptBlocCountPacket); }
+    uint32_t GetBodySize() const override { return sizeof(AttackResultPlayerInterruptBlocCountPacket); }
 };
 
-
-    
-
-
-
-    
+#pragma pack(pop)

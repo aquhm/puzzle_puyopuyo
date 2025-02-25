@@ -48,11 +48,14 @@
 #include <SdL3/SDL.h>
 #include <SdL3/SDL_keyboard.h>
 #include <SdL3/SDL_keycode.h>
+#include "../network/GameServer.hpp"
 
 
 GameState::GameState() 
 {
     draw_objects_.reserve(100);
+
+    InitializePacketProcessors();
 }
 
 GameState::~GameState() = default;
@@ -1776,66 +1779,76 @@ void GameState::UpdateInterruptBlockView()
 
 void GameState::HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length)
 {
-    if (length < sizeof(PacketBase)) {
+    if (length < sizeof(PacketHeader))
+    {
         LOGGER.Warning("Received invalid network message size");
         return;
     }
 
-    const auto* packet = reinterpret_cast<const PacketBase*>(message.data());
+    PacketHeader header;
+    std::memcpy(&header, message.data(), sizeof(header));
 
-    // 패킷 크기 검증
-    if (length != packet->GetSize()) 
+    PacketType type = header.type;
+    uint32_t size = header.size;
+
+    if (length < size) 
     {
-        LOGGER.Warning("Invalid packet size. Expected: {}, Actual: {}",
-            packet->GetSize(), length);
+        LOGGER.Warning("Incomplete packet received: expected {}, got {}", size, length);
         return;
     }
 
-    switch (packet->GetType())
+    auto it = packet_processors_.find(type);
+    if (it != packet_processors_.end()) 
     {
-    case PacketType::InitializeGame:
-        if (const auto* initPacket = static_cast<const GameInitPacket*>(packet)) {
-            HandleGameInitialize(connectionId, initPacket);
-        }
-        break;
-
-    case PacketType::AddNewBlock:
-        if (const auto* newBlockPacket = static_cast<const AddNewBlockPacket*>(packet)) {
-            HandleAddNewBlock(connectionId, newBlockPacket);
-        }
-        break;
-
-    case PacketType::UpdateBlockMove:
-        if (const auto* movePacket = static_cast<const MoveBlockPacket*>(packet)) {
-            HandleUpdateBlockMove(connectionId, movePacket);
-        }
-        break;
-
-    case PacketType::UpdateBlockRotate:
-        if (const auto* rotatePacket = static_cast<const RotateBlockPacket*>(packet)) {
-            HandleBlockRotate(connectionId, rotatePacket);
-        }
-        break;
-
-    case PacketType::StartGame:
-        HandleStartGame();
-        break;
-
-    case PacketType::CheckBlockState:
-        if (const auto* checkPacket = static_cast<const CheckBlockStatePacket*>(packet)) {
-            HandleCheckBlockState(connectionId, checkPacket);
-        }
-        break;
-
-    case PacketType::GameOver:
-        HandleGameOver();
-        break;
-
-    default:
-        LOGGER.Warning("Unknown packet type: {}", static_cast<int>(packet->GetType()));
-        break;
+        // 패킷 본문 처리
+        const char* body = message.data() + sizeof(PacketHeader);
+        size_t bodySize = size - sizeof(PacketHeader);
+        it->second(connectionId, std::span<const char>(body, bodySize));
+    }
+    else 
+    {
+        LOGGER.Warning("Unknown packet type: {}", static_cast<int>(type));
     }
 }
+
+void GameState::InitializePacketProcessors()
+{
+    packet_processors_[PacketType::InitializeGame] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            ProcessTypedPacket<GameInitPacket>(connectionId, data, &GameState::HandleGameInitialize);
+        };
+
+    packet_processors_[PacketType::AddNewBlock] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            ProcessTypedPacket<AddNewBlockPacket>(connectionId, data, &GameState::HandleAddNewBlock);
+        };
+
+    packet_processors_[PacketType::UpdateBlockMove] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            ProcessTypedPacket<MoveBlockPacket>(connectionId, data, &GameState::HandleUpdateBlockMove);
+        };
+
+    packet_processors_[PacketType::UpdateBlockRotate] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            ProcessTypedPacket<RotateBlockPacket>(connectionId, data, &GameState::HandleBlockRotate);
+        };
+
+    packet_processors_[PacketType::StartGame] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            HandleStartGame();
+        };
+
+    packet_processors_[PacketType::CheckBlockState] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            ProcessTypedPacket<CheckBlockStatePacket>(connectionId, data, &GameState::HandleCheckBlockState);
+        };
+
+    packet_processors_[PacketType::GameOver] = [this](uint8_t connectionId, std::span<const char> data)
+        {
+            HandleGameOver();
+        };
+}
+
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
 {
@@ -1845,7 +1858,6 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
         return;
     }
 
-    // 맵 생성
     background_ = GAME_APP.GetMapManager().CreateMap(packet->map_id);
 
     if (background_ && background_->Initialize()) 
@@ -1859,7 +1871,6 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
         }
     }
 
-    // 플레이어 생성
     CreateGamePlayer(packet->block1, packet->block2, packet->player_id, packet->character_id);
 }
 

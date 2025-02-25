@@ -128,7 +128,8 @@ bool GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
         const auto& player = it->second;
         if (player && player->GetId() != exclude_id)
         {
-            auto packet_data = std::span<const char>{ reinterpret_cast<const char*>(&packet), packet.GetSize() };
+            auto packetBytes = packet.ToBytes();
+            auto packet_data = std::span<const char>{ packetBytes.data(), packetBytes.size()};
 
             if (SendMsg(player->GetNetInfo(), packet_data) == false)
             {

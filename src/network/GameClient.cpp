@@ -257,12 +257,16 @@ void GameClient::ReStartGame(std::span<const uint8_t> block1, std::span<const ui
 
 void GameClient::ProcessPacket(std::span<const char> packet)
 {
+    // 패킷 헤더 읽기
+    PacketHeader header;
+    std::memcpy(&header, packet.data(), sizeof(header));
+
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
     {
         std::string_view message(packet.data(), packet.size());
-
         uint8_t connectionId = 0;
         uint32_t length = static_cast<uint32_t>(packet.size());
+
         gameState->HandleNetworkMessage(connectionId, message, length);
     }
 }

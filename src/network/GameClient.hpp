@@ -55,10 +55,11 @@ protected:
     void ProcessConnectExit() override;
 
 private:
-    template<typename PacketType> requires std::derived_from<PacketType, PacketBase>
-    void SendPacketInternal(const PacketType& packet)
+    template<std::derived_from<PacketBase> T>
+    void SendPacketInternal(const T& packet)
     {
-        SendData(std::span<const char>{reinterpret_cast<const char*>(&packet), packet.GetSize()});
+        auto packetBytes = packet.ToBytes();
+        SendData(std::span<const char>(packetBytes.data(), packetBytes.size()));
     }
 
     CriticalSection critical_section_{};

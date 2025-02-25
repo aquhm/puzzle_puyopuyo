@@ -156,7 +156,6 @@ void StateManager::ResumeCurrentState()
     if (paused_ && currentState_) 
     {
         paused_ = false;
-        // 필요한 경우 상태 재개 로직 추가
     }
 }
 

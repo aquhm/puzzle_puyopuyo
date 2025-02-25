@@ -223,19 +223,25 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
         packet = msg_buffer_.data();
         while (true)
         {
-            memcpy(&packet_size, packet, Constants::Network::PACKET_SIZE_LEN);
 
-            if (recv_remain_size_ < packet_size || packet_size <= 0)
+            if (recv_remain_size_ < sizeof(PacketHeader)) {
+                break;
+            }
+
+            PacketHeader header;
+            std::memcpy(&header, packet, sizeof(PacketHeader));
+
+            if (recv_remain_size_ < header.size || header.size <= sizeof(PacketHeader)) 
             {
                 break;
             }
 
             ProcessPacket(std::span<const char>(packet, packet_size));
 
-            recv_remain_size_ -= packet_size;
-            packet += packet_size;
+            recv_remain_size_ -= header.size;
+            packet += header.size;
 
-            if (recv_remain_size_ <= 0 || recv_remain_size_ < Constants::Network::PACKET_SIZE_LEN)
+            if (recv_remain_size_ < sizeof(PacketHeader)) 
             {
                 break;
             }

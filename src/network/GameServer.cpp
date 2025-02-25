@@ -98,31 +98,37 @@ void GameServer::ProcessPacket(const ProcessEvent& event)
         return;
     }
 
-    // PacketBase로 해석
-    const auto* packet = reinterpret_cast<const PacketBase*>(event.packet_data.data());
+    // 패킷 헤더 추출
+    PacketHeader header;
+    std::memcpy(&header, event.packet_data.data(), sizeof(PacketHeader));
 
+   
     // 패킷 타입 검증
-    if (!IsValidPacketType(packet->GetType())) 
+    if (!IsValidPacketType(header.type))
     {
-        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(packet->GetType()));
+        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(header.type));
         return;
     }
 
+
     // 패킷 크기 검증
-    if (event.packet_data.size() != packet->GetSize()) 
+    if (event.packet_data.size() != header.size)
     {
         LOGGER.Warning("Invalid packet size. Expected: {}, Actual: {}",
-            packet->GetSize(), event.packet_data.size());
+            header.size, event.packet_data.size());
         return;
     }
 
     // 프로세서 찾기
-    auto it = packet_processors_.find(packet->GetType());
-    if (it == packet_processors_.end()) 
+    auto it = packet_processors_.find(header.type);
+    if (it == packet_processors_.end())
     {
-        LOGGER.Warning("No processor found for packet type: {}", static_cast<int>(packet->GetType()));
+        LOGGER.Warning("No processor found for packet type: {}", static_cast<int>(header.type));
         return;
     }
+
+    // 패킷 본문 추출
+    const PacketBase* packet = reinterpret_cast<const PacketBase*>(event.packet_data.data());
 
     // 패킷 처리
     it->second->Process(*packet, event.client_info);

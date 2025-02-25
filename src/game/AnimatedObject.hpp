@@ -17,22 +17,22 @@ class AnimatedObject : public RenderableObject
 public:
     struct AnimationInfo 
     {
-        int frame_count{ 0 };          // Total number of frames
-        int current_frame{ 0 };        // Current frame index
-        int columns{ 0 };              // Number of columns in sprite sheet
-        float frame_time{ 0.0f };      // Time per frame
-        float accumulated_time{ 0.0f }; // Time accumulated for current frame
-        bool is_looping{ true };       // Whether animation should loop
-        bool is_playing{ false };      // Whether animation is currently playing
-        bool is_reverse{ false };      // Whether animation should play in reverse
+        int frame_count{ 0 };          
+        int current_frame{ 0 };        
+        int columns{ 0 };              
+        float frame_time{ 0.0f };      
+        float accumulated_time{ 0.0f };
+        bool is_looping{ true };       
+        bool is_playing{ false };      
+        bool is_reverse{ false };      
     };
 
     struct SpriteSheetInfo 
     {
-        SDL_FRect view_rect{};        // Rectangle for a single frame
-        SDL_FRect source_rect{};      // Rectangle for entire sprite sheet
-        SDL_FPoint spacing{ 0, 0 };     // Spacing between frames (x, y)
-        SDL_FPoint offset{ 0, 0 };      // Starting position on texture (x, y)
+        SDL_FRect view_rect{};        
+        SDL_FRect source_rect{};      
+        SDL_FPoint spacing{ 0, 0 };   
+        SDL_FPoint offset{ 0, 0 };    
     };
 
     AnimatedObject() = default;
