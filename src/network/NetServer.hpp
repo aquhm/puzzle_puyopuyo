@@ -14,6 +14,13 @@
 #include <memory>
 #include <span>
 
+struct SendQueueData
+{
+    std::vector<char> buffer;
+
+    SendQueueData(std::span<const char> data) : buffer(data.begin(), data.end()) {}
+};
+
 
 struct ClientInfo 
 {
@@ -22,7 +29,7 @@ struct ClientInfo
     OverlappedEx send_overlapped;
 
     RingBuffer  recv_buffer;
-    Concurrency::concurrent_queue<std::vector<char>> send_queue;
+    Concurrency::concurrent_queue<std::shared_ptr<SendQueueData>> send_queue;
 
     ClientInfo() 
     {

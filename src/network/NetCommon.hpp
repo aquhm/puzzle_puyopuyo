@@ -11,7 +11,6 @@
 
 #define WM_SOCKET (WM_USER + 1)
 
-// 상수 정의를 enum class로 현대화
 enum class OperationType : uint8_t
 {
     None,

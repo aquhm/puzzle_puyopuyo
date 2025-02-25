@@ -17,17 +17,17 @@ bool NetServer::StartServer()
 {
     try
     {
-        if (!InitSocket())
+        if (InitSocket() == false)
         {
             throw NetworkException("InitSocket Failed");
         }
 
-        if (!BindAndListen(Constants::Network::NET_PORT))
+        if (BindAndListen(Constants::Network::NET_PORT) == false)
         {
             throw NetworkException("BindAndListen Failed");
         }
 
-        if (!CreateThreadAndIOCP())
+        if (CreateThreadAndIOCP() == false)
         {
             throw NetworkException("CreateThreadAndIOCP Failed");
         }
@@ -214,11 +214,13 @@ unsigned int NetServer::WorkerThread()
     return 0;
 }
 
-unsigned int NetServer::AccepterThread() {
+unsigned int NetServer::AccepterThread() 
+{
     sockaddr_in client_addr{};
     int addr_len = sizeof(client_addr);
 
-    while (accepter_running_) {
+    while (accepter_running_) 
+    {
         ClientInfo* client = GetEmptyClientInfo();
         if (!client) {
             continue;
@@ -227,15 +229,20 @@ unsigned int NetServer::AccepterThread() {
         client->socket = Socket(accept(listen_socket_.get(),
             reinterpret_cast<sockaddr*>(&client_addr), &addr_len));
 
-        if (!client->socket.is_valid()) {
+        if (client->socket.is_valid() == false) 
+        {
             continue;
         }
 
-        if (!BindIOCP(client)) {
+        if (BindIOCP(client) == false) 
+        {
             continue;
         }
 
-        if (!BindRecv(client, 0, 0)) {
+        client->recv_buffer.Reset();
+
+        if (BindRecv(client, 0, 0) == false)
+        {
             continue;
         }
 
@@ -344,21 +351,38 @@ void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD 
     // 전송 완료된 바이트 수를 누적
     overlapped->remain_size += bytes;
 
-    // 디버깅 로그
-    // LogDebug(std::format(L"ProcessSend packetType = {}, remainSize = {}, IoSize = {}, packetSize = {}", 
-    //                      packet_type, overlapped->remain_size, bytes, overlapped->packet_size));
 
     // 전송 완료된 데이터를 큐에서 제거
-    std::vector<char> temp_buffer;
+    std::shared_ptr<SendQueueData> temp_buffer;
     client->send_queue.try_pop(temp_buffer);
 
     // 다음 전송 데이터가 있으면 처리
-    if (!client->send_queue.empty()) 
+    if (!client->send_queue.empty())
     {
-        std::vector<char> next_data;
-        if (client->send_queue.try_pop(next_data)) 
+        std::shared_ptr<SendQueueData> next_data;
+        if (client->send_queue.try_pop(next_data))
         {
-            SendMsg(client, std::span<const char>(next_data.data(), next_data.size()));
+            // 다음 전송 데이터로 오버랩 구조체 설정
+            client->send_overlapped.operation = OperationType::Send;
+            client->send_overlapped.remain_size = 0;
+            client->send_overlapped.packet_size = static_cast<int>(next_data->buffer.size());
+            client->send_overlapped.wsa_buf.buf = next_data->buffer.data();
+            client->send_overlapped.wsa_buf.len = static_cast<ULONG>(next_data->buffer.size());
+            client->send_overlapped.begin_buf = next_data->buffer.data();
+
+            ZeroMemory(&client->send_overlapped.overlapped, sizeof(OVERLAPPED));
+
+            // 다음 전송 시작
+            DWORD sent_bytes = 0;
+            WSASend(
+                client->socket.get(),
+                &client->send_overlapped.wsa_buf,
+                1,
+                &sent_bytes,
+                0,
+                &client->send_overlapped.overlapped,
+                nullptr
+            );
         }
     }
 }
@@ -370,12 +394,31 @@ bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_siz
         return false;
     }
 
-    // 이동 위치 및 처리된 위치 계산
-    int move_pos = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos()) + remain_size;
-    int process_move = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos());
+    char* buffer = nullptr;
 
-    // 새 버퍼 위치 얻기
-    char* buffer = client->recv_buffer.GetBuffer(move_pos, process_move, Constants::Network::MAX_PACKET_SIZE);
+    // 최초 호출인 경우(processed_pos가 nullptr)
+    if (processed_pos == 0 && remain_size == 0) 
+    {
+        // 직접 버퍼 요청
+        buffer = client->recv_buffer.GetBuffer(Constants::Network::MAX_PACKET_SIZE);
+    }
+    else 
+    {
+        // 기존 로직
+        int move_pos = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos()) + remain_size;
+        int process_move = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos());
+
+        // 확인 - 계산된 값이 올바른지
+        if (move_pos < 0 || process_move < 0) {
+            // 문제가 있으면 직접 버퍼 요청
+            buffer = client->recv_buffer.GetBuffer(Constants::Network::MAX_PACKET_SIZE);
+        }
+        else {
+            // 기존대로 처리
+            buffer = client->recv_buffer.GetBuffer(move_pos, process_move, Constants::Network::MAX_PACKET_SIZE);
+        }
+    }
+
     if (!buffer) 
     {
         return false;
@@ -387,6 +430,7 @@ bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_siz
     client->recv_overlapped.wsa_buf.buf = buffer;
     client->recv_overlapped.begin_buf = client->recv_buffer.GetProcessedPos();
     client->recv_overlapped.receive_size = remain_size;
+    client->recv_overlapped.operation = OperationType::Receive;
 
     DWORD flags = 0;
     DWORD recv_bytes = 0;
@@ -412,18 +456,26 @@ bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_siz
     return true;
 }
 
-bool NetServer::SendMsg(ClientInfo* client, std::span<const char> msg) 
+bool NetServer::SendMsg(ClientInfo* client, std::span<const char> msg)
 {
-    if (!client || !client->socket.is_valid() || msg.empty()) 
+    if (!client || !client->socket.is_valid() || msg.empty())
     {
         return false;
     }
 
-    std::vector<char> send_data(msg.begin(), msg.end());
-        
-    client->send_queue.push(std::move(send_data));
-    client->send_overlapped.wsa_buf.buf = const_cast<char*>(msg.data());
-    client->send_overlapped.wsa_buf.len = static_cast<ULONG>(msg.size());
+    // 전송 데이터 생성
+    auto send_data = std::make_shared<SendQueueData>(msg);
+
+    // 오버랩 구조체 설정
+    client->send_overlapped.operation = OperationType::Send;
+    client->send_overlapped.remain_size = 0;
+    client->send_overlapped.packet_size = static_cast<int>(send_data->buffer.size());
+    client->send_overlapped.wsa_buf.buf = send_data->buffer.data();
+    client->send_overlapped.wsa_buf.len = static_cast<ULONG>(send_data->buffer.size());
+    client->send_overlapped.begin_buf = send_data->buffer.data();
+
+    // 큐에 저장 (공유 포인터로 참조 카운트 유지)
+    client->send_queue.push(send_data);
 
     ZeroMemory(&client->send_overlapped.overlapped, sizeof(OVERLAPPED));
 
@@ -438,8 +490,10 @@ bool NetServer::SendMsg(ClientInfo* client, std::span<const char> msg)
         nullptr
     );
 
-    if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) 
+    if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING && WSAGetLastError() != WSAEWOULDBLOCK)
     {
+        LogError(L"WSASend()");
+        DisconnectProcess(client);
         return false;
     }
 
@@ -470,7 +524,7 @@ void NetServer::CloseSocket(ClientInfo* client, bool force)
     // 버퍼 초기화
     client->recv_buffer.Reset();
 
-    std::vector<char> dummy;
+    std::shared_ptr<SendQueueData> dummy;
     while (client->send_queue.try_pop(dummy)) {}
 
     // 오버랩 구조체 초기화

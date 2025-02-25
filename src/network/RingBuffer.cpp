@@ -15,24 +15,29 @@ RingBuffer::RingBuffer() :
 
 bool RingBuffer::Create(size_t size) 
 {
+    buffer_.clear();
     buffer_.resize(size, 0);
+    std::fill(buffer_.begin(), buffer_.end(), 0);
     buffer_size_ = size;
 
-    begin_ = end_ = current_begin_ = current_end_ = readed_ = buffer_.data();
+    begin_ = current_begin_ = current_end_ = readed_ = buffer_.data();
+    end_ = buffer_.data() + size - 1;  // 버퍼의 마지막 위치로 수정
     recycle_ = buffer_.data() + size - 1;
 
     used_size_ = processed_size_ = 0;
     return true;
 }
 
-void RingBuffer::Reset() 
+void RingBuffer::Reset()
 {
     CriticalSection::Lock lock(critical_section_);
+    std::fill(buffer_.begin(), buffer_.end(), 0);
+    //std::memset(buffer_.data(), 0, buffer_size_);
 
-    std::memset(buffer_.data(), 0, buffer_size_);
-
-    begin_ = end_ = current_begin_ = current_end_ = readed_ = buffer_.data();
+    begin_ = current_begin_ = current_end_ = readed_ = buffer_.data();
+    end_ = buffer_.data() + buffer_size_ - 1;  // 버퍼의 마지막 위치로 수정
     recycle_ = buffer_.data() + buffer_size_ - 1;
+
     used_size_ = processed_size_ = 0;
 }
 
@@ -54,7 +59,7 @@ char* RingBuffer::GetBuffer(size_t requiredSize)
     {
         if (begin_ + requiredSize > current_begin_)
         {
-            throw std::runtime_error("RingBuffer::GetBuffer: Cannot allocate space");
+            return nullptr;
         }
         current_begin_ = begin_;
         current_end_ = begin_ + requiredSize;
