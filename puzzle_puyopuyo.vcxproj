@@ -32,7 +32,6 @@
     <ClInclude Include="src\core\manager\MapManager.hpp" />
     <ClInclude Include="src\core\manager\ParticleManager.hpp" />
     <ClInclude Include="src\core\manager\ResourceManager.hpp" />
-    <ClInclude Include="src\core\system\GameSynchronizer.h" />
     <ClInclude Include="src\core\WindowsMessageHandler.hpp" />
     <ClInclude Include="src\game\AnimatedObject.hpp" />
     <ClInclude Include="src\game\block\Block.hpp" />
@@ -103,7 +102,6 @@
     <ClCompile Include="src\core\manager\MapManager.cpp" />
     <ClCompile Include="src\core\manager\ParticleManager.cpp" />
     <ClCompile Include="src\core\manager\ResourceManager.cpp" />
-    <ClCompile Include="src\core\system\GameSynchronizer.cpp" />
     <ClCompile Include="src\core\WindowsMessageHandler.cpp" />
     <ClCompile Include="src\game\AnimatedObject.cpp" />
     <ClCompile Include="src\game\block\Block.cpp" />

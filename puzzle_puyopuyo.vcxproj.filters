@@ -45,9 +45,6 @@
     <ClInclude Include="src\states\GameState.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\system\GameSynchronizer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="src\states\GameStateTransition.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -261,9 +258,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\states\GameState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\system\GameSynchronizer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\states\LoginState.cpp">
