@@ -165,8 +165,10 @@ bool GameServer::ConnectProcess(ClientInfo* client)
     GiveIdPacket packet;
     packet.player_id = GenerateUniqueId();
 
-    const char* packet_data = reinterpret_cast<const char*>(&packet);
-    return SendMsg(client, std::span<const char>(packet_data, sizeof(packet)));
+    auto packetBytes = packet.ToBytes();
+    auto packet_data = std::span<const char>{ packetBytes.data(), packetBytes.size() };
+
+    return SendMsg(client, packet_data);
 }
 
 bool GameServer::DisconnectProcess(ClientInfo* client) 

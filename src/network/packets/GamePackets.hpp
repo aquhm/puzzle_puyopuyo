@@ -239,7 +239,7 @@ struct GiveIdPacket : PacketBase
     uint8_t player_id;      
 
     PacketType GetType() const override { return PacketType::GiveId; }
-    uint32_t GetBodySize() const override { return sizeof(PacketBase); }
+    uint32_t GetBodySize() const override { return sizeof(GiveIdPacket); }
 };
 
 struct StartCharSelectPacket : PacketBase

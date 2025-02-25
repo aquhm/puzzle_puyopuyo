@@ -179,7 +179,6 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
 {
     const int event = WSAGETSELECTEVENT(lParam);
     const int error = WSAGETSELECTERROR(lParam);
-
     if (error != 0)
     {
         Disconnect();
@@ -192,10 +191,19 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
     case FD_READ:
     {
         uint32_t recv_size = 0;
-        uint32_t packet_size = 0;
         char* packet = msg_buffer_.data();
 
-        recv_size = recv(socket_.get(), msg_buffer_.data() + recv_remain_size_, Constants::Network::CLIENT_BUF_SIZE, 0);
+        // 버퍼 오버플로우 방지
+        if (recv_remain_size_ >= Constants::Network::CLIENT_BUF_SIZE)
+        {
+            LogError(L"Buffer overflow prevented");
+            recv_remain_size_ = 0;
+            return false;
+        }
+
+        // 데이터 수신
+        recv_size = recv(socket_.get(), msg_buffer_.data() + recv_remain_size_,
+            Constants::Network::CLIENT_BUF_SIZE - recv_remain_size_, 0);
 
         if (recv_size == SOCKET_ERROR)
         {
@@ -215,42 +223,42 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
 
         recv_remain_size_ += recv_size;
 
-        if (recv_remain_size_ < Constants::Network::PACKET_SIZE_LEN)
-        {
-            return false;
-        }
-
+        // 패킷 처리 루프
         packet = msg_buffer_.data();
-        while (true)
+        while (recv_remain_size_ >= sizeof(PacketHeader))
         {
-
-            if (recv_remain_size_ < sizeof(PacketHeader)) {
-                break;
-            }
-
+            // 헤더 읽기
             PacketHeader header;
-            std::memcpy(&header, packet, sizeof(PacketHeader));
+            std::memcpy(&header, packet, sizeof(PacketHeader));            
 
-            if (recv_remain_size_ < header.size || header.size <= sizeof(PacketHeader)) 
+            // 유효성 검사
+            if (header.size < sizeof(PacketHeader) || header.size > Constants::Network::MAX_PACKET_SIZE)
             {
-                break;
+                //LogError(std::format("Invalid packet size: {}", header.size));
+                recv_remain_size_ = 0; // 버퍼 비우기
+                return false;
             }
 
-            ProcessPacket(std::span<const char>(packet, packet_size));
+            // 전체 패킷이 수신되었는지 확인
+            if (recv_remain_size_ < header.size)
+            {
+                break; // 더 많은 데이터 필요
+            }
 
+            // 패킷 처리
+            ProcessPacket(std::span<const char>(packet, header.size));
+
+            // 버퍼 포인터 및 남은 크기 업데이트
             recv_remain_size_ -= header.size;
             packet += header.size;
-
-            if (recv_remain_size_ < sizeof(PacketHeader)) 
-            {
-                break;
-            }
         }
 
-        if (recv_remain_size_ > 0)
+        // 남은 데이터 이동
+        if (recv_remain_size_ > 0 && packet != msg_buffer_.data())
         {
             memmove(msg_buffer_.data(), packet, recv_remain_size_);
         }
+
         break;
     }
 

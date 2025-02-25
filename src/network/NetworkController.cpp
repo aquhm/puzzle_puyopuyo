@@ -96,7 +96,9 @@ bool NetworkController::SendToClient(ClientInfo* client, const PacketBase& packe
         return false;
 
     auto packetBytes = packet.ToBytes();
-    return server_->SendMsg(client, std::span<const char>(packetBytes.data(), packetBytes.size()));
+    auto packet_data = std::span<const char>{ packetBytes.data(), packetBytes.size() };
+
+    return server_->SendMsg(client, packet_data);
 }
 
 
