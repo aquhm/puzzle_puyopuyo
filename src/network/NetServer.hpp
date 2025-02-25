@@ -29,7 +29,7 @@ struct ClientInfo
         recv_overlapped.operation = OperationType::Receive;
         send_overlapped.operation = OperationType::Send;
 
-        recv_buffer.Create(NetworkConfig::BUFFER_SIZE);
+        recv_buffer.Create(Constants::Network::MAX_RINGBUFSIZE);
     }
 };
 

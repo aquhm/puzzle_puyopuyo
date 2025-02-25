@@ -19,16 +19,6 @@ enum class OperationType : uint8_t
     Send,
 };
 
-struct NetworkConfig
-{
-    static constexpr uint16_t DEFAULT_PORT = 9000;
-    static constexpr size_t PACKET_SIZE_LENGTH = sizeof(uint32_t);
-    static constexpr size_t MAX_PACKET_SIZE = 256;
-    static constexpr size_t MAX_CLIENTS = 4;
-    static constexpr uint32_t BUFFER_SIZE = 1024;
-    static constexpr size_t MAX_WORKER_THREADS = 1;
-};
-
 struct OverlappedEx 
 {
     WSAOVERLAPPED overlapped;

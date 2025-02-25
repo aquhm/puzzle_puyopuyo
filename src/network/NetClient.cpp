@@ -58,12 +58,6 @@ bool NetClient::Start(HWND hwnd)
 
 bool NetClient::InitSocket()
 {
-    /*WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-        throw NetworkException("WSAStartup Failed");
-    }*/
-
     socket_ = Socket(WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED));
 
     if (!socket_.is_valid())
@@ -201,7 +195,7 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
         uint32_t packet_size = 0;
         char* packet = msg_buffer_.data();
 
-        recv_size = recv(socket_.get(), msg_buffer_.data() + recv_remain_size_, NetworkConfig::BUFFER_SIZE, 0);
+        recv_size = recv(socket_.get(), msg_buffer_.data() + recv_remain_size_, Constants::Network::CLIENT_BUF_SIZE, 0);
 
         if (recv_size == SOCKET_ERROR)
         {
@@ -221,7 +215,7 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
 
         recv_remain_size_ += recv_size;
 
-        if (recv_remain_size_ < NetworkConfig::PACKET_SIZE_LENGTH)
+        if (recv_remain_size_ < Constants::Network::PACKET_SIZE_LEN)
         {
             return false;
         }
@@ -229,7 +223,7 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
         packet = msg_buffer_.data();
         while (true)
         {
-            memcpy(&packet_size, packet, NetworkConfig::PACKET_SIZE_LENGTH);
+            memcpy(&packet_size, packet, Constants::Network::PACKET_SIZE_LEN);
 
             if (recv_remain_size_ < packet_size || packet_size <= 0)
             {
@@ -241,7 +235,7 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
             recv_remain_size_ -= packet_size;
             packet += packet_size;
 
-            if (recv_remain_size_ <= 0 || recv_remain_size_ < NetworkConfig::PACKET_SIZE_LENGTH)
+            if (recv_remain_size_ <= 0 || recv_remain_size_ < Constants::Network::PACKET_SIZE_LEN)
             {
                 break;
             }
@@ -277,18 +271,6 @@ void NetClient::LogError(std::wstring_view msg) const
 
     OutputDebugString(static_cast<LPCWSTR>(lpMsgBuf));
     LocalFree(lpMsgBuf);
-}
-
-void NetClient::PollSocketEvents() 
-{
-    DWORD result = WSAWaitForMultipleEvents(1, &event_handle_, FALSE, 0, FALSE);
-    if (result == WSA_WAIT_EVENT_0) 
-    {
-        WSANETWORKEVENTS networkEvents;
-        WSAEnumNetworkEvents(socket_.get(), event_handle_, &networkEvents);
-
-        PostMessage(NULL, SDL_USEREVENT_SOCK, (WPARAM)socket_.get(), (LPARAM)networkEvents.lNetworkEvents);
-    }
 }
 
 void NetClient::EventPollingThreadFunc() 

@@ -6,6 +6,7 @@
  */
 
 #include "NetCommon.hpp"
+#include "../core/common/constants/Constants.hpp"
 
 #include <string>
 #include <array>
@@ -27,15 +28,12 @@ public:
     [[nodiscard]] virtual bool Start(HWND hwnd);
     virtual void Exit();
 
-    // 匙飘况农 烹脚
-    void SendData(std::span<const char> data);
-    [[nodiscard]] bool ProcessRecv(WPARAM wParam, LPARAM lParam);
 
-    // 立加 包府
     [[nodiscard]] bool Connect(std::string_view ip, uint16_t port);
     void Disconnect(bool force = false);
 
-    void PollSocketEvents();
+    void SendData(std::span<const char> data);
+    [[nodiscard]] bool ProcessRecv(WPARAM wParam, LPARAM lParam);    
     
 protected:
     virtual void ProcessPacket(std::span<const char> packet) = 0;
@@ -55,14 +53,14 @@ private:
     void LogError(std::wstring_view msg) const;
 
 private:
-    WSASession wsa_session_;            // RAII WSA 包府
-    Socket socket_;                     // RAII 家南 包府
+    WSASession wsa_session_;
+    Socket socket_;
     HANDLE worker_thread_{ nullptr };
 
     HWND hwnd_;
     bool initialize_;
 
-    std::array<char, NetworkConfig::BUFFER_SIZE * 8> msg_buffer_{};
+    std::array<char, Constants::Network::CLIENT_BUF_SIZE * 8> msg_buffer_{};
     uint32_t recv_remain_size_{ 0 };
 
     std::atomic<bool> is_connected_{ false };

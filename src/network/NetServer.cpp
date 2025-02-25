@@ -4,7 +4,7 @@
 #include <process.h>
 
 NetServer::NetServer() :
-    clients_(std::make_unique<ClientInfo[]>(NetworkConfig::MAX_CLIENTS))
+    clients_(std::make_unique<ClientInfo[]>(Constants::Network::MAX_CLIENT))
 {
 }
 
@@ -22,7 +22,7 @@ bool NetServer::StartServer()
             throw NetworkException("InitSocket Failed");
         }
 
-        if (!BindAndListen(NetworkConfig::DEFAULT_PORT))
+        if (!BindAndListen(Constants::Network::NET_PORT))
         {
             throw NetworkException("BindAndListen Failed");
         }
@@ -111,7 +111,7 @@ bool NetServer::CreateThreadAndIOCP()
 
 bool NetServer::CreateWorkerThread() 
 {
-    for (size_t i = 0; i < NetworkConfig::MAX_WORKER_THREADS; ++i) 
+    for (size_t i = 0; i < Constants::Network::MAX_WORKERTHREAD; ++i) 
     {
         unsigned int thread_id = 0;
         worker_threads_[i] = (HANDLE)_beginthreadex(  // static_cast 대신 C 스타일 캐스팅 사용
@@ -260,7 +260,7 @@ void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD 
     }
 
     // 패킷 크기 정보보다 작은 경우 재수신
-    if (overlapped->receive_size < NetworkConfig::PACKET_SIZE_LENGTH) 
+    if (overlapped->receive_size < Constants::Network::PACKET_SIZE_LEN) 
     {
         BindRecv(client, processed_pos, overlapped->receive_size);
         return;
@@ -268,7 +268,7 @@ void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD 
 
     // 패킷 크기 확인 및 처리
     int packet_size = 0;
-    memcpy(&packet_size, processed_pos, NetworkConfig::PACKET_SIZE_LENGTH);
+    memcpy(&packet_size, processed_pos, Constants::Network::PACKET_SIZE_LEN);
 
     int remain_size = overlapped->receive_size;
 
@@ -285,9 +285,9 @@ void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD 
 
         while (true) 
         {
-            if (remain_size >= NetworkConfig::PACKET_SIZE_LENGTH) 
+            if (remain_size >= Constants::Network::PACKET_SIZE_LEN) 
             {
-                memcpy(&packet_size, processed_pos, NetworkConfig::PACKET_SIZE_LENGTH);
+                memcpy(&packet_size, processed_pos, Constants::Network::PACKET_SIZE_LEN);
 
                 if (packet_size <= 0 || static_cast<size_t>(packet_size) > client->recv_buffer.GetBufferSize()) 
                 {
@@ -336,9 +336,9 @@ void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD 
 
     // 패킷 타입 확인 (디버깅용)
     uint16_t packet_type = 0;
-    if (overlapped->wsa_buf.buf && overlapped->wsa_buf.len >= NetworkConfig::PACKET_SIZE_LENGTH + sizeof(uint16_t)) 
+    if (overlapped->wsa_buf.buf && overlapped->wsa_buf.len >= Constants::Network::PACKET_SIZE_LEN + sizeof(uint16_t)) 
     {
-        memcpy(&packet_type, overlapped->wsa_buf.buf + NetworkConfig::PACKET_SIZE_LENGTH, sizeof(uint16_t));
+        memcpy(&packet_type, overlapped->wsa_buf.buf + Constants::Network::PACKET_SIZE_LEN, sizeof(uint16_t));
     }
 
     // 전송 완료된 바이트 수를 누적
@@ -375,15 +375,15 @@ bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_siz
     int process_move = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos());
 
     // 새 버퍼 위치 얻기
-    char* buffer = client->recv_buffer.GetBuffer(move_pos, process_move, NetworkConfig::MAX_PACKET_SIZE);
+    char* buffer = client->recv_buffer.GetBuffer(move_pos, process_move, Constants::Network::MAX_PACKET_SIZE);
     if (!buffer) 
     {
         return false;
     }
 
     // WSARecv 작업을 위한 설정
-    client->recv_overlapped.wsa_buf.len = static_cast<ULONG>(NetworkConfig::MAX_PACKET_SIZE);
-    client->recv_overlapped.packet_size = NetworkConfig::MAX_PACKET_SIZE;
+    client->recv_overlapped.wsa_buf.len = static_cast<ULONG>(Constants::Network::MAX_PACKET_SIZE);
+    client->recv_overlapped.packet_size = Constants::Network::MAX_PACKET_SIZE;
     client->recv_overlapped.wsa_buf.buf = buffer;
     client->recv_overlapped.begin_buf = client->recv_buffer.GetProcessedPos();
     client->recv_overlapped.receive_size = remain_size;
@@ -485,7 +485,7 @@ bool NetServer::ExitServer()
 {
     DestroyThread();
 
-    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) 
+    for (size_t i = 0; i < Constants::Network::MAX_CLIENT; ++i) 
     {
         if (clients_[i].socket.is_valid()) 
         {
@@ -501,7 +501,7 @@ void NetServer::DestroyThread() {
         worker_running_ = false;
 
         // WorkerThread 종료
-        for (size_t i = 0; i < NetworkConfig::MAX_WORKER_THREADS; ++i) {
+        for (size_t i = 0; i < Constants::Network::MAX_WORKERTHREAD; ++i) {
             PostQueuedCompletionStatus(iocp_handle_, 0, 0, nullptr);
         }
 
@@ -535,7 +535,7 @@ void NetServer::DestroyThread() {
 
 ClientInfo* NetServer::GetEmptyClientInfo() 
 {
-    for (size_t i = 0; i < NetworkConfig::MAX_CLIENTS; ++i) 
+    for (size_t i = 0; i < Constants::Network::MAX_CLIENT; ++i)
     {
         if (!clients_[i].socket.is_valid()) 
         {
