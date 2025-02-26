@@ -42,9 +42,9 @@ std::shared_ptr<Player> PlayerManager::CreatePlayer(uint8_t id, ClientInfo* net_
     }
 
     auto player = std::make_shared<Player>();
-    player->SetId(id);
-    player->SetNetInfo(net_info);
     player->Initialize();
+    player->SetId(id);
+    player->SetNetInfo(net_info);    
 
     players_[id] = player;
     return player;
