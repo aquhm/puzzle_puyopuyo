@@ -101,7 +101,7 @@ void StateManager::HandleEvent(const SDL_Event& event)
     currentState_->HandleEvent(event);
 }
 
-void StateManager::HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length)
+void StateManager::HandleNetworkMessage(uint8_t connectionId, std::span<const char> message, uint32_t length)
 {
     if (!initialized_ || paused_ || !currentState_) 
     {

@@ -225,32 +225,32 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
 
         // 패킷 처리 루프
         packet = msg_buffer_.data();
-        while (recv_remain_size_ >= sizeof(PacketHeader))
+        while (recv_remain_size_ >= sizeof(PacketBase))
         {
-            // 헤더 읽기
-            PacketHeader header;
-            std::memcpy(&header, packet, sizeof(PacketHeader));            
+            // 패킷 기본 정보 읽기
+            PacketBase packetBase;
+            std::memcpy(&packetBase, packet, sizeof(PacketBase));
 
-            // 유효성 검사
-            if (header.size < sizeof(PacketHeader) || header.size > Constants::Network::MAX_PACKET_SIZE)
+            // 유효성 검사 
+            if (packetBase.size < sizeof(PacketBase) || packetBase.size > Constants::Network::MAX_PACKET_SIZE)
             {
-                //LogError(std::format("Invalid packet size: {}", header.size));
+                // LogError(std::format("Invalid packet size: {}", baseHeader.size));
                 recv_remain_size_ = 0; // 버퍼 비우기
                 return false;
             }
 
             // 전체 패킷이 수신되었는지 확인
-            if (recv_remain_size_ < header.size)
+            if (recv_remain_size_ < packetBase.size)
             {
                 break; // 더 많은 데이터 필요
             }
 
             // 패킷 처리
-            ProcessPacket(std::span<const char>(packet, header.size));
+            ProcessPacket(std::span<const char>(packet, packetBase.size));
 
             // 버퍼 포인터 및 남은 크기 업데이트
-            recv_remain_size_ -= header.size;
-            packet += header.size;
+            recv_remain_size_ -= packetBase.size;
+            packet += packetBase.size;
         }
 
         // 남은 데이터 이동
@@ -258,7 +258,6 @@ bool NetClient::ProcessRecv(WPARAM wParam, LPARAM lParam)
         {
             memmove(msg_buffer_.data(), packet, recv_remain_size_);
         }
-
         break;
     }
 

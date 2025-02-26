@@ -91,48 +91,42 @@ void GameServer::Update()
 
 void GameServer::ProcessPacket(const ProcessEvent& event)
 {
-    if (event.packet_data.empty() || event.packet_data.size() < sizeof(PacketBase)) 
+    if (event.packet_data.empty() || event.packet_data.size() < sizeof(PacketBase))
     {
         LOGGER.Warning("Invalid packet data");
         return;
     }
 
-    // 패킷 헤더 추출
-    PacketHeader header;
-    std::memcpy(&header, event.packet_data.data(), sizeof(PacketHeader));
+    // 패킷 기본 정보 읽기
+    const PacketBase* basePacket = reinterpret_cast<const PacketBase*>(event.packet_data.data());
+    PacketType packetType = static_cast<PacketType>(basePacket->type);
 
-   
     // 패킷 타입 검증
-    if (!IsValidPacketType(header.type))
+    if (!IsValidPacketType(packetType))
     {
-        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(header.type));
+        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(packetType));
         return;
     }
 
-
     // 패킷 크기 검증
-    if (event.packet_data.size() != header.size)
+    if (event.packet_data.size() != basePacket->size)
     {
         LOGGER.Warning("Invalid packet size. Expected: {}, Actual: {}",
-            header.size, event.packet_data.size());
+            basePacket->size, event.packet_data.size());
         return;
     }
 
     // 프로세서 찾기
-    auto it = packet_processors_.find(header.type);
+    auto it = packet_processors_.find(packetType);
     if (it == packet_processors_.end())
     {
-        LOGGER.Warning("No processor found for packet type: {}", static_cast<int>(header.type));
+        LOGGER.Warning("No processor found for packet type: {}", static_cast<int>(packetType));
         return;
     }
 
-    // 패킷 본문 추출
-    const PacketBase* packet = reinterpret_cast<const PacketBase*>(event.packet_data.data());
-
     // 패킷 처리
-    it->second->Process(*packet, event.client_info);
+    it->second->Process(*basePacket, event.client_info);
 }
-
 
 bool GameServer::StartServer() 
 {
@@ -158,7 +152,7 @@ bool GameServer::ExitServer()
     return NetServer::ExitServer();
 }
 
-bool GameServer::ConnectProcess(ClientInfo* client) 
+bool GameServer::ConnectProcess(ClientInfo* client)
 {
     // 새로운 클라이언트 접속시 ID 부여
     GiveIdPacket packet;
@@ -169,6 +163,7 @@ bool GameServer::ConnectProcess(ClientInfo* client)
 
     return SendMsg(client, packet_data);
 }
+
 
 bool GameServer::DisconnectProcess(ClientInfo* client) 
 {

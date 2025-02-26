@@ -61,7 +61,6 @@
     <ClInclude Include="src\network\NetworkController.hpp" />
     <ClInclude Include="src\network\PacketProcessor.hpp" />
     <ClInclude Include="src\network\packets\GamePackets.hpp" />
-    <ClInclude Include="src\network\packets\IPacket.hpp" />
     <ClInclude Include="src\network\NetClient.hpp" />
     <ClInclude Include="src\network\NetCommon.hpp" />
     <ClInclude Include="src\network\NetServer.hpp" />

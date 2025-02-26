@@ -50,7 +50,7 @@ public:
 
     
     void HandleEvent(const SDL_Event& event) override;
-    void HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length);
+    void HandleNetworkMessage(uint8_t connectionId, std::span<const char> message, uint32_t length);
 
     
     void RequestStateChange(StateID newState);

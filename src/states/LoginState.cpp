@@ -32,9 +32,10 @@ void LoginState::InitializePacketHandlers()
 {
     packet_processor_.RegisterHandler<GiveIdPacket>(
         PacketType::GiveId,
+        
         [this](uint8_t connectionId, const GiveIdPacket* packet) 
         {
-            HandleGiveId(connectionId);
+            HandleGiveId(packet->player_id);
         }
     );
 }

@@ -1,41 +1,45 @@
 #include "PacketProcessor.hpp"
 #include "../utils/Logger.hpp"
 
-void PacketProcessor::ProcessPacket(uint8_t connectionId, std::span<const char> data, uint32_t length) 
+void PacketProcessor::ProcessPacket(uint8_t connectionId, std::span<const char> data, uint32_t length)
 {
-    if (length < sizeof(PacketHeader)) 
+    if (length < sizeof(PacketBase))
     {
         LOGGER.Warning("Invalid packet: too small");
         return;
     }
 
-    PacketHeader header;
-    std::memcpy(&header, data.data(), sizeof(PacketHeader));
+    const PacketBase* basePacket = reinterpret_cast<const PacketBase*>(data.data());
 
-    if (!IsValidPacketType(header.type)) 
+    // 패킷 크기 검증
+    if (basePacket->size != length)
     {
-        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(header.type));
+        LOGGER.Warning("Packet size mismatch: expected {}, got {}",
+            basePacket->size, static_cast<unsigned int>(length));
         return;
     }
 
-    if (header.size != length) 
+    // 패킷 타입 변환 및 검증
+    PacketType packetType = static_cast<PacketType>(basePacket->type);
+    if (!IsValidPacketType(packetType))
     {
-        LOGGER.Warning("Packet size mismatch: expected {}, got {}", header.size, static_cast<unsigned int>(length));
+        LOGGER.Warning("Invalid packet type: {}", static_cast<int>(packetType));
         return;
     }
 
-    auto it = handlers_.find(header.type);
-    if (it != handlers_.end()) 
+    // 핸들러 호출
+    auto it = handlers_.find(packetType);
+    if (it != handlers_.end())
     {
         it->second(connectionId, data);
     }
-    else 
+    else
     {
-        LOGGER.Warning("No handler registered for packet type: {}", static_cast<int>(header.type));
+        LOGGER.Warning("No handler registered for packet type: {}", static_cast<int>(packetType));
     }
 }
 
-void PacketProcessor::ClearHandlers() 
+void PacketProcessor::ClearHandlers()
 {
     handlers_.clear();
 }
