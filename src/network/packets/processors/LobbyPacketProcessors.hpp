@@ -85,7 +85,7 @@ private:
         {
             if (player->GetId() != newPlayer->GetId())
             {
-                PlayerInfoPacket packet;
+                AddPlayerPacket packet;
                 packet.player_id = player->GetId();
                 packet.character_id = player->GetCharacterId();
 
