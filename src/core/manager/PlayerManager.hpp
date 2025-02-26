@@ -40,7 +40,7 @@ public:
     bool RemovePlayer(uint8_t id);
     uint8_t RemovePlayerInRoom(ClientInfo* pNetInfo);
     void SetMyPlayer(std::shared_ptr<Player> player) { my_player_ = player; }
-    [[nodiscard]] std::shared_ptr<Player> GetMyPlayer() const { return my_player_; }
+    [[nodiscard]] const std::shared_ptr<Player>& GetMyPlayer() const { return my_player_; }
     [[nodiscard]] CriticalSection& GetCriticalSection() { return critical_section_; }
     [[nodiscard]] PlayerMap& GetPlayers() { return players_; }
 

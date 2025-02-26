@@ -246,12 +246,10 @@ void CharacterSelectState::HandleKeyInput(SDL_Keycode key)
 
     if (current_pos_.x != prevPos.x || current_pos_.y != prevPos.y) 
     {
-        if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
-        {            
-            auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
-            gameState->GetPlayer()->SetCharacterID(characterId);
-            NETWORK.ChangeCharSelect(current_pos_.x, current_pos_.y);
-        }
+        auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
+        
+        GAME_APP.GetPlayerManager().GetMyPlayer()->SetCharacterId(characterId);
+        NETWORK.ChangeCharSelect(current_pos_.x, current_pos_.y);
     }
 }
 

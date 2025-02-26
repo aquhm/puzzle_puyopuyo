@@ -2,6 +2,8 @@
 #include "../states/GameState.hpp"
 #include "./packets/GamePackets.hpp"
 #include "../core/manager/StateManager.hpp"
+#include "../network/player/Player.hpp"
+#include "../core/manager/PlayerManager.hpp"
 #include "../core/GameApp.hpp"
 
 #include <format>
@@ -44,7 +46,7 @@ void GameClient::ChatMessage(std::string_view msg)
 {
 
     ChatMessagePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.SetMessage(msg);
 
     SendPacketInternal(packet);
@@ -54,7 +56,7 @@ void GameClient::ChangeCharSelect(uint8_t x, uint8_t y)
 {
 
     ChangeCharSelectPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.x_pos = x;
     packet.y_pos = y;
 
@@ -64,7 +66,7 @@ void GameClient::ChangeCharSelect(uint8_t x, uint8_t y)
 void GameClient::DecideCharacter(uint8_t x, uint8_t y)
 {
     DecideCharacterPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.x_pos = x;
     packet.y_pos = y;
 
@@ -75,7 +77,7 @@ void GameClient::AddNewBlock(std::span<const uint8_t> block)
 {
     AddNewBlockPacket packet;
 
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.block_type;  // 블록 타입 2개
 
     SendPacketInternal(packet);
@@ -85,7 +87,7 @@ void GameClient::GameInitialize(std::span<const uint8_t> block1, std::span<const
 {
 
     GameInitPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     if (block1.size() >= 2) {
         std::copy_n(block1.data(), 2, packet.block1.begin());
@@ -100,7 +102,7 @@ void GameClient::GameInitialize(std::span<const uint8_t> block1, std::span<const
 void GameClient::MoveBlock(uint8_t moveType, float position) {
 
     MoveBlockPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.move_type = moveType;
     packet.position = position;
 
@@ -110,7 +112,7 @@ void GameClient::MoveBlock(uint8_t moveType, float position) {
 void GameClient::RotateBlock(uint8_t rotateType, bool isHorizontalMoving) {
 
     RotateBlockPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.rotate_type = rotateType;
     packet.is_horizontal_moving = isHorizontalMoving;
 
@@ -121,7 +123,7 @@ void GameClient::RotateBlock(uint8_t rotateType, bool isHorizontalMoving) {
 void GameClient::AttackInterruptBlock(int16_t count, float x, float y, uint8_t type) {
 
     AttackInterruptPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.count = count;
     packet.position_x = x;
     packet.position_y = y;
@@ -133,7 +135,7 @@ void GameClient::AttackInterruptBlock(int16_t count, float x, float y, uint8_t t
 void GameClient::DefenseInterruptBlock(int16_t count, float x, float y, uint8_t type) 
 {
     DefenseInterruptPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.count = count;
     packet.position_x = x;
     packet.position_y = y;
@@ -145,7 +147,7 @@ void GameClient::DefenseInterruptBlock(int16_t count, float x, float y, uint8_t 
 void GameClient::AddInterruptBlock(uint8_t yRowCnt, uint8_t xCnt, std::span<const uint8_t> xIdx) {
 
     AddInterruptBlockPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.y_row_count = yRowCnt;
     packet.x_count = xCnt;
 
@@ -161,7 +163,7 @@ void GameClient::AddInterruptBlock(uint8_t yRowCnt, uint8_t xCnt, std::span<cons
 void GameClient::CheckBlockState() {
 
     CheckBlockStatePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     SendPacketInternal(packet);
 }
@@ -169,7 +171,7 @@ void GameClient::CheckBlockState() {
 void GameClient::UpdateGameBlockPos(float pos1, float pos2) {
 
     UpdateBlockPosPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.position1 = pos1;
     packet.position2 = pos2;
 
@@ -179,7 +181,7 @@ void GameClient::UpdateGameBlockPos(float pos1, float pos2) {
 void GameClient::ChangeBlockState(uint8_t state) {
 
     ChangeBlockStatePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.state = state;
 
     SendPacketInternal(packet);
@@ -189,7 +191,7 @@ void GameClient::PushBlockInGame(std::span<const float> pos1, std::span<const fl
 {
 
     PushBlockPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     if (pos1.size() >= 2) {
         std::copy_n(pos1.data(), 2, packet.position1.begin());
@@ -204,7 +206,7 @@ void GameClient::PushBlockInGame(std::span<const float> pos1, std::span<const fl
 void GameClient::ChangBlockState(uint8_t state)
 {
     ChangeBlockStatePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.state = state;
 
     SendPacketInternal(packet);
@@ -214,7 +216,7 @@ void GameClient::RequireFallingBlock(uint8_t fallingIdx, bool falling)
 {
     FallingBlockPacket packet;
         
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     packet.falling_index = fallingIdx;
     packet.is_falling = falling;
 
@@ -224,7 +226,7 @@ void GameClient::RequireFallingBlock(uint8_t fallingIdx, bool falling)
 void GameClient::StopComboAttack() 
 {
     StopComboPacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     SendPacketInternal(packet);
 }
@@ -232,7 +234,7 @@ void GameClient::StopComboAttack()
 void GameClient::LoseGame() 
 {
     LoseGamePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     SendPacketInternal(packet);
 }
@@ -240,7 +242,7 @@ void GameClient::LoseGame()
 void GameClient::ReStartGame(std::span<const uint8_t> block1, std::span<const uint8_t> block2) {
 
     RestartGamePacket packet;
-    packet.player_id = player_id_;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
     if (block1.size() >= 2) 
     {

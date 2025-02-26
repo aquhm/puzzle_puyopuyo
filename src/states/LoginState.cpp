@@ -256,7 +256,7 @@ void LoginState::HandleGiveId(uint8_t playerId)
     auto& playerManager = GAME_APP.GetPlayerManager();
     if (auto player = playerManager.CreatePlayer(playerId))
     {
-        playerManager.SetMyPlayer(player);
+        playerManager.SetMyPlayer(player);        
         GAME_APP.GetStateManager().RequestStateChange(StateManager::StateID::Room);
     }
 }
