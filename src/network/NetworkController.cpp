@@ -130,13 +130,12 @@ void NetworkController::GameInitialize(std::span<const uint8_t> block1, std::spa
     }
 }
 
-bool NetworkController::StartCharacterSelect() 
+void NetworkController::StartCharacterSelect() 
 {
     if (role_ == NetworkRole::Server && server_) 
     {
-        return server_->StartCharacterSelect();
+        server_->StartCharacterSelect();
     }
-    return false;
 }
 
 void NetworkController::ChangeCharSelect(uint8_t x, uint8_t y) 

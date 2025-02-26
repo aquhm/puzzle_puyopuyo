@@ -236,11 +236,11 @@ bool GameServer::PacketProcess(ClientInfo* client, std::span<const char> packet_
 }
 
 // 캐릭터 선택 관련
-bool GameServer::StartCharacterSelect() 
+void GameServer::StartCharacterSelect() 
 {
     // 캐릭터 선택 시작을 모든 클라이언트에게 통보        
     StartCharSelectPacket packet;
-    return BroadcastPacket(packet);
+    BroadcastPacket(packet);
 }
 
 void GameServer::ChangeCharSelect(uint8_t x, uint8_t y) 

@@ -74,7 +74,7 @@ public:
     void LoseGame();
 
     // 캐릭터 선택 관련
-    [[nodiscard]] bool StartCharacterSelect();
+    void StartCharacterSelect();
     void ChangeCharSelect(uint8_t x, uint8_t y);
     void DecideCharacter(uint8_t x, uint8_t y);
 

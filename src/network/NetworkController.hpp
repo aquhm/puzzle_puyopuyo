@@ -57,7 +57,7 @@ public:
 
 
     // 게임 상태 제어 함수들
-    bool StartCharacterSelect();
+    void StartCharacterSelect();
     void StartGame();
     void GameInitialize(std::span<const uint8_t> block1, std::span<const uint8_t> block2);
     void ChangeCharSelect(uint8_t x, uint8_t y);
