@@ -265,13 +265,9 @@ void CharacterSelectState::HandleCharacterSelection()
     }
     else 
     {
-
-        if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
-        {
-            auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
-            gameState->GetPlayer()->SetCharacterID(characterId);
-            NETWORK.DecideCharacter(current_pos_.x, current_pos_.y);
-        }
+        auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
+        GAME_APP.GetPlayerManager().GetMyPlayer()->SetCharacterId(characterId);
+        NETWORK.DecideCharacter(current_pos_.x, current_pos_.y);
     }
 
     is_selected_ = true;
