@@ -95,7 +95,7 @@ public:
         // 캐릭터 선택 상태 업데이트
         if (auto charSelect = static_cast<CharacterSelectState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            charSelect->SetEnemySelectPos(decide_packet.x_pos, decide_packet.y_pos);
+            charSelect->SetEnemyDecide(decide_packet.x_pos, decide_packet.y_pos);
         }
     }
 
