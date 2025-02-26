@@ -197,6 +197,11 @@ void GameApp::HandleEvents(const SDL_Event& event)
 
 void GameApp::Update() 
 {
+    if (NETWORK.IsRunning())
+    {
+        NETWORK.Update();
+    }
+
     managers_->Update(elapsed_time_);
 }
 
