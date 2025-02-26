@@ -181,12 +181,9 @@ void RoomState::Leave()
 
 bool RoomState::StartGame()
 {
-    if (NETWORK.StartCharacterSelect()) 
-    {
-        GAME_APP.GetStateManager().RequestStateChange(StateManager::StateID::CharSelect);
-        return true;
-    }
-    return false;
+    NETWORK.StartCharacterSelect();
+    GAME_APP.GetStateManager().RequestStateChange(StateManager::StateID::CharSelect);
+    return true;
 }
 
 bool RoomState::ExitGame()

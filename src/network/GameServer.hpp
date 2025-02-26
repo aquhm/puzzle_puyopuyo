@@ -64,7 +64,7 @@ public:
 
     // 패킷 전송 헬퍼 함수
     template<typename PacketType> requires std::derived_from<PacketType, PacketBase>
-    bool BroadcastPacket(const PacketType& packet, uint8_t exclude_id = 0);
+    void BroadcastPacket(const PacketType& packet, uint8_t exclude_id = 0);
                 
 
     // 게임 시작/초기화 관련
@@ -117,12 +117,11 @@ private:
 };
 
 template<typename PacketType> requires std::derived_from<PacketType, PacketBase>
-bool GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
+void GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
 {
     auto& playerManager = GAME_APP.GetPlayerManager();
     PlayerManager::PlayerMap players = playerManager.GetPlayers();
 
-    bool success = true;
     for (auto it = players.begin(); it != players.end(); ++it)
     {
         const auto& player = it->second;
@@ -131,11 +130,7 @@ bool GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
             auto packetBytes = packet.ToBytes();
             auto packet_data = std::span<const char>{ packetBytes.data(), packetBytes.size()};
 
-            if (SendMsg(player->GetNetInfo(), packet_data) == false)
-            {
-                success = false;
-            }
+            SendMsg(player->GetNetInfo(), packet_data);
         }
     }
-    return success;
 }
