@@ -12,12 +12,12 @@
 #include <filesystem>
 #include <concepts>
 
-#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_filesystem.h>
 
 #include "IManager.hpp"
 #include "../IResource.hpp"
 #include "../../resource/ResourcePathTrait.hpp"
+#include "../../utils/Logger.hpp"
 
 
 struct SDL_Renderer;
@@ -100,7 +100,7 @@ std::shared_ptr<T> ResourceManager::GetResource(const std::string& path)
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load resource '%s': %s", fullPath.c_str(), e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load resource '%s': %s", fullPath.c_str(), e.what());
         return nullptr;
     }
 }

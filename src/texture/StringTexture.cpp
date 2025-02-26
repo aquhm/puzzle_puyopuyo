@@ -6,6 +6,7 @@
 #include <SDL3/SDL_ttf.h>
 #include <SDL3/SDL_pixels.h>
 #include <Windows.h>
+#include "../utils/Logger.hpp"
 
 void StringTexture::RenderText(std::string_view text, const SDL_Color& textColor, StringEncoding encoding, FontType fontType)
 {
@@ -63,7 +64,7 @@ void StringTexture::RenderText(std::string_view text, const SDL_Color& textColor
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to render text: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to render text: %s", e.what());
     }
 }
 
@@ -159,7 +160,7 @@ void StringTexture::RenderUnicode(std::u16string_view text, const SDL_Color& tex
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to render Unicode text: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to render Unicode text: %s", e.what());
     }
 }
 

@@ -1,6 +1,6 @@
 #include "GameBoard.hpp"
 
-//#include "../block/Block.hpp"
+
 #include "../block/GroupBlock.hpp"
 #include "../block/GameGroupBlock.hpp"
 
@@ -11,6 +11,8 @@
 #include "../../texture/ImageTexture.hpp"
 #include "../../states/GameState.hpp"
 #include "../../network/NetworkController.hpp"
+
+#include "../../utils/Logger.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -53,7 +55,7 @@ bool GameBoard::Initialize(float xPos, float yPos, std::list<std::shared_ptr<Blo
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GameBoard initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "GameBoard initialization failed: %s", e.what());
         return false;
     }
 }

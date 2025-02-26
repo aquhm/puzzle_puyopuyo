@@ -2,6 +2,7 @@
 #include "../texture/StringTexture.hpp"
 #include "../core/GameApp.hpp"
 #include "../utils/StringUtils.hpp"
+#include "../utils/Logger.hpp"
 
 #include <stdexcept>
 #include <format>
@@ -37,7 +38,7 @@ bool TextBox::Init(float x, float y, float width, float height)
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize TextBox: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize TextBox: %s", e.what());
         return false;
     }
 }
@@ -198,7 +199,7 @@ void TextBox::UpdateDrawBox()
         }
     }
     catch (const std::exception& e) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION,
             "Failed to update text box: %s", e.what());
     }
 }

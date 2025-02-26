@@ -17,14 +17,26 @@
 
 #include <format>
 #include <exception>
-#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_system.h>
+#include "../utils/Logger.hpp"
 
 
 LoginState::LoginState()
     : backgrounds_{}
     , ui_elements_{}
 {
+    InitializePacketHandlers();
+}
+
+void LoginState::InitializePacketHandlers()
+{
+    packet_processor_.RegisterHandler<GiveIdPacket>(
+        PacketType::GiveId,
+        [this](uint8_t connectionId, const GiveIdPacket* packet) 
+        {
+            HandleGiveId(connectionId);
+        }
+    );
 }
 
 bool LoginState::Init()
@@ -46,7 +58,7 @@ bool LoginState::Init()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoginState initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "LoginState initialization failed: %s", e.what());
         return false;
     }
 }
@@ -65,7 +77,7 @@ bool LoginState::LoadBackgrounds()
         auto texture = ImageTexture::Create(bg_paths[i]);
         if (texture == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load background texture: %s", bg_paths[i].c_str());
+            SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load background texture: %s", bg_paths[i].c_str());
             return false;
         }
         backgrounds_[i] = std::move(texture);
@@ -80,7 +92,7 @@ bool LoginState::InitializeUI()
 
     if (!buttonTexture) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get button texture");
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to get button texture");
         return false;
     }
 
@@ -233,24 +245,9 @@ void LoginState::HandleKeyboardEvent(const SDL_Event& event)
     }
 }
 
-void LoginState::HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length)
+void LoginState::HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length)
 {
-    const auto* packet = reinterpret_cast<const PacketBase*>(message.data());
-    if (!packet || length < sizeof(PacketBase)) 
-    {
-        return;
-    }
-
-    switch (packet->GetType()) 
-    {
-    case PacketType::GiveId:
-        if (length >= sizeof(GiveIdPacket)) 
-        {
-            const auto* give_id_packet = reinterpret_cast<const GiveIdPacket*>(packet);
-            HandleGiveId(give_id_packet->player_id);
-        }
-        break;
-    }
+    packet_processor_.ProcessPacket(connectionId, data, length);
 }
 
 void LoginState::HandleGiveId(uint8_t playerId)

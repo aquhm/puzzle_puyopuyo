@@ -17,7 +17,6 @@
 
 #include <format>
 #include <unordered_map>
-#include <SDL3/SDL_log.h>
 
 
 

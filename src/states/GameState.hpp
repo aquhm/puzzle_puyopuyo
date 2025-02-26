@@ -22,6 +22,7 @@
 #include "../game/block/Block.hpp"
 #include "../network/packets/GamePackets.hpp"
 #include "../network/NetworkController.hpp"
+#include "../network/PacketProcessor.hpp"
 
 
 class NetworkController;
@@ -42,6 +43,7 @@ class ResultView;
 class Button;
 class ImageTexture;
 class GamePlayer;
+class PacketProcessor;
 
 namespace GameStateDetail 
 {
@@ -101,7 +103,7 @@ public:
     void Render() override;
     void Release() override;
     void HandleEvent(const SDL_Event& event) override;
-    void HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length) override;
+    void HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length) override;
 
     // 게임 상태 조회
     [[nodiscard]] std::string_view GetStateName() const override { return "Game"; }
@@ -213,7 +215,7 @@ private:
     void HandleNetworkCommand(const std::string_view& command);
     bool SendChatMsg();
 
-    void InitializePacketProcessors();
+    void InitializePacketHandlers();
 
     template<typename T>
     void ProcessTypedPacket(uint8_t connectionId, std::span<const char> data, void (GameState::* handler)(uint8_t, const T*));
@@ -301,7 +303,7 @@ private:
     bool isNetworkGame_{ false };
     uint8_t localPlayerId_{ 0 };
 
-    std::unordered_map<PacketType, std::function<void(uint8_t, std::span<const char>)>> packet_processors_;
+    PacketProcessor packet_processor_{};
 };
 
 template<typename T>

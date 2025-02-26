@@ -55,7 +55,7 @@ GameState::GameState()
 {
     draw_objects_.reserve(100);
 
-    InitializePacketProcessors();
+    InitializePacketHandlers();
 }
 
 GameState::~GameState() = default;
@@ -1777,76 +1777,110 @@ void GameState::UpdateInterruptBlockView()
     }
 }
 
-void GameState::HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length)
+void GameState::HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length)
 {
-    if (length < sizeof(PacketHeader))
-    {
-        LOGGER.Warning("Received invalid network message size");
-        return;
-    }
-
-    PacketHeader header;
-    std::memcpy(&header, message.data(), sizeof(header));
-
-    PacketType type = header.type;
-    uint32_t size = header.size;
-
-    if (length < size) 
-    {
-        LOGGER.Warning("Incomplete packet received: expected {}, got {}", size, length);
-        return;
-    }
-
-    auto it = packet_processors_.find(type);
-    if (it != packet_processors_.end()) 
-    {
-        // 패킷 본문 처리
-        const char* body = message.data() + sizeof(PacketHeader);
-        size_t bodySize = size - sizeof(PacketHeader);
-        it->second(connectionId, std::span<const char>(body, bodySize));
-    }
-    else 
-    {
-        LOGGER.Warning("Unknown packet type: {}", static_cast<int>(type));
-    }
+    packet_processor_.ProcessPacket(connectionId, data, length);
 }
 
-void GameState::InitializePacketProcessors()
+void GameState::InitializePacketHandlers()
 {
-    packet_processors_[PacketType::InitializeGame] = [this](uint8_t connectionId, std::span<const char> data)
-        {
-            ProcessTypedPacket<GameInitPacket>(connectionId, data, &GameState::HandleGameInitialize);
-        };
 
-    packet_processors_[PacketType::AddNewBlock] = [this](uint8_t connectionId, std::span<const char> data)
-        {
-            ProcessTypedPacket<AddNewBlockPacket>(connectionId, data, &GameState::HandleAddNewBlock);
-        };
+    packet_processor_.RegisterHandler<GameInitPacket>(
+        PacketType::InitializeGame,
+        [this](uint8_t connectionId, const GameInitPacket* packet) {
+            HandleGameInitialize(connectionId, packet);
+        }
+    );
 
-    packet_processors_[PacketType::UpdateBlockMove] = [this](uint8_t connectionId, std::span<const char> data)
-        {
-            ProcessTypedPacket<MoveBlockPacket>(connectionId, data, &GameState::HandleUpdateBlockMove);
-        };
+    packet_processor_.RegisterHandler<AddNewBlockPacket>(
+        PacketType::AddNewBlock,
+        [this](uint8_t connectionId, const AddNewBlockPacket* packet) {
+            HandleAddNewBlock(connectionId, packet);
+        }
+    );
 
-    packet_processors_[PacketType::UpdateBlockRotate] = [this](uint8_t connectionId, std::span<const char> data)
-        {
-            ProcessTypedPacket<RotateBlockPacket>(connectionId, data, &GameState::HandleBlockRotate);
-        };
+    packet_processor_.RegisterHandler<MoveBlockPacket>(
+        PacketType::UpdateBlockMove,
+        [this](uint8_t connectionId, const MoveBlockPacket* packet) {
+            HandleUpdateBlockMove(connectionId, packet);
+        }
+    );
 
-    packet_processors_[PacketType::StartGame] = [this](uint8_t connectionId, std::span<const char> data)
-        {
+    packet_processor_.RegisterHandler<RotateBlockPacket>(
+        PacketType::UpdateBlockRotate,
+        [this](uint8_t connectionId, const RotateBlockPacket* packet) {
+            HandleBlockRotate(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<PacketBase>(
+        PacketType::StartGame,
+        [this](uint8_t connectionId, const PacketBase* packet) {
             HandleStartGame();
-        };
+        }
+    );
 
-    packet_processors_[PacketType::CheckBlockState] = [this](uint8_t connectionId, std::span<const char> data)
-        {
-            ProcessTypedPacket<CheckBlockStatePacket>(connectionId, data, &GameState::HandleCheckBlockState);
-        };
+    packet_processor_.RegisterHandler<CheckBlockStatePacket>(
+        PacketType::CheckBlockState,
+        [this](uint8_t connectionId, const CheckBlockStatePacket* packet) {
+            HandleCheckBlockState(connectionId, packet);
+        }
+    );
 
-    packet_processors_[PacketType::GameOver] = [this](uint8_t connectionId, std::span<const char> data)
-        {
+    packet_processor_.RegisterHandler<PacketBase>(
+        PacketType::GameOver,
+        [this](uint8_t connectionId, const PacketBase* packet) {
             HandleGameOver();
-        };
+        }
+    );
+
+    packet_processor_.RegisterHandler<FallingBlockPacket>(
+        PacketType::UpdateBlockFalling,
+        [this](uint8_t connectionId, const FallingBlockPacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<ChangeBlockStatePacket>(
+        PacketType::ChangeBlockState,
+        [this](uint8_t connectionId, const ChangeBlockStatePacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<AttackInterruptPacket>(
+        PacketType::AttackInterruptBlock,
+        [this](uint8_t connectionId, const AttackInterruptPacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<DefenseInterruptPacket>(
+        PacketType::DefenseInterruptBlock,
+        [this](uint8_t connectionId, const DefenseInterruptPacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<AddInterruptBlockPacket>(
+        PacketType::AddInterruptBlock,
+        [this](uint8_t connectionId, const AddInterruptBlockPacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<StopComboPacket>(
+        PacketType::StopComboAttack,
+        [this](uint8_t connectionId, const StopComboPacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<LoseGamePacket>(
+        PacketType::LoseGame,
+        [this](uint8_t connectionId, const LoseGamePacket* packet) {
+        }
+    );
+
+    packet_processor_.RegisterHandler<RestartGamePacket>(
+        PacketType::RestartGame,
+        [this](uint8_t connectionId, const RestartGamePacket* packet) {
+        }
+    );
 }
 
 

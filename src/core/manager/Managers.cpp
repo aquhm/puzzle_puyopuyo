@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_log.h>
 
 #include "../IRenderable.hpp"
 #include "../IEventHandler.hpp"
@@ -13,6 +12,7 @@
 #include "MapManager.hpp"
 #include "ParticleManager.hpp"
 #include "PlayerManager.hpp"
+#include "../../utils/Logger.hpp"
 
 
 bool Managers::CreateManagers() 
@@ -49,7 +49,7 @@ bool Managers::CreateManagers()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "매니저 생성 실패: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "매니저 생성 실패: %s", e.what());
         return false;
     }
 }
@@ -69,7 +69,7 @@ bool Managers::Initialize()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "매니저 초기화 실패: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "매니저 초기화 실패: %s", e.what());
         return false;
     }
 }

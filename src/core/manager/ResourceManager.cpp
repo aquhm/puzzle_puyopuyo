@@ -5,6 +5,7 @@
 #include <SDL3/SDL_image.h>
 #include <SDL3/SDL_render.h>
 #include <format>
+#include "../../utils/Logger.hpp"
 
 bool ResourceManager::Initialize()
 {
@@ -15,7 +16,7 @@ bool ResourceManager::Initialize()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ResourceManager initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "ResourceManager initialization failed: %s", e.what());
         return false;
     }
 }

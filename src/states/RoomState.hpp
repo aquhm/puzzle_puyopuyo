@@ -6,14 +6,18 @@
  */
 
 #include "BaseState.hpp"
+#include "../network/PacketProcessor.hpp"
+#include "../network/packets/GamePackets.hpp"
+#include "../ui/EditBox.hpp"
+
 #include <array>
 #include <memory>
 #include <string_view>
 
-#include "../ui/EditBox.hpp"
 
 class ImageTexture;
 class Button;
+class PacketProcessor;
 
 class RoomState final : public BaseState
 {
@@ -33,7 +37,7 @@ public:
     void Render() override;
     void Release()override;
     void HandleEvent(const SDL_Event& event) override;
-    void HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length) override;
+    void HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length) override;
 
     [[nodiscard]] std::string_view GetStateName() const override
     {
@@ -54,18 +58,18 @@ private:
     bool SendChatMessage();
 
     // 네트워크 메시지 처리
-    void HandleChatMessage(std::string_view message);
-    void HandlePlayerJoined(uint8_t playerId);
-    void HandlePlayerLeft(uint8_t playerId);
-    void HandleGameStart();
+    void HandleChatMessage(uint8_t connectionId, const ChatMessagePacket* packet);
+    void HandlePlayerJoined(uint8_t connectionId, const AddPlayerPacket* packet);
+    void HandlePlayerLeft(uint8_t connectionId, const RemovePlayerInRoomPacket* packet);
+    void HandleGameStart(uint8_t connectionId, const PacketBase* packet);
 
-    // 렌더링 관련
     void RenderBackground() const;
     void RenderUI() const;
     void UpdateBackgroundAnimation(float deltaTime);
 
-    // 유틸리티 함수
     [[nodiscard]] EditBox* GetChatBox() const { return ui_elements_.chat_box.get(); }
+
+    void InitializePacketHandlers();
 
 private:
     static constexpr size_t BACKGROUND_COUNT = 10;
@@ -90,5 +94,7 @@ private:
     }ui_elements_;
 
     std::array<std::shared_ptr<ImageTexture>, BACKGROUND_COUNT> backgrounds_;
+
+    PacketProcessor packet_processor_{};
 
 };

@@ -18,7 +18,7 @@ bool StateManager::Initialize()
 {
     if (initialized_) 
     {
-        LOGGER.Warning("StateManager is already initialized");
+        SDL_LOG_WARN(SDL_LOG_CATEGORY_ERROR, "StateManager is already initialized");
         return true;
     }
 

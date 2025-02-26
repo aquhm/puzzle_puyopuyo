@@ -8,8 +8,8 @@
 
 #include <cmath>
 #include <stdexcept>
-#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_rect.h>
+#include "../../utils/Logger.hpp"
 
 BulletEffect::BulletEffect() 
 {
@@ -31,7 +31,7 @@ bool BulletEffect::Initialize(const SDL_FPoint& start_pos, const SDL_FPoint& tar
         
     if (!texture_) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load bullet effect texture");
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load bullet effect texture");
         return false;
     }
 

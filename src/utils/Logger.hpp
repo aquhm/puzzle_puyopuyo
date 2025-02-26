@@ -6,6 +6,11 @@
 #include <source_location>
 #include <format>
 #include <chrono>
+#include <cstdio>
+#include <stdexcept>
+#include <Windows.h>
+
+#include <SDL3/SDL_log.h>
 
 enum class LogLevel {
     Debug,
@@ -23,6 +28,9 @@ public:
     Logger& operator=(const Logger&) = delete;
     Logger(Logger&&) = delete;
     Logger& operator=(Logger&&) = delete;
+
+    static void SDLLogOutputFunction(void* userdata, int category, SDL_LogPriority priority, const char* message);
+    void InitializeSDLLogging();
 
     template<typename... Args>
     void Debug(std::format_string<Args...> fmt, Args&&... args);
@@ -49,7 +57,13 @@ public:
     void SetLogToDebugger(bool enable) { log_to_debugger_ = enable; }
     void SetLogLevel(LogLevel level) { log_level_ = level; }
 
-   
+    // SDL 로그 레벨에 맞는 함수들
+    void SDLLogVerbose(int category, const char* fmt, ...);
+    void SDLLogDebug(int category, const char* fmt, ...);
+    void SDLLogInfo(int category, const char* fmt, ...);
+    void SDLLogWarn(int category, const char* fmt, ...);
+    void SDLLogError(int category, const char* fmt, ...);
+    void SDLLogCritical(int category, const char* fmt, ...);
 
 private:
     Logger() = default;
@@ -170,3 +184,10 @@ void Logger::Log(LogLevel level,
 #define LOG_WARNING(...) LOGGER.Warning(__VA_ARGS__)
 #define LOG_ERROR(...) LOGGER.Error(__VA_ARGS__)
 #define LOG_CRITICAL(...) LOGGER.Critical(__VA_ARGS__)
+
+#define SDL_LOG_VERBOSE(category, ...) LOGGER.SDLLogVerbose(category, __VA_ARGS__)
+#define SDL_LOG_DEBUG(category, ...) LOGGER.SDLLogDebug(category, __VA_ARGS__)
+#define SDL_LOG_INFO(category, ...) LOGGER.SDLLogInfo(category, __VA_ARGS__)
+#define SDL_LOG_WARN(category, ...) LOGGER.SDLLogWarn(category, __VA_ARGS__)
+#define SDL_LOG_ERROR(category, ...) LOGGER.SDLLogError(category, __VA_ARGS__)
+#define SDL_LOG_CRITICAL(category, ...) LOGGER.SDLLogCritical(category, __VA_ARGS__)

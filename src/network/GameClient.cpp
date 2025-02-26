@@ -6,7 +6,7 @@
 
 #include <format>
 #include <algorithm>
-#include <SDL3/SDL_log.h>
+#include "../utils/Logger.hpp"
 
 
 
@@ -14,7 +14,7 @@ bool GameClient::Start(HWND hwnd)
 {
     if (!NetClient::Start(hwnd))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NetClient Start failed");
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "NetClient Start failed");
         return false;
     }
     return true;

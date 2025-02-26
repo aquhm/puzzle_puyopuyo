@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include "../../utils/Logger.hpp"
 
 
 ParticleManager::~ParticleManager() 
@@ -31,7 +32,7 @@ bool ParticleManager::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ParticleManager initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "ParticleManager initialization failed: %s", e.what());
         return false;
     }
 }

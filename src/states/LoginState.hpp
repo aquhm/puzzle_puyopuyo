@@ -5,13 +5,16 @@
  *
  */
 #include "BaseState.hpp"
+#include "../ui/Button.hpp"
+#include "../network/PacketProcessor.hpp"
+#include "../network/packets/GamePackets.hpp"
+
 #include <array>
 #include <memory>
 
-#include "../ui/Button.hpp"
-
 class ImageTexture;
 class TextBox;
+class PacketProcessor;
 
 class LoginState final : public BaseState
 {
@@ -34,7 +37,7 @@ public:
     void Render() override;
     void Release()override;
     void HandleEvent(const SDL_Event& event) override;
-    void HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length) override;
+    void HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length) override;
 
     [[nodiscard]] std::string_view GetStateName() const override { return "Login"; }
 
@@ -51,8 +54,9 @@ private:
 
     bool RequireConnect();      // 서버 접속 요청
     bool RequireInitGameSrv();  // 게임 서버 생성
-
     void HandleGiveId(uint8_t playerId);
+
+    void InitializePacketHandlers();
 
 private:    
 
@@ -64,4 +68,6 @@ private:
     } ui_elements_;
 
     std::array<std::shared_ptr<ImageTexture>, BACKGROUND_COUNT> backgrounds_;
+
+    PacketProcessor packet_processor_{};
 };

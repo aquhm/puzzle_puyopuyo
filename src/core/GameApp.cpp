@@ -21,13 +21,12 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_system.h>
 #include <SDL3/SDL_init.h>
-#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_properties.h >
 
 #include <stdexcept>
 #include <format>
 #include "../network/NetworkController.hpp"
-
+#include "../utils/Logger.hpp"
 
 GameApp& GameApp::GetInstance() 
 {
@@ -61,7 +60,7 @@ bool GameApp::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "초기화 실패: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "초기화 실패: %s", e.what());
         return false;
     }
 }
@@ -216,7 +215,7 @@ bool GameApp::SetFullscreen(bool enable)
 
     if (SDL_SetWindowFullscreen(window_.get(), enable) == false)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "전체화면 설정 실패: %s", SDL_GetError());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_VIDEO, "전체화면 설정 실패: %s", SDL_GetError());
         return false;
     } 
 

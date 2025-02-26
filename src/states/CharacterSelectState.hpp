@@ -1,10 +1,14 @@
 #pragma once
 
 #include "BaseState.hpp"
+#include "../network/PacketProcessor.hpp"
+#include "../network/packets/GamePackets.hpp"
+
 #include <memory>
 #include <array>
 #include <string>
 #include <span>
+
 
 class ImageTexture;
 class Button;
@@ -29,7 +33,7 @@ public:
     static constexpr int CHAR_SELECT_BG_SPACING = 3;
     static constexpr int GAME_CHARACTER_COUNT = 22;
 
-    CharacterSelectState() = default;
+    CharacterSelectState();
     ~CharacterSelectState() override = default;
 
     CharacterSelectState(const CharacterSelectState&) = delete;
@@ -44,7 +48,7 @@ public:
    void Render() override;
    void Release() override;
    void HandleEvent(const SDL_Event& event) override;
-   void HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length) override;
+   void HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length) override;
    [[nodiscard]] std::string_view GetStateName() const override { return "CharSelect"; }
 
     // 게임 상태 제어
@@ -72,6 +76,12 @@ private:
     //void UpdateSelection(const SDL_Event& event);
     void HandleCharacterSelection();
 
+    void HandleChangeCharSelect(uint8_t connectionId, const ChangeCharSelectPacket* packet);
+    void HandleDecideCharSelect(uint8_t connectionId, const DecideCharacterPacket* packet);
+    void HandleStartGame(uint8_t connectionId, const PacketBase* packet);
+
+    void InitializePacketHandlers();
+
 private:
     // 리소스 관리
     std::array<std::shared_ptr<ImageTexture>, 2> backgrounds_;
@@ -91,4 +101,5 @@ private:
     bool is_selected_{ false };
     bool is_enemy_selected_{ false };
 
+    PacketProcessor packet_processor_{};
 };

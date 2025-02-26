@@ -59,6 +59,7 @@
     <ClInclude Include="src\network\GameClient.hpp" />
     <ClInclude Include="src\network\GameServer.hpp" />
     <ClInclude Include="src\network\NetworkController.hpp" />
+    <ClInclude Include="src\network\PacketProcessor.hpp" />
     <ClInclude Include="src\network\packets\GamePackets.hpp" />
     <ClInclude Include="src\network\packets\IPacket.hpp" />
     <ClInclude Include="src\network\NetClient.hpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="src\network\NetClient.cpp" />
     <ClCompile Include="src\network\NetServer.cpp" />
     <ClCompile Include="src\network\NetworkController.cpp" />
+    <ClCompile Include="src\network\PacketProcessor.cpp" />
     <ClCompile Include="src\network\player\Player.cpp" />
     <ClCompile Include="src\core\manager\PlayerManager.cpp" />
     <ClCompile Include="src\network\RingBuffer.cpp" />

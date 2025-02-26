@@ -4,8 +4,7 @@
 #include "../../network/player/Player.hpp"
 #include "../../network/NetworkController.hpp"
 #include "../../network/packets/GamePackets.hpp"
-
-#include <SDL3/SDL_log.h>
+#include "../../utils/Logger.hpp"
 
 
 bool PlayerManager::Initialize() 
@@ -17,7 +16,7 @@ bool PlayerManager::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "PlayerManager 초기화 실패: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "PlayerManager 초기화 실패: %s", e.what());
         return false;
     }
 }

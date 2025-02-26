@@ -7,7 +7,7 @@
 #include <chrono>
 #include <algorithm>
 #include <stdexcept>
-#include <SDL3/SDL_log.h>
+#include "../../utils/Logger.hpp"
 
 bool MapManager::Initialize() 
 {
@@ -19,7 +19,7 @@ bool MapManager::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "MapManager initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "MapManager initialization failed: %s", e.what());
         return false;
     }
 }

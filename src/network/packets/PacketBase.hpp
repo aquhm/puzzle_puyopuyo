@@ -10,7 +10,6 @@ struct PacketHeader
     uint32_t size;      // 헤더를 포함한 전체 패킷 크기
     PacketType type;    // 패킷 타입
 };
-
 #pragma pack(pop)
 
 class PacketBase

@@ -6,6 +6,7 @@
 
 #include <format>
 #include <stdexcept>
+#include "../utils/Logger.hpp"
 
 EditBox::EditBox()
     : TextBox()
@@ -35,7 +36,7 @@ bool EditBox::Init(float x, float y, float width, float height)
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize EditBox: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize EditBox: %s", e.what());
         return false;
     }
 }
@@ -220,7 +221,7 @@ void EditBox::InputContent(std::string_view text)
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to add message: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to add message: %s", e.what());
     }
 }
 

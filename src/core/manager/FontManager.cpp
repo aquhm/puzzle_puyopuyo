@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cassert>
 #include "../../utils/PathUtil.hpp"
+#include "../../utils/Logger.hpp"
 
 void FontManager::FontDeleter::operator()(TTF_Font* font) const
 {
@@ -33,8 +34,7 @@ bool FontManager::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-            "Font initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Font initialization failed: %s", e.what());
         return false;
     }
 }
@@ -66,7 +66,7 @@ void FontManager::LoadFont(FontType type, const std::string& filename, float siz
 {
     if (!IsValidFontType(type)) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid font type");
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Invalid font type");
         return;
     }
 
@@ -87,7 +87,7 @@ void FontManager::LoadFont(FontType type, const std::string& filename, float siz
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Font loading failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Font loading failed: %s", e.what());
     }
 }
 

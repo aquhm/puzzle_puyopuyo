@@ -14,7 +14,7 @@
 #include "../texture/ImageTexture.hpp"
 
 #include <format>
-#include <SDL3/SDL_log.h>
+#include "../utils/Logger.hpp"
 
 
 RoomState::RoomState()
@@ -22,6 +22,38 @@ RoomState::RoomState()
     , ui_elements_{}
     , background_animation_{}
 {
+    InitializePacketHandlers();
+}
+
+void RoomState::InitializePacketHandlers()
+{
+    packet_processor_.RegisterHandler<ChatMessagePacket>(
+        PacketType::ChatMessage,
+        [this](uint8_t connectionId, const ChatMessagePacket* packet) {
+            HandleChatMessage(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<AddPlayerPacket>(
+        PacketType::AddPlayer,
+        [this](uint8_t connectionId, const AddPlayerPacket* packet) {
+            HandlePlayerJoined(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<RemovePlayerInRoomPacket>(
+        PacketType::RemovePlayerInRoom,
+        [this](uint8_t connectionId, const RemovePlayerInRoomPacket* packet) {
+            HandlePlayerLeft(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<PacketBase>(
+        PacketType::StartCharSelect,
+        [this](uint8_t connectionId, const PacketBase* packet) {
+            HandleGameStart(connectionId, packet);
+        }
+    );
 }
 
 bool RoomState::Init()
@@ -43,7 +75,7 @@ bool RoomState::Init()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "RoomState initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "RoomState initialization failed: %s", e.what());
         return false;
     }
 }
@@ -66,7 +98,7 @@ bool RoomState::LoadBackgrounds()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load backgrounds: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load backgrounds: %s", e.what());
         return false;
     }
 }
@@ -77,7 +109,7 @@ bool RoomState::InitializeUI()
     auto button_texture = ImageTexture::Create("UI/BUTTON/button.png");
     if (!button_texture) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get button texture");
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to get button texture");
         return false;
     }
 
@@ -296,67 +328,42 @@ void RoomState::HandleKeyboardEvent(const SDL_Event& event)
 }
 
 
-void RoomState::HandleNetworkMessage(uint8_t connectionId, std::string_view message, uint32_t length)
+void RoomState::HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length)
 {
-    const auto* packet = reinterpret_cast<const PacketBase*>(message.data());
-    if (!packet || length < sizeof(PacketBase)) {
-        return;
-    }
-
-    switch (packet->GetType()) {
-    case PacketType::ChatMessage:
-        if (length >= sizeof(ChatMessagePacket)) {
-            const auto* chat_packet = reinterpret_cast<const ChatMessagePacket*>(packet);
-            HandleChatMessage(chat_packet->message.data());
-        }
-        break;
-
-    case PacketType::AddPlayer:
-        if (length >= sizeof(AddPlayerPacket)) {
-            const auto* player_packet = reinterpret_cast<const AddPlayerPacket*>(packet);
-            HandlePlayerJoined(player_packet->player_id);
-        }
-        break;
-
-    case PacketType::RemovePlayerInRoom:
-        if (length >= sizeof(RemovePlayerInRoomPacket)) {
-            const auto* remove_packet = reinterpret_cast<const RemovePlayerInRoomPacket*>(packet);
-            HandlePlayerLeft(remove_packet->id);
-        }
-        break;
-
-    case PacketType::StartCharSelect:
-        HandleGameStart();
-        break;
-    }
+    packet_processor_.ProcessPacket(connectionId, data, length);
 }
 
-void RoomState::HandleChatMessage(std::string_view message)
+void RoomState::HandleChatMessage(uint8_t connectionId, const ChatMessagePacket* packet)
 {
-    if (ui_elements_.chat_box) {
-        ui_elements_.chat_box->InputContent(message);
-    }
-}
-
-void RoomState::HandlePlayerJoined(uint8_t playerId)
-{
-    if (const auto player = GAME_APP.GetPlayerManager().CreatePlayer(playerId)) 
+    if (ui_elements_.chat_box) 
     {
-        auto message = std::format(" {}´ÔÀÌ ÀÔÀåÇÏ¼Ì½À´Ï´Ù.", playerId);
-        HandleChatMessage(message);
+        ui_elements_.chat_box->InputContent(packet->message.data());
     }
 }
 
-void RoomState::HandlePlayerLeft(uint8_t playerId)
+void RoomState::HandlePlayerJoined(uint8_t connectionId, const AddPlayerPacket* packet)
 {
-    if (GAME_APP.GetPlayerManager().RemovePlayer(playerId)) 
+    if (const auto player = GAME_APP.GetPlayerManager().CreatePlayer(packet->player_id))
     {
-        auto message = std::format(" {}´ÔÀÌ ÅðÀåÇÏ¼Ì½À´Ï´Ù.", playerId);
-        HandleChatMessage(message);
+        auto message = std::format(" {}´ÔÀÌ ÀÔÀåÇÏ¼Ì½À´Ï´Ù.", packet->player_id);
+        if (ui_elements_.chat_box) {
+            ui_elements_.chat_box->InputContent(message);
+        }
     }
 }
 
-void RoomState::HandleGameStart()
+void RoomState::HandlePlayerLeft(uint8_t connectionId, const RemovePlayerInRoomPacket* packet)
+{
+    if (GAME_APP.GetPlayerManager().RemovePlayer(packet->id))
+    {
+        auto message = std::format(" {}´ÔÀÌ ÅðÀåÇÏ¼Ì½À´Ï´Ù.", packet->id);
+        if (ui_elements_.chat_box) {
+            ui_elements_.chat_box->InputContent(message);
+        }
+    }
+}
+
+void RoomState::HandleGameStart(uint8_t connectionId, const PacketBase* packet)
 {
     GAME_APP.GetStateManager().RequestStateChange(StateManager::StateID::CharSelect);
 }

@@ -17,7 +17,37 @@
 #include <stdexcept>
 #include <random>
 #include "GameState.hpp"
+#include "../utils/Logger.hpp"
 
+
+CharacterSelectState::CharacterSelectState()
+{
+    InitializePacketHandlers();
+}
+
+void CharacterSelectState::InitializePacketHandlers()
+{
+    packet_processor_.RegisterHandler<ChangeCharSelectPacket>(
+        PacketType::ChangeCharSelect,
+        [this](uint8_t connectionId, const ChangeCharSelectPacket* packet) {
+            HandleChangeCharSelect(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<DecideCharacterPacket>(
+        PacketType::DecideCharSelect,
+        [this](uint8_t connectionId, const DecideCharacterPacket* packet) {
+            HandleDecideCharSelect(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<PacketBase>(
+        PacketType::StartGame,
+        [this](uint8_t connectionId, const PacketBase* packet) {
+            HandleStartGame(connectionId, packet);
+        }
+    );
+}
 
 bool CharacterSelectState::Init()
 {
@@ -116,7 +146,7 @@ bool CharacterSelectState::Init()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "CharacterSelect initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "CharacterSelect initialization failed: %s", e.what());
         return false;
     }
 }
@@ -172,16 +202,7 @@ void CharacterSelectState::HandleEvent(const SDL_Event& event)
         if (!is_selected_) {
             HandleKeyInput(event.key.key);
         }
-        break;
-        //TODO
-   /* case SDL_EVENT_SYSWM:
-        if (e.syswm.msg->msg.win.msg == SDL_USEREVENT_SOCK) {
-            NETWORK.ProcessReceived(
-                e.syswm.msg->msg.win.wParam,
-                e.syswm.msg->msg.win.lParam);
-        }
-        break;
-    }*/
+        break; 
     }
 }
 
@@ -440,39 +461,31 @@ bool CharacterSelectState::RequireGameStart()
     return true;    
 }
 
-void CharacterSelectState::HandleNetworkMessage(uint8_t connectIdx, std::string_view message, uint32_t length)
+void CharacterSelectState::HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length)
 {
-    const auto msg = reinterpret_cast<const PacketBase*>(message.data());
+    packet_processor_.ProcessPacket(connectionId, data, length);
+}
 
-    switch (msg->GetType())
+void CharacterSelectState::HandleChangeCharSelect(uint8_t connectionId, const ChangeCharSelectPacket* packet)
+{
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
-    case PacketType::ChangeCharSelect:
-    {
-        const auto* packet = reinterpret_cast<const ChangeCharSelectPacket*>(msg);
-        if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id)) 
-        {
-            SetEnemySelectPos(packet->x_pos, packet->y_pos);
-        }
-        break;
+        SetEnemySelectPos(packet->x_pos, packet->y_pos);
     }
+}
 
-    case PacketType::DecideCharSelect:
+void CharacterSelectState::HandleDecideCharSelect(uint8_t connectionId, const DecideCharacterPacket* packet)
+{
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
-        const auto* packet = reinterpret_cast<const DecideCharacterPacket*>(msg);
-        if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id)) 
-        {
-            SetEnemyDecide(packet->x_pos, packet->y_pos);
-            player->SetCharacterId(current_pos_.y * 7 + current_pos_.x);
-        }
-        break;
+        SetEnemyDecide(packet->x_pos, packet->y_pos);
+        player->SetCharacterId(packet->y_pos * 7 + packet->x_pos);
     }
+}
 
-    case PacketType::StartGame:
-    {
-        GAME_APP.GetStateManager().ChangeState(StateManager::StateID::Game);
-        break;
-    }
-    }
+void CharacterSelectState::HandleStartGame(uint8_t connectionId, const PacketBase* packet)
+{
+    GAME_APP.GetStateManager().ChangeState(StateManager::StateID::Game);
 }
 
 bool CharacterSelectState::CanMoveDown() 
@@ -544,7 +557,7 @@ bool CharacterSelectState::LoadBackgrounds()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load backgrounds: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load backgrounds: %s", e.what());
         return false;
     }
 }
@@ -602,7 +615,7 @@ bool CharacterSelectState::LoadCharacterResources()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load character resources: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load character resources: %s", e.what());
         return false;
     }
 }
@@ -648,7 +661,7 @@ bool CharacterSelectState::LoadUIElements()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load UI elements: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load UI elements: %s", e.what());
         return false;
     }
 }

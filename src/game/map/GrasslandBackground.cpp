@@ -2,6 +2,7 @@
 #include "../../texture/ImageTexture.hpp"
 #include "../../core/GameUtils.hpp"
 #include <format>
+#include "../../utils/Logger.hpp"
 
 void GrasslandParticleSystem::SpawnParticle(BGParticle& particle)
 {
@@ -93,7 +94,7 @@ bool GrasslandBackground::LoadEffectTextures()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load effect texture: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load effect texture: %s", e.what());
         return false;
     }
 }

@@ -8,11 +8,13 @@
 #include "../../game/system/GamePlayer.hpp"
 #include "../particles/BgParticleSystem.hpp"
 #include "../../core/GameUtils.hpp"
+#include "../../utils/Logger.hpp"
 
 
 #include <format>
 #include <stdexcept>
 #include <cmath>
+
 
 GameBackground::GameBackground()
     : render_target_(nullptr, SDL_DestroyTexture)
@@ -47,7 +49,7 @@ bool GameBackground::Initialize()
     }
     catch (const std::exception& e) 
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Background initialization failed: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Background initialization failed: %s", e.what());
         return false;
     }
 }
@@ -88,7 +90,7 @@ bool GameBackground::LoadBackgroundTextures()
     }
     catch (const std::exception& e)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load background textures: %s", e.what());
+        SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to load background textures: %s", e.what());
         return false;
     }
 }
