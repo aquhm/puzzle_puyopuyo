@@ -48,9 +48,9 @@ void RoomState::InitializePacketHandlers()
         }
     );
 
-    packet_processor_.RegisterHandler<PacketBase>(
+    packet_processor_.RegisterHandler<StartCharSelectPacket>(
         PacketType::StartCharSelect,
-        [this](uint8_t connectionId, const PacketBase* packet) {
+        [this](uint8_t connectionId, const StartCharSelectPacket* packet) {
             HandleGameStart(connectionId, packet);
         }
     );
