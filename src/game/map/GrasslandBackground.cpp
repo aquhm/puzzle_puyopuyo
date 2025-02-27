@@ -3,6 +3,7 @@
 #include "../../core/GameUtils.hpp"
 #include <format>
 #include "../../utils/Logger.hpp"
+#include "../../utils/PathUtil.hpp"
 
 void GrasslandParticleSystem::SpawnParticle(BGParticle& particle)
 {
@@ -76,7 +77,9 @@ bool GrasslandBackground::LoadEffectTextures()
 {
     try
     {
-        auto effect_path = std::format("{}{:02d}/op{:02d}_00.png", file_path_, map_index_, map_index_);
+        std::string bgPath = PathUtil::GetBgPath();
+
+        auto effect_path = std::format("{}/bg{:02d}/op{:02d}_00.png", bgPath, map_index_, map_index_);
         effect_texture_ = ImageTexture::Create(effect_path);
 
         if (!effect_texture_)

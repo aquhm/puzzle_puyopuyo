@@ -78,7 +78,6 @@ protected:
     SDL_FPoint player_direction_vector_;
 
     uint8_t map_index_{};
-    std::string file_path_{ "./Image/BG/BG" };
     float accumulated_time_{ 0.0f };
     bool is_initialized_{ false };    
 };

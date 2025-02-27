@@ -49,6 +49,7 @@
 #include <SdL3/SDL_keyboard.h>
 #include <SdL3/SDL_keycode.h>
 #include "../network/GameServer.hpp"
+#include <iostream>
 
 
 GameState::GameState() 
@@ -2784,7 +2785,10 @@ void GameState::Release()
 
 void GameState::CreateBlocksFromFile()
 {
-    std::ifstream file("puyo.txt");
+    std::string currentPath = std::filesystem::current_path().string();
+    std::cout << "현재 작업 디렉토리: " << currentPath << std::endl;
+
+    std::ifstream file("./bin/puyo.txt");
     if (!file)
     {
         throw std::runtime_error("Failed to open puyo.txt");

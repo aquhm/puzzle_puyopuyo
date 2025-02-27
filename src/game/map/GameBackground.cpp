@@ -14,6 +14,7 @@
 #include <format>
 #include <stdexcept>
 #include <cmath>
+#include "../../utils/PathUtil.hpp"
 
 
 GameBackground::GameBackground()
@@ -58,11 +59,13 @@ bool GameBackground::LoadBackgroundTextures()
 {
     try
     {
+        std::string bgPath = PathUtil::GetBgPath();
+
         for (int i = 0; i < 2; ++i)
         {
             // ResourceManager를 통해 리소스 로드
-            auto bg_filename = std::format("{}{:02d}/bg{:02d}_{:02d}.png", file_path_, map_index_, map_index_, i);
-            auto mask_filename = std::format("{}{:02d}/bg{:02d}_mask{}.png", file_path_, map_index_, map_index_, i == 0 ? "" : "_2");
+            auto bg_filename = std::format("{}/bg{:02d}/bg{:02d}_{:02d}.png", bgPath, map_index_, map_index_, i);
+            auto mask_filename = std::format("{}/bg{:02d}/bg{:02d}_mask{}.png", bgPath, map_index_, map_index_, i == 0 ? "" : "_2");
 
             background_textures_[i] = ImageTexture::Create(bg_filename);
             block_preview_textures_[i] = ImageTexture::Create(mask_filename);
