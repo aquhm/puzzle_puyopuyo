@@ -43,15 +43,6 @@ void StateManager::InitializeStates()
     states_[StateID::CharSelect] = std::make_shared<CharacterSelectState>();
     states_[StateID::Game] = std::make_shared<GameState>();
 
-    // 각 상태 초기화
-    for (auto& [id, state] : states_) 
-    {
-        if (!state->Init()) 
-        {
-            throw std::runtime_error(std::format("Failed to initialize state: {}",static_cast<int>(id)));
-        }
-    }
-
     // 초기 상태 설정
     ChangeState(StateID::Login);
 }
@@ -137,6 +128,12 @@ void StateManager::ChangeState(StateID newState)
 
     currentStateId_ = newState;
     currentState_ = it->second;
+
+    if (currentState_->isInitialized() == false)
+    {
+        currentState_->Init();
+    }
+    
     currentState_->Enter();
 
     LOGGER.Info("State changed to: {}", static_cast<int>(newState));
@@ -147,7 +144,6 @@ void StateManager::PauseCurrentState()
     if (!paused_ && currentState_) 
     {
         paused_ = true;
-        // 필요한 경우 상태 일시 중지 로직 추가
     }
 }
 

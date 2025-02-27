@@ -70,9 +70,8 @@ bool GameState::Init()
 
     try 
     {
-        if (!LoadResources() ||
-            !InitializeComponents() ||
-            !CreateUI()) {
+        if (!LoadResources() || !InitializeComponents() || !CreateUI()) 
+        {
             return false;
         }
 
@@ -1806,7 +1805,6 @@ void GameState::HandleNetworkMessage(uint8_t connectionId, std::span<const char>
 
 void GameState::InitializePacketHandlers()
 {
-
     packet_processor_.RegisterHandler<GameInitPacket>(
         PacketType::InitializeGame,
         [this](uint8_t connectionId, const GameInitPacket* packet) {

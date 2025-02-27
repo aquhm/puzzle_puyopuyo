@@ -17,7 +17,7 @@ GroupBlock::GroupBlock()
     , state_(BlockState::Max)
 {
     SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
-    //InitializeBlocks();
+    InitializeBlocks();
 }
 
 void GroupBlock::InitializeBlocks() 

@@ -562,7 +562,7 @@ void GameGroupBlock::Update(float deltaTime)
     if (state_ == BlockState::Playing && blocks_[Standard] && blocks_[Satellite]) 
     {
         // 회전 중인 경우 회전 처리
-        if (isRotating_) 
+        if (isRotating_)
         {
             HandleRotation(deltaTime);
         }
@@ -584,7 +584,7 @@ void GameGroupBlock::Update(float deltaTime)
             // 충돌 체크 및 네트워크 처리
             if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
             {
-                if (MoveDown() == false) 
+                if (MoveDown() == false)
                 {
                     SetState(BlockState::Effecting);
                     NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Effecting));
