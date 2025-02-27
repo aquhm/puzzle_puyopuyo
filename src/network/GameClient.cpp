@@ -85,18 +85,24 @@ void GameClient::AddNewBlock(std::span<const uint8_t> block)
 
 void GameClient::GameInitialize(std::span<const uint8_t> block1, std::span<const uint8_t> block2) 
 {
+    if (const auto& myPlayer = GAME_APP.GetPlayerManager().GetMyPlayer(); myPlayer != nullptr)
+    {
+        InitializePlayerPacket packet;
+        packet.player_id = myPlayer->GetId();
+        packet.character_idx = myPlayer->GetCharacterId();
 
-    GameInitPacket packet;
-    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
+        if (block1.size() >= 2) 
+        {
+            std::copy_n(block1.data(), 2, packet.block_type1.begin());
+        }
 
-    if (block1.size() >= 2) {
-        std::copy_n(block1.data(), 2, packet.block1.begin());
+        if (block2.size() >= 2) 
+        {
+            std::copy_n(block2.data(), 2, packet.block_type2.begin());
+        }
+
+        SendPacketInternal(packet);
     }
-    if (block2.size() >= 2) {
-        std::copy_n(block2.data(), 2, packet.block2.begin());
-    }
-
-    SendPacketInternal(packet);
 }
 
 void GameClient::MoveBlock(uint8_t moveType, float position) {
