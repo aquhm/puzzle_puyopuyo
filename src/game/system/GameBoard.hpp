@@ -99,7 +99,7 @@ private:
     uint8_t playerID_{ 0 };
 
     std::shared_ptr<GroupBlock> activeGroupBlock_;
-    std::list<std::shared_ptr<Block>> blockList_{ };
+    std::list<std::shared_ptr<Block>>* blockList_;
 
     BoardState state_{ BoardState::Normal };
     SDL_FlipMode flip_{ SDL_FLIP_NONE };

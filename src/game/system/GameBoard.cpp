@@ -29,7 +29,7 @@ bool GameBoard::Initialize(float xPos, float yPos, std::list<std::shared_ptr<Blo
 {
     try
     {
-        blockList_ = blockList;
+        blockList_ = &blockList;
         playerID_ = playerId;
 
         // 배경 텍스처 로드
@@ -357,7 +357,7 @@ void GameBoard::RenderNewBlockPosition()
         newBlockPosition_->Render();
 
         // 두 번째 블록 위치
-        newBlockPosition_->SetPosition(Constants::Board::NEW_BLOCK_POS_X + Constants::Block::SIZE,Constants::Board::NEW_BLOCK_POS_Y);
+        newBlockPosition_->SetPosition(Constants::Board::NEW_BLOCK_POS_X + Constants::Block::SIZE, Constants::Board::NEW_BLOCK_POS_Y);
         newBlockPosition_->Render();
     }
 }
@@ -375,9 +375,9 @@ void GameBoard::RenderTargetMarks()
 
 void GameBoard::RenderFixedBlocks() 
 {
-    if (blockList_.empty() == false) 
+    if (blockList_->empty() == false) 
     {
-        std::ranges::for_each(blockList_, std::mem_fn(&Block::Render));
+        std::ranges::for_each(*blockList_, std::mem_fn(&Block::Render));
     }
 }
 
@@ -395,7 +395,7 @@ void GameBoard::Release()
         }
 
         // 기타 멤버 변수 초기화
-        blockList_.clear();
+        blockList_->clear();
         activeGroupBlock_.reset();
         puyoSourceTexture_.reset();
 

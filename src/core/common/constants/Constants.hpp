@@ -100,7 +100,7 @@ namespace Constants
 
         constexpr int SHATTERING_DOWN_SPEED = 50;    
 
-        constexpr float DOWN_VELOCITY = 0.5f;               // 블록 하강 속도
+        constexpr float DOWN_VELOCITY = 0.05f;               // 블록 하강 속도
         constexpr float ROTATE_VELOCITY = 500.0f;           // 블록 회전 속도
         constexpr float HORIZONTAL_VELOCITY = SIZE / 90.0f; // 수평 이동 속도
     }
