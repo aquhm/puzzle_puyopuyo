@@ -339,6 +339,10 @@ void GameState::Enter()
     // 게임 상태 초기화
     stateInfo_ = GameStateInfo{};
     scoreInfo_ = ScoreInfo{};
+
+    stateInfo_.currentPhase = GamePhase::Standing;
+    stateInfo_.previousPhase = GamePhase::Standing;
+
     lastInputTime_ = SDL_GetTicks();
 
     SDL_StartTextInput(GAME_APP.GetWindow());
@@ -631,11 +635,14 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                 }
             }
         }
-        else {
-            if (stateInfo_.shouldQuit) {
+        else 
+        {
+            if (stateInfo_.shouldQuit) 
+            {
                 stateInfo_.currentPhase = GamePhase::Standing;
             }
-            else {
+            else 
+            {
                 if (NETWORK.IsRunning()) 
                 {
                     NETWORK.StopComboAttack();
@@ -648,7 +655,8 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                 {
                     GenerateIceBlocks();
                 }
-                else {
+                else 
+                {
                     CreateNextBlock();
                 }
             }
@@ -969,9 +977,13 @@ bool GameState::GameRestart()
     if (exit_button_) exit_button_->SetVisible(false);
 
     // 게임 상태 초기화
-    stateInfo_ = GameStateInfo{};
+    stateInfo_ = GameStateInfo{ };
     scoreInfo_ = ScoreInfo{};
+    stateInfo_.currentPhase = GamePhase::Standing;
+    stateInfo_.previousPhase = GamePhase::Standing;
     lastInputTime_ = SDL_GetTicks();
+    
+
 
     // 다음 블록 초기화
     InitNextBlock();
@@ -2166,7 +2178,8 @@ bool GameState::CheckGameBlockState()
     }
 
     // 최소 블록 수 체크
-    if (block_list_.size() < Constants::Game::MIN_MATCH_COUNT) {
+    if (block_list_.size() < Constants::Game::MIN_MATCH_COUNT) 
+    {
         ResetComboState();
         stateInfo_.currentPhase = GamePhase::Playing;
         stateInfo_.previousPhase = GamePhase::Playing;
