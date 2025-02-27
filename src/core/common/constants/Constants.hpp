@@ -161,10 +161,10 @@ namespace Constants
 
     inline namespace Background
     {
-        constexpr int MASK_WIDTH = 320;
-        constexpr int MASK_HEIGHT = 240;
-        constexpr int MASK_POSITION_X = 0;
-        constexpr int MASK_POSITION_Y = 0;
+        constexpr int MASK_WIDTH = 256;
+        constexpr int MASK_HEIGHT = 128;
+        constexpr int MASK_POSITION_X = 240;
+        constexpr int MASK_POSITION_Y = 63;
         constexpr float NEW_BLOCK_VELOCITY = 100.0f;
         constexpr float NEW_BLOCK_SCALE_VELOCITY = 50.0f;
     }

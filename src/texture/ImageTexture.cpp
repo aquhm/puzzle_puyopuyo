@@ -45,38 +45,41 @@ std::shared_ptr<ImageTexture> ImageTexture::Create(const std::string& path)
 
 bool ImageTexture::Load(const std::string& path) 
 {
+
     ReleaseTexture();
     path_ = path;
 
     SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-    if (loadedSurface == nullptr) 
+    if (loadedSurface == nullptr)
     {
         throw std::runtime_error(std::format("Unable to load image {}: {}", path, SDL_GetError()));
     }
-        
-    if (auto formatDetail = SDL_GetPixelFormatDetails(loadedSurface->format); formatDetail != nullptr)
-    {
-        auto colorKey = SDL_MapRGB(formatDetail, NULL, 0, 0, 0);
-        SDL_SetSurfaceColorKey(loadedSurface, true, colorKey);
-    }
 
-    auto* renderer = GAME_APP.GetRenderer();
-    if (renderer == nullptr) 
+    try
+    { 
+        if (auto formatDetail = SDL_GetPixelFormatDetails(loadedSurface->format); formatDetail != nullptr)
+        {
+            auto colorKey = SDL_MapRGB(formatDetail, NULL, 0, 0, 0);
+            SDL_SetSurfaceColorKey(loadedSurface, true, colorKey);
+        }
+
+        texture_ = SDL_CreateTextureFromSurface(GAME_APP.GetRenderer(), loadedSurface);
+        if (texture_ == nullptr)
+        {
+            SDL_DestroySurface(loadedSurface);
+            throw std::runtime_error(std::format("Unable to create texture: {}", SDL_GetError()));
+        }
+
+        width_ = static_cast<float>(loadedSurface->w);
+        height_ = static_cast<float>(loadedSurface->h);
+
+        SDL_DestroySurface(loadedSurface);
+    }
+    catch (const std::exception& e)
     {
         SDL_DestroySurface(loadedSurface);
-        throw std::runtime_error("No renderer available");
     }
-
-    if (texture_ = SDL_CreateTextureFromSurface(renderer, loadedSurface); texture_ == nullptr)
-    {
-        SDL_DestroySurface(loadedSurface);
-        throw std::runtime_error(std::format("Unable to create texture: {}", SDL_GetError()));
-    }
-
-    width_ = static_cast<float>(loadedSurface->w);
-    height_ = static_cast<float>(loadedSurface->h);
-
-    SDL_DestroySurface(loadedSurface);
+    
     return true;
 }
 
@@ -127,7 +130,7 @@ void ImageTexture::Render(float x, float y, const SDL_FRect* sourceRect, double 
         return;
     }
 
-    auto* renderer = GAME_APP.GetRenderer();
+    auto renderer = GAME_APP.GetRenderer();
     if (renderer == nullptr)
     {
         return;

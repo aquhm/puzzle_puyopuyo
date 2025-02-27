@@ -67,12 +67,15 @@ bool GameApp::Initialize()
 
 bool GameApp::InitializeSDL()
 {
+    SDL_SetHint(SDL_HINT_APP_NAME, "PuyoPuyo");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+    
+    SDL_SetAppMetadata("PuyoPuyo", "1.0", "com.weight.puyopuyo");
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == false)
     {
         throw std::runtime_error(std::format("SDL 초기화 실패: {}", SDL_GetError()));
-    }
-
-    SDL_SetAppMetadata("PuyoPuyo", "1.0", "com.weight.puyopuyo");
+    }   
 
     SDL_Window* window= nullptr;
     SDL_Renderer* renderer= nullptr;
