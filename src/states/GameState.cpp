@@ -275,7 +275,6 @@ void GameState::Enter()
     // 배경 초기화
     if (NETWORK.IsServer() || !NETWORK.IsRunning()) 
     {
-        // TODO: 맵 매니저 구현 후 GetRandomMap() 구현
         if (background_ = GAME_APP.GetMapManager().GetRandomMap(); background_->Initialize())
         {
             draw_objects_.push_back(background_.get());
@@ -2090,15 +2089,20 @@ void GameState::CalculateIceBlockCount()
     }
 }
 
-void GameState::ProcessMatchedBlocks() {
-    if (matched_blocks_.empty()) {
+void GameState::ProcessMatchedBlocks() 
+{
+    if (matched_blocks_.empty()) 
+    {
         return;
     }
 
     bool allProcessed = true;
-    for (const auto& group : matched_blocks_) {
-        for (auto* block : group) {
-            if (block->GetState() != BlockState::PlayOut) {
+    for (const auto& group : matched_blocks_) 
+    {
+        for (auto* block : group) 
+        {
+            if (block->GetState() != BlockState::PlayOut) 
+            {
                 allProcessed = false;
                 break;
             }
@@ -2120,8 +2124,12 @@ void GameState::ProcessMatchedBlocks() {
 
                 // 파티클 생성
                 SDL_FPoint pos{ block->GetX(), block->GetY() };
-                // TODO: 파티클 매니저 구현 필요
-                //PARTICLE_MANAGER.CreateBlockDestroyEffect(pos, block->GetBlockType());
+
+                auto particle_container = std::make_shared<ExplosionContainer>();
+                particle_container->SetBlockType(block->GetBlockType());
+                particle_container->SetPlayerID(GAME_APP.GetPlayerManager().GetMyPlayer()->GetId());
+                
+                GAME_APP.GetParticleManager().AddParticleContainer(std::move(particle_container), pos);
 
                 // 게임 보드에서 제거
                 board_blocks_[posY][posX] = nullptr;

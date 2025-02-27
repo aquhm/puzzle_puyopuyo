@@ -264,9 +264,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
 bool GameGroupBlock::MoveDown(bool collisionCheck)
 {
-    checkingCollision_ = true;
-
-    
+    checkingCollision_ = true;    
 
     bool hasCollision = false;
     bool canMove = true;
@@ -286,9 +284,7 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
                 continue;
             }
 
-            if (SDL_HasRectIntersectionFloat(
-                &blocks_[Satellite]->GetRect(),
-                &block->GetRect()))
+            if (SDL_HasRectIntersectionFloat(&blocks_[Satellite]->GetRect(), &block->GetRect()))
             {
                 hasCollision = true;
                 resultRect = block->GetRect();
@@ -304,17 +300,16 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
         }
         else if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT) 
         {
-            blocks_[Standard]->SetY(
-                static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE * 2));
-            blocks_[Satellite]->SetY(
-                static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE));
+            blocks_[Standard]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE * 2));
+            blocks_[Satellite]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE));
             canMove_ = false;
         }
         break;
 
     case RotateState::Right:
     case RotateState::Left:
-        if (isFalling_ == false) {
+        if (isFalling_ == false) 
+        {
             // 좌-우 배치일 때의 충돌 체크
             HandleHorizontalCollision();
         }
@@ -330,9 +325,7 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
         {
             if (!block) continue;
 
-            if (SDL_HasRectIntersectionFloat(
-                &blocks_[Standard]->GetRect(),
-                &block->GetRect()))
+            if (SDL_HasRectIntersectionFloat(&blocks_[Standard]->GetRect(), &block->GetRect()))
             {
                 hasCollision = true;
                 resultRect = block->GetRect();
@@ -403,14 +396,14 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
         blocks_[Standard]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
         fallingIdx_ = Satellite;
         isFalling_ = true;
-        //NetworkManager::GetInstance().RequireFallingBlock(fallingIdx_, isFalling_);
+        NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
     }
     else if (!collision1 && collision2) 
     {
         blocks_[Satellite]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
         fallingIdx_ = Standard;
         isFalling_ = true;
-        //NetworkManager::GetInstance().RequireFallingBlock(fallingIdx_, isFalling_);
+        NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
     }
     else
     {
@@ -589,14 +582,14 @@ void GameGroupBlock::Update(float deltaTime)
             ForceVelocityY(velocity_);
 
             // 충돌 체크 및 네트워크 처리
-            /*if ((NetworkManager::GetInstance().IsRunning() && playerID_) ||
-                !NetworkManager::GetInstance().IsRunning())
+            if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
             {
-                if (!MoveDown()) {
+                if (MoveDown() == false) 
+                {
                     SetState(BlockState::Effecting);
-                    NetworkManager::GetInstance().ChangeBlockState(BlockState::Effecting);
+                    NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Effecting));
                 }
-            }*/
+            }
         }
     }
     else if (state_ == BlockState::Effecting) 

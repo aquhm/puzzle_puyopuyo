@@ -989,8 +989,8 @@ void GamePlayer::Update(float delta_time)
 
     // 투사체 및 파티클 업데이트
     UpdateBullets(delta_time);
-    // TODO: Update particles
-    //PARTICLE_MANAGER.Update(delta_time);
+ 
+    GAME_APP.GetParticleManager().Update(delta_time);
 }
 
 void GamePlayer::UpdateGameState(float delta_time)

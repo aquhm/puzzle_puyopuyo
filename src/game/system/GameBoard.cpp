@@ -323,12 +323,8 @@ void GameBoard::Render()
     // 고정된 블록들 렌더링
     RenderFixedBlocks();
 
-    // 파티클 렌더링
-    //if (playerID_ != 0) {  // 상대 유저인 경우에만
-    // 
-    // TODO
-    //PARTICLE_MANAGER.Render(playerID_);
-    //}
+    // 파티클 렌더링     
+    GAME_APP.GetParticleManager().RenderForPlayer(playerID_);
 
     // 렌더 타겟 복원 및 최종 렌더링
     SDL_SetRenderTarget(GAME_APP.GetRenderer(), nullptr);
