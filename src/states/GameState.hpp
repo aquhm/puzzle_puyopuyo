@@ -145,7 +145,7 @@ public:
     [[nodiscard]] short GetTotalInterruptBlockCount() { return scoreInfo_.totalInterruptBlockCount; }
     [[nodiscard]] short GetTotalInterruptEnemyBlockCount() { return scoreInfo_.totalEnemyInterruptBlockCount; }
 
-    [[nodiscard]] const std::unique_ptr<EditBox>& GetEditBox() { return chatbox_; }
+    [[nodiscard]] const std::shared_ptr<EditBox>& GetEditBox() { return chatbox_; }
 
 private:
 
@@ -264,26 +264,26 @@ private:
     } scoreInfo_;
 
     // 게임 컴포넌트
-    std::unique_ptr<GameBoard> gameboard_;
+    std::shared_ptr<GameBoard> gameboard_;
     std::shared_ptr<GameBackground> background_;
-    std::unique_ptr<InterruptBlockView> interrupt_view_;
-    std::unique_ptr<ComboView> combo_view_;
-    std::unique_ptr<ResultView> result_view_;
-    std::unique_ptr<GameGroupBlock> control_block_;
+    std::shared_ptr<InterruptBlockView> interrupt_view_;
+    std::shared_ptr<ComboView> combo_view_;
+    std::shared_ptr<ResultView> result_view_;
+    std::shared_ptr<GameGroupBlock> control_block_;
     std::shared_ptr<GamePlayer> game_player_;
 
     // UI 컴포넌트
-    std::unique_ptr<EditBox> chatbox_;
-    std::unique_ptr<Button> restart_button_;
-    std::unique_ptr<Button> exit_button_;
+    std::shared_ptr<EditBox> chatbox_;
+    std::shared_ptr<Button> restart_button_;
+    std::shared_ptr<Button> exit_button_;
 
     // 게임 보드 데이터
     Block* board_blocks_[Constants::Board::BOARD_Y_COUNT][Constants::Board::BOARD_X_COUNT]{ nullptr };
     std::vector<RenderableObject*> draw_objects_;
-    std::deque<std::unique_ptr<GroupBlock>> next_blocks_;
+    std::deque<std::shared_ptr<GroupBlock>> next_blocks_;
     std::list<std::shared_ptr<Block>> block_list_;
     std::set<std::shared_ptr<IceBlock>> ice_blocks_;
-    std::list<std::unique_ptr<BulletEffect>> bullets_;
+    std::list<std::shared_ptr<BulletEffect>> bullets_;
     std::vector<BulletEffect*> bullets_to_delete_;
     std::vector<std::vector<Block*>> matched_blocks_;
 

@@ -292,7 +292,18 @@ void GameState::Enter()
     // 네트워크 게임 초기화
     if (NETWORK.IsRunning() && next_blocks_.size() == 2) 
     {
-        // TODO: InitializeNetworkGame() 구현
+        std::array<uint8_t, 2> first_block_types{};
+        std::array<uint8_t, 2> second_block_types{};
+
+        auto& first_blocks = next_blocks_[0]->GetBlocks();
+        first_block_types[0] = static_cast<uint8_t>(first_blocks[0]->GetBlockType());
+        first_block_types[1] = static_cast<uint8_t>(first_blocks[1]->GetBlockType());
+
+        auto& second_blocks = next_blocks_[1]->GetBlocks();
+        second_block_types[0] = static_cast<uint8_t>(second_blocks[0]->GetBlockType());
+        second_block_types[1] = static_cast<uint8_t>(second_blocks[1]->GetBlockType());
+
+        NETWORK.GameInitialize(first_block_types, second_block_types);
     }
 
     // UI 컴포넌트 초기화
@@ -526,7 +537,7 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                     SDL_Point idx{ block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
                     // 파티클 생성
-                    auto particleContainer = std::make_unique<ExplosionContainer>();
+                    auto particleContainer = std::make_shared<ExplosionContainer>();
                     particleContainer->SetBlockType(block->GetBlockType());
                     particleContainer->SetPlayerID(GAME_APP.GetPlayerManager().GetMyPlayer()->GetId());
 
@@ -847,7 +858,7 @@ void GameState::CreateBullet(Block* block)
         Constants::Board::POSITION_Y
     };
 
-    auto bullet = std::make_unique<BulletEffect>();
+    auto bullet = std::make_shared<BulletEffect>();
     if (!bullet->Initialize(startPos, endPos, block->GetBlockType())) 
     {
         LOGGER.Error("Failed to create bullet effect");
@@ -855,7 +866,7 @@ void GameState::CreateBullet(Block* block)
     }
 
     bullet->SetAttacking(!stateInfo_.hasIceBlock);
-    bullets_.push_back(std::move(bullet));
+    bullets_.emplace_back(bullet);
 
     // 방해 블록 관련 네트워크 처리
     if (stateInfo_.hasIceBlock) 
@@ -1004,8 +1015,8 @@ void GameState::GameQuit()
 
 void GameState::InitNextBlock() 
 {
-    auto nextBlock1 = std::make_unique<GroupBlock>();
-    auto nextBlock2 = std::make_unique<GroupBlock>();
+    auto nextBlock1 = std::make_shared<GroupBlock>();
+    auto nextBlock2 = std::make_shared<GroupBlock>();
 
     if (!nextBlock1->Create() || !nextBlock2->Create()) 
     {
@@ -1024,8 +1035,8 @@ void GameState::InitNextBlock()
     if (background_) 
     {
         background_->Reset();
-        background_->SetNextBlock(std::move(next_blocks_[0]));
-        background_->SetNextBlock(std::move(next_blocks_[1]));
+        background_->SetNextBlock(next_blocks_[0]);
+        background_->SetNextBlock(next_blocks_[1]);
     }
 }
 
@@ -1036,7 +1047,7 @@ void GameState::CreateNextBlock()
         return;
     }
 
-    auto nextBlock = std::make_unique<GroupBlock>();
+    auto nextBlock = std::make_shared<GroupBlock>();
     if (!nextBlock->Create()) 
     {
         LOGGER.Error("Failed to create next block");
@@ -1048,8 +1059,8 @@ void GameState::CreateNextBlock()
 
     if (background_) 
     {
-        next_blocks_.push_back(std::move(nextBlock));
-        background_->SetNextBlock(std::move(nextBlock));
+        next_blocks_.push_back(nextBlock);
+        background_->SetNextBlock(nextBlock);
     }
 
     if (gameboard_) {
@@ -1901,8 +1912,8 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
 
         if (!next_blocks_.empty()) 
         {
-            background_->SetNextBlock(std::move(next_blocks_[0]));
-            background_->SetNextBlock(std::move(next_blocks_[1]));
+            background_->SetNextBlock(next_blocks_[0]);
+            background_->SetNextBlock(next_blocks_[1]);
         }
     }
 
@@ -2320,7 +2331,7 @@ void GameState::DestroyNextBlock()
 
             if (gameboard_) 
             {
-                gameboard_->CreateNewBlockInGame(std::move(control_block_));
+                gameboard_->CreateNewBlockInGame(control_block_);
             }
 
             UpdateTargetPosIdx();

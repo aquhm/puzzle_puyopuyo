@@ -52,9 +52,8 @@ private:
     bool createManager()
     {
         auto manager = std::make_unique<T>();
-        auto name = manager->GetName();
-        managers_[std::string(name)] = std::move(manager);
-        return true;
+        auto [it, inserted] = managers_.emplace(manager->GetName(), std::move(manager));
+        return inserted;
     }
 
 private:

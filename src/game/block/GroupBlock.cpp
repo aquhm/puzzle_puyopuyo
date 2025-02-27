@@ -17,7 +17,7 @@ GroupBlock::GroupBlock()
     , state_(BlockState::Max)
 {
     SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
-    InitializeBlocks();
+    //InitializeBlocks();
 }
 
 void GroupBlock::InitializeBlocks() 
@@ -42,13 +42,12 @@ bool GroupBlock::Create()
 
         std::random_device rd;
         std::mt19937 randEngine(rd());
-        std::uniform_int_distribution<int> distribution(
-            static_cast<int>(BlockType::Red),
-            static_cast<int>(BlockType::Purple)
-        );
+        std::uniform_int_distribution<int> distribution(static_cast<int>(BlockType::Red), static_cast<int>(BlockType::Purple));
 
-        for (auto& block : blocks_) {
-            if (!block) {
+        for (auto& block : blocks_) 
+        {
+            if (!block) 
+            {
                 throw std::runtime_error("Block initialization failed");
             }
 

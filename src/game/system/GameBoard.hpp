@@ -55,8 +55,8 @@ public:
     void Render() override;
     void Release() override;
 
-    void SetBlockInfoTexture(std::shared_ptr<ImageTexture> texture);
-    void CreateNewBlockInGame(std::shared_ptr<GroupBlock> block);
+    void SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture);
+    void CreateNewBlockInGame(const std::shared_ptr<GroupBlock>& block);
     void ClearActiveGroupBlock() { activeGroupBlock_ = nullptr; }
     void UpdateTargetBlockMark(const std::array<BlockTargetMark, 2>& markInfo);
     void ResetGroupBlock();

@@ -21,7 +21,7 @@ class ParticleManager : public IManager, public IRenderable
 {
 public:
 
-    using ParticleContainerList = std::list<std::unique_ptr<ParticleContainer>>;
+    using ParticleContainerList = std::list<std::shared_ptr<ParticleContainer>>;
     using TextureMap = std::unordered_map<std::string, std::shared_ptr<ImageTexture>>;
 
     ParticleManager() = default;
@@ -42,8 +42,8 @@ public:
 
     
     void RenderForPlayer(uint8_t playerId);
-    void AddParticleContainer(std::unique_ptr<ParticleContainer> container);
-    void AddParticleContainer(std::unique_ptr<ParticleContainer> container, const SDL_FPoint& position);
+    void AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container);
+    void AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container, const SDL_FPoint& position);
     void RemoveParticleContainer(const ParticleContainer& container);
 
     void SetDrawEnabled(bool enabled) { isDrawEnabled_ = enabled; }

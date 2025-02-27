@@ -375,7 +375,7 @@ void GameBackground::Reset()
     is_player_changing_block_ = false;
 }
 
-void GameBackground::SetNextBlock(std::shared_ptr<GroupBlock> block) 
+void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block) 
 {
     if (!block)
     {
@@ -386,7 +386,7 @@ void GameBackground::SetNextBlock(std::shared_ptr<GroupBlock> block)
     is_changing_block_ = true;
 }
 
-void GameBackground::SetPlayerNextBlock(std::shared_ptr<GroupBlock> block) 
+void GameBackground::SetPlayerNextBlock(const std::shared_ptr<GroupBlock>& block)
 {
     if (!block)
     {

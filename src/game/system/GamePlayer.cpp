@@ -242,7 +242,7 @@ void GamePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 
     if (background_)
     {
-        new_blocks_.push_back(std::move(next_block));
+        new_blocks_.push_back(next_block);
         background_->SetPlayerNextBlock(next_block);
     }
 }

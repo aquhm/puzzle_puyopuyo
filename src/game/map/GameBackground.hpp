@@ -40,8 +40,8 @@ public:
     void Release() override;
 
     void Reset();
-    void SetNextBlock(std::shared_ptr<GroupBlock> block);
-    void SetPlayerNextBlock(std::shared_ptr<GroupBlock> block);
+    void SetNextBlock(const std::shared_ptr<GroupBlock>& block);
+    void SetPlayerNextBlock(const std::shared_ptr<GroupBlock>& block);
 
     [[nodiscard]] bool IsChangingBlock() const;
     [[nodiscard]] bool IsChangingPlayerBlock() const;

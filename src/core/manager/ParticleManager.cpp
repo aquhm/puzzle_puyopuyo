@@ -87,7 +87,7 @@ void ParticleManager::RenderForPlayer(uint8_t playerId)
     }
 }
 
-void ParticleManager::AddParticleContainer(std::unique_ptr<ParticleContainer> container) 
+void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container)
 {
     if (!isInitialized_) 
     {
@@ -102,7 +102,7 @@ void ParticleManager::AddParticleContainer(std::unique_ptr<ParticleContainer> co
     containers_.push_back(std::move(container));
 }
 
-void ParticleManager::AddParticleContainer(std::unique_ptr<ParticleContainer> container, const SDL_FPoint& position)
+void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container, const SDL_FPoint& position)
 {
     if (!isInitialized_) 
     {

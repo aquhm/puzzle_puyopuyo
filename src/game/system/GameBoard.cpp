@@ -105,7 +105,7 @@ void GameBoard::InitializePositions(float xPos, float yPos)
     SetSize(Constants::Board::WIDTH, Constants::Board::HEIGHT);
 }
 
-void GameBoard::SetBlockInfoTexture(std::shared_ptr<ImageTexture> texture) 
+void GameBoard::SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture) 
 {
     if (newBlockPosition_) 
     {
@@ -126,7 +126,7 @@ void GameBoard::SetBlockInfoTexture(std::shared_ptr<ImageTexture> texture)
     puyoSourceTexture_ = texture;
 }
 
-void GameBoard::CreateNewBlockInGame(std::shared_ptr<GroupBlock> block) 
+void GameBoard::CreateNewBlockInGame(const std::shared_ptr<GroupBlock>& block) 
 {
     if (activeGroupBlock_ && activeGroupBlock_->GetState() == BlockState::Playing) 
     {
