@@ -340,8 +340,8 @@ void GameState::Enter()
     stateInfo_ = GameStateInfo{};
     scoreInfo_ = ScoreInfo{};
 
-    stateInfo_.currentPhase = GamePhase::Standing;
-    stateInfo_.previousPhase = GamePhase::Standing;
+    stateInfo_.currentPhase = GamePhase::Playing;
+    stateInfo_.previousPhase = GamePhase::Playing;
 
     lastInputTime_ = SDL_GetTicks();
 
@@ -979,8 +979,8 @@ bool GameState::GameRestart()
     // 게임 상태 초기화
     stateInfo_ = GameStateInfo{ };
     scoreInfo_ = ScoreInfo{};
-    stateInfo_.currentPhase = GamePhase::Standing;
-    stateInfo_.previousPhase = GamePhase::Standing;
+    stateInfo_.currentPhase = GamePhase::Playing;
+    stateInfo_.previousPhase = GamePhase::Playing;
     lastInputTime_ = SDL_GetTicks();
     
 
