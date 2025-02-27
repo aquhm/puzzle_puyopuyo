@@ -98,7 +98,7 @@ bool GamePlayer::Initialize(const std::span<const uint8_t>& blocktype1, const st
         InitializeControlBlock();
 
 #ifdef _APP_DEBUG_
-        CreateBlocksFromFile();
+        //CreateBlocksFromFile();
 #endif
 
         // Set initial game state
@@ -130,9 +130,9 @@ void GamePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blocktype1
         throw std::runtime_error("Failed to create next blocks");
     }
 
-    next_block1->SetPosition(Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_X, Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_Y);
-    next_block2->SetPosition(Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
-    next_block2->SetSize(Constants::Block::SIZE * 0.75f, Constants::Block::SIZE * 0.75f);
+    next_block1->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
+    next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
+    next_block2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     new_blocks_.push_back(std::move(next_block1));
     new_blocks_.push_back(std::move(next_block2));
@@ -237,8 +237,8 @@ void GamePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
         throw std::runtime_error("Failed to create next block");
     }
 
-    next_block->SetPosition(Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_SMALL_X, 100);
-    next_block->SetSize(Constants::Block::SIZE * 0.75f, Constants::Block::SIZE * 0.75f);
+    next_block->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, 100);
+    next_block->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_)
     {
@@ -290,7 +290,7 @@ void GamePlayer::MoveBlock(uint8_t move_type, float position)
         break;
 
     case Constants::Direction::Bottom:
-        control_block_->ForceAddVelocityY(Constants::Block::DOWN_VELOCITY, false);
+        control_block_->ForceAddVelocityY(Constants::GroupBlock::ADD_VELOCITY, false);
         break;
 
     default:
@@ -360,10 +360,8 @@ bool GamePlayer::PushBlockInGame(std::span<float> pos1, std::span<float> pos2)
         int x_idx_0 = static_cast<int>(pos1[0] / Constants::Block::SIZE);
         int x_idx_1 = static_cast<int>(pos2[0] / Constants::Block::SIZE);
 
-        int y_idx_0 = (Constants::Board::BOARD_Y_COUNT - 2) -
-            static_cast<int>(pos1[1] / Constants::Block::SIZE);
-        int y_idx_1 = (Constants::Board::BOARD_Y_COUNT - 2) -
-            static_cast<int>(pos2[1] / Constants::Block::SIZE);
+        int y_idx_0 = (Constants::Board::BOARD_Y_COUNT - 2) - static_cast<int>(pos1[1] / Constants::Block::SIZE);
+        int y_idx_1 = (Constants::Board::BOARD_Y_COUNT - 2) - static_cast<int>(pos2[1] / Constants::Block::SIZE);
 
         blocks[0]->SetPosIdx(x_idx_0, y_idx_0);
         blocks[1]->SetPosIdx(x_idx_1, y_idx_1);
@@ -1382,21 +1380,15 @@ bool GamePlayer::Restart(const std::span<const uint8_t>& block_type1, const std:
         auto next_block1 = std::make_unique<GroupBlock>();
         auto next_block2 = std::make_unique<GroupBlock>();
 
-        if (!next_block1->Create(static_cast<BlockType>(block_type1[0]),
-            static_cast<BlockType>(block_type1[1])) ||
-            !next_block2->Create(static_cast<BlockType>(block_type2[0]),
-                static_cast<BlockType>(block_type2[1])))
+        if (!next_block1->Create(static_cast<BlockType>(block_type1[0]), static_cast<BlockType>(block_type1[1])) ||
+            !next_block2->Create(static_cast<BlockType>(block_type2[0]), static_cast<BlockType>(block_type2[1])))
         {
             throw std::runtime_error("Failed to create next blocks");
         }
 
-        next_block1->SetPosition(Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_X,
-            Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_Y);
-
-        next_block2->SetPosition(Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_SMALL_X,
-            Constants::BlockPosition::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
-        next_block2->SetSize(Constants::Block::SIZE * 0.75f,
-            Constants::Block::SIZE * 0.75f);
+        next_block1->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
+        next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
+        next_block2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
         new_blocks_.push_back(std::move(next_block1));
         new_blocks_.push_back(std::move(next_block2));
@@ -1421,8 +1413,8 @@ bool GamePlayer::Restart(const std::span<const uint8_t>& block_type1, const std:
         if (result_view_) result_view_->Initialize();
         if (control_block_) control_block_->ResetBlock();
 
-#ifdef _DEBUG
-        CreateBlocksFromFile();
+#ifdef _APP_DEBUG_
+        //CreateBlocksFromFile();
 #endif
 
         // Reset game state

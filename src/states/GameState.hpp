@@ -128,6 +128,7 @@ public:
     void CreateGamePlayer(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2, uint8_t playerIdx, uint8_t characterIdx);
     void DestroyNextBlock();
     void CreateBlocksFromFile(); // 파일로 부터 블록 셋팅
+    void PushBlockInGame(GameGroupBlock* groupBlock);
 
     // 블록 연결 검사 관련
     void CollectRemoveIceBlocks();
@@ -191,6 +192,8 @@ private:
     void UpdateBlockLinks();
     bool FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGroups);
     short RecursionCheckBlock(short x, short y, Constants::Direction direction, std::vector<Block*>& matchedBlocks);
+    
+
 
     // 점수 계산
     void CalculateScore();
@@ -199,7 +202,7 @@ private:
     [[nodiscard]] uint8_t GetTypeBonus(size_t count) const;
     [[nodiscard]] uint8_t GetMargin() const;
 
-    // 방해 블록 관리
+    // 방해 블록 관리    
     void GenerateIceBlocks();
     void GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID);
     void GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID);

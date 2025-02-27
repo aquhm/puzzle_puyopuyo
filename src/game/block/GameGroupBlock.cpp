@@ -657,7 +657,7 @@ void GameGroupBlock::ProcessBlockPlacement()
 
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            //gameState->PushBlockInGame(this);
+            gameState->PushBlockInGame(this);
         }
     }
 }

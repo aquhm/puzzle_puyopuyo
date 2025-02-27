@@ -286,7 +286,7 @@ void GameState::Enter()
     InitNextBlock();
 
 #ifdef _APP_DEBUG_
-    CreateBlocksFromFile();
+    //CreateBlocksFromFile();
 #endif
 
     // 네트워크 게임 초기화
@@ -396,8 +396,7 @@ void GameState::Update(float deltaTime)
     stateInfo_.playTime += deltaTime;
 
     // 게임 시작 체크
-    if (stateInfo_.playTime >= Constants::Game::PLAY_START_DELAY &&
-        !stateInfo_.isRunning &&
+    if (stateInfo_.playTime >= Constants::Game::PLAY_START_DELAY && !stateInfo_.isRunning && 
         stateInfo_.currentPhase == GamePhase::Playing &&
         background_ && background_->IsReadyGame())
     {
@@ -407,10 +406,7 @@ void GameState::Update(float deltaTime)
             NETWORK.StartGame();
             CreateNextBlock();
         }
-    }
-
-    // 게임 로직 업데이트
-    UpdateGameLogic(deltaTime);
+    }    
 
     // 게임 오브젝트 업데이트
     for (auto* obj : draw_objects_) 
@@ -430,14 +426,17 @@ void GameState::Update(float deltaTime)
         }
     }
 
-    // 총알 업데이트
-    BulletUpdate(deltaTime);
+    // 게임 로직 업데이트
+    UpdateGameLogic(deltaTime);    
 
     // 네트워크 플레이어 업데이트
     if (game_player_ && NETWORK.IsRunning())
     {
         game_player_->Update(deltaTime);
     }
+
+    // 발사체 갱신
+    BulletUpdate(deltaTime);
 
     GAME_APP.GetParticleManager().Update(deltaTime);
 
@@ -628,7 +627,8 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                         {
                             GenerateIceBlocks();
                         }
-                        else {
+                        else 
+                        {
                             CreateNextBlock();
                         }
                     }
@@ -989,7 +989,7 @@ bool GameState::GameRestart()
     InitNextBlock();
 
 #ifdef _APP_DEBUG_
-    CreateBlocksFromFile();
+    //CreateBlocksFromFile();
 #endif
 
     return true;
@@ -1036,9 +1036,8 @@ void GameState::InitNextBlock()
         return;
     }
 
-    nextBlock1->SetPosition(Constants::BlockPosition::NEXT_BLOCK_POS_X, Constants::BlockPosition::NEXT_BLOCK_POS_Y);
-
-    nextBlock2->SetPosition(Constants::BlockPosition::NEXT_BLOCK_POS_SMALL_X, Constants::BlockPosition::NEXT_BLOCK_POS_SMALL_Y);
+    nextBlock1->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_X, Constants::GroupBlock::NEXT_BLOCK_POS_Y);
+    nextBlock2->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y);
     nextBlock2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     next_blocks_.push_back(std::move(nextBlock1));
@@ -1066,7 +1065,7 @@ void GameState::CreateNextBlock()
         return;
     }
 
-    nextBlock->SetPosition(Constants::BlockPosition::NEXT_BLOCK_POS_SMALL_X, 100);
+    nextBlock->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, 100);
     nextBlock->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_) 
@@ -2867,4 +2866,74 @@ void GameState::CreateBlocksFromFile()
     }
 
     block_list_.sort([](const auto& a, const auto& b) { return *a < *b; });
+}
+
+void GameState::PushBlockInGame(GameGroupBlock* groupBlock)
+{
+    if (!groupBlock)
+    {
+        LOGGER.Error("PushBlockInGame called with null block");
+        return;
+    }
+
+    const auto& blocks = groupBlock->GetBlocks();
+
+    for (const auto& currentBlock : blocks)
+    {
+        if (currentBlock)
+        {
+            block_list_.push_back(currentBlock);
+
+            int xIdx = currentBlock->GetPosIdx_X();
+            int yIdx = currentBlock->GetPosIdx_Y();
+            board_blocks_[yIdx][xIdx] = currentBlock.get();
+
+            UpdateLinkState(currentBlock.get());
+        }
+    }
+
+    block_list_.sort(BlockComp());
+
+    if (gameboard_)
+    {
+        gameboard_->ClearActiveGroupBlock();
+    }
+
+    // 삭제 여부 체크
+    if (!CheckGameBlockState() && stateInfo_.currentPhase == GamePhase::Playing)
+    {
+        if (stateInfo_.isDefending)
+        {
+            stateInfo_.isDefending = false;
+            stateInfo_.defenseCount = 0;
+        }
+
+        // 방해 블록 있는 경우 방해블록 생성
+        if (scoreInfo_.totalInterruptBlockCount > 0 && !stateInfo_.isComboAttack && !stateInfo_.isDefending)
+        {
+            GenerateIceBlocks();
+        }
+        else
+        {
+            CreateNextBlock();  // 다음 게임그룹블록 생성
+        }
+    }
+    else
+    {
+        if (stateInfo_.hasIceBlock)
+        {
+            if (stateInfo_.defenseCount >= 1 && !stateInfo_.isComboAttack)
+            {
+                stateInfo_.isDefending = false;
+                stateInfo_.defenseCount = 0;
+                return;
+            }
+
+            stateInfo_.defenseCount++;
+            stateInfo_.isDefending = true;
+        }
+    }
+
+    // 컨트롤 블록 리셋
+    groupBlock->ResetBlock();
 }

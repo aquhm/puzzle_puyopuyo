@@ -119,6 +119,8 @@ namespace Constants
 
         constexpr int NEXT_BLOCK_SMALL_SIZE = 21;
         constexpr int COUNT = 2;
+
+        constexpr float ADD_VELOCITY = 10.0f;
     }
 
     namespace Board
@@ -169,17 +171,6 @@ namespace Constants
         constexpr float NEW_BLOCK_SCALE_VELOCITY = 50.0f;
     }
 
-    inline namespace BlockPosition
-    {
-        constexpr int NEXT_BLOCK_POS_X = 450;
-        constexpr int NEXT_BLOCK_POS_Y = 100;
-        constexpr int NEXT_BLOCK_POS_SMALL_X = 400;
-        constexpr int NEXT_BLOCK_POS_SMALL_Y = 50;
-        constexpr int NEXT_PLAYER_BLOCK_POS_X = 750;
-        constexpr int NEXT_PLAYER_BLOCK_POS_Y = 100;
-        constexpr int NEXT_PLAYER_BLOCK_POS_SMALL_X = 700;
-        constexpr int NEXT_PLAYER_BLOCK_POS_SMALL_Y = 50;
-    }
 
     inline namespace Network
     {
