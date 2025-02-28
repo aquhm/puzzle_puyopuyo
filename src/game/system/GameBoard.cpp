@@ -102,7 +102,7 @@ void GameBoard::InitializePositions(float xPos, float yPos)
     };
 
     SetPosition(0, 0);
-    SetSize(Constants::Board::WIDTH, Constants::Board::HEIGHT);
+    SetScale(Constants::Board::WIDTH, Constants::Board::HEIGHT);
 }
 
 void GameBoard::SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture) 

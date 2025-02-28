@@ -87,11 +87,12 @@ public:
     void Render() override;
     void Release() override;
 
+    [[nodiscard]] std::shared_ptr<Block> Clone() const;
+
     virtual void SetPlayerID(uint8_t id) { playerID_ = id; }
     virtual void SetState(BlockState state);    
     void SetBlockType(BlockType type);    
     void SetLinkState(LinkState state = LinkState::Normal);
-
     void SetBlockTex(const std::shared_ptr<ImageTexture>& tex) { texture_ = tex; }
     void SetEffectState(EffectState state) { effectState_ = state; }
     void SetLevel(uint8_t level) { level_ = level; }
@@ -106,8 +107,7 @@ public:
 		indexX_ = x;
     }
 
-    void SetSize(float width, float height) override;
-
+    void SetScale(float width, float height) override;
 
     [[nodiscard]] int GetPosIdx_X() const { return indexX_; }
     [[nodiscard]] int GetPosIdx_Y() const { return indexY_; }
@@ -132,7 +132,7 @@ private:
     void UpdatePlayingState(float deltaTime);    // 플레이 상태 업데이트
     void InitializeEffectPositions();            // 이펙트 위치 초기화
     void UpdateSourceRectForLinkState();
-    void UpdateLinkStateForDownMoving();
+    void UpdateLinkStateForDownMoving();    
     
 
 protected:

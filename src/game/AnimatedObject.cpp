@@ -128,7 +128,7 @@ void AnimatedObject::SetTextureInfo(std::shared_ptr<ImageTexture> texture,
     int rows = static_cast<int>(source_rect.h / view_rect.h);
     animation_info_.frame_count = animation_info_.columns * rows;
 
-    SetSize(view_rect.w, view_rect.h);
+    SetScale(view_rect.w, view_rect.h);
 
     Reset();
 }

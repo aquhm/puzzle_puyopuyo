@@ -23,7 +23,7 @@ void RenderableObject::SetY(float y)
     destination_rect_.y = y;
 }
 
-void RenderableObject::SetSize(float width, float height) 
+void RenderableObject::SetScale(float width, float height)
 {
     size_.x = width;
     size_.y = height;

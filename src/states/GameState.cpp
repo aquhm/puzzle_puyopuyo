@@ -70,8 +70,8 @@ bool GameState::Init()
 
     try 
     {
-        if (!LoadResources() || !InitializeComponents() || !CreateUI()) 
-        {
+        if (LoadResources() == false || InitializeComponents() == false || CreateUI() == false)
+        {            
             return false;
         }
 
@@ -153,10 +153,10 @@ bool GameState::InitializeComponents()
     }
 
     // 컨트롤 블록 초기화
-    control_block_ = std::make_unique<GameGroupBlock>();
-    if (control_block_) 
+    control_block_ = std::make_shared<GameGroupBlock>();
+    if (control_block_ != nullptr) 
     {
-        control_block_->SetGameBlocks(block_list_);
+        control_block_->SetGameBlocks(&block_list_);
 
         if (auto player = GAME_APP.GetPlayerManager().GetMyPlayer()) 
         {
@@ -1036,7 +1036,7 @@ void GameState::InitNextBlock()
 
     nextBlock1->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_X, Constants::GroupBlock::NEXT_BLOCK_POS_Y);
     nextBlock2->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y);
-    nextBlock2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
+    nextBlock2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     next_blocks_.push_back(std::move(nextBlock1));
     next_blocks_.push_back(std::move(nextBlock2));
@@ -1064,7 +1064,7 @@ void GameState::CreateNextBlock()
     }
 
     nextBlock->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, 100);
-    nextBlock->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
+    nextBlock->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_) 
     {
@@ -1121,7 +1121,7 @@ void GameState::Render()
     RenderUI();
 
 #ifdef _DEBUG
-    RenderDebugInfo();
+    //RenderDebugInfo();
 #endif
 }
 
@@ -1362,7 +1362,7 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, con
     //mpGamePlayer = new GamePlayer;
     if (game_player_ == nullptr)
     {
-        game_player_ = std::shared_ptr<GamePlayer>(new GamePlayer);
+        game_player_ = std::make_shared<GamePlayer>();
     }
 
     game_player_->Initialize(blocktype1, blocktype2, playerIdx, characterIdx, background_);
@@ -1742,7 +1742,7 @@ void GameState::InitializeIceBlock(IceBlock* block, const std::shared_ptr<ImageT
     block->SetPosition(renderX, renderY);
 
     // 크기 설정
-    block->SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
+    block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
 
     // 플레이어 ID 설정
     block->SetPlayerID(playerID);
@@ -2346,6 +2346,7 @@ void GameState::DestroyNextBlock()
             control_block_->SetGroupBlock(nextBlock.get());
             control_block_->SetState(BlockState::Playing);
             control_block_->SetEnableRotState(RotateState::Default, false, false, false);
+            control_block_->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
 
             if (gameboard_) 
             {
@@ -2860,7 +2861,7 @@ void GameState::CreateBlocksFromFile()
             block->SetBlockType(static_cast<BlockType>(type));
             block->SetPosIdx(x, Constants::Board::BOARD_Y_COUNT - 1 - y);
             block->SetPosition(x_pos, y_pos);
-            block->SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
+            block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
             block->SetState(BlockState::Stationary);
             block->SetBlockTex(texture);
 

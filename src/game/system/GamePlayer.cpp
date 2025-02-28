@@ -132,7 +132,7 @@ void GamePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blocktype1
 
     next_block1->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
     next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
-    next_block2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
+    next_block2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     new_blocks_.push_back(std::move(next_block1));
     new_blocks_.push_back(std::move(next_block2));
@@ -220,7 +220,7 @@ void GamePlayer::InitializeControlBlock()
 
     if (control_block_)
     {
-        control_block_->SetGameBlocks(block_list_);
+        control_block_->SetGameBlocks(&block_list_);
     }
     else
     {
@@ -238,7 +238,7 @@ void GamePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
     }
 
     next_block->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, 100);
-    next_block->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
+    next_block->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_)
     {
@@ -1356,7 +1356,7 @@ void GamePlayer::CreateBlocksFromFile()
             block->SetBlockType(static_cast<BlockType>(type));
             block->SetPosIdx(x, Constants::Board::BOARD_Y_COUNT - 1 - y);
             block->SetPosition(x_pos, y_pos);
-            block->SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
+            block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
             block->SetState(BlockState::Stationary);
             block->SetBlockTex(texture);
 
@@ -1377,8 +1377,8 @@ bool GamePlayer::Restart(const std::span<const uint8_t>& block_type1, const std:
     try
     {
         // Initialize next blocks
-        auto next_block1 = std::make_unique<GroupBlock>();
-        auto next_block2 = std::make_unique<GroupBlock>();
+        auto next_block1 = std::make_shared<GroupBlock>();
+        auto next_block2 = std::make_shared<GroupBlock>();
 
         if (!next_block1->Create(static_cast<BlockType>(block_type1[0]), static_cast<BlockType>(block_type1[1])) ||
             !next_block2->Create(static_cast<BlockType>(block_type2[0]), static_cast<BlockType>(block_type2[1])))
@@ -1388,7 +1388,7 @@ bool GamePlayer::Restart(const std::span<const uint8_t>& block_type1, const std:
 
         next_block1->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
         next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
-        next_block2->SetSize(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
+        next_block2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
         new_blocks_.push_back(std::move(next_block1));
         new_blocks_.push_back(std::move(next_block2));

@@ -186,7 +186,7 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
         height = min(height, static_cast<float>(Constants::Block::SIZE));
 
         small_block->SetPosition(x, y);
-        small_block->SetSize(width, height);
+        small_block->SetScale(width, height);
 
         if (x == Constants::GroupBlock::NEXT_BLOCK_POS_X && y == Constants::GroupBlock::NEXT_BLOCK_POS_Y &&
             width == Constants::Block::SIZE && height == Constants::Block::SIZE)
@@ -266,7 +266,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         height = std::min<float>(height, Constants::Block::SIZE);
 
         small_block->SetPosition(x, y);
-        small_block->SetSize(width, height);
+        small_block->SetScale(width, height);
 
         if (x == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X && y == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y &&
             width == Constants::Block::SIZE && height == Constants::Block::SIZE)

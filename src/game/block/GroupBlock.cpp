@@ -15,16 +15,16 @@ GroupBlock::GroupBlock()
     , blocks_{}
     , groupBlockType_(GroupBlockType::Default)
     , state_(BlockState::Max)
-{
-    SetSize(Constants::Block::SIZE, Constants::Block::SIZE);
+{    
     InitializeBlocks();
+    SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
 }
 
 void GroupBlock::InitializeBlocks() 
 {
     for (auto& block : blocks_) 
     {
-        block = std::make_unique<Block>();
+        block = std::make_shared<Block>();
     }
 }
 
@@ -212,14 +212,14 @@ void GroupBlock::SetPosY(float y)
 
 void GroupBlock::SetScale(float width, float height)
 {
-    size_.x = static_cast<float>(width);
-    size_.y = static_cast<float>(height);
+    size_.x = width;
+    size_.y = height;
 
     for (auto& block : blocks_) 
     {
         if (block) 
         {
-            block->SetSize(width, height);
+            block->SetScale(width, height);
         }
     }
 

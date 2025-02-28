@@ -59,7 +59,7 @@ public:
     [[nodiscard]] int CalculateIdxY(float y) const;
 
     void SetGroupBlock(GroupBlock* block);
-	void SetGameBlocks(std::list<std::shared_ptr<Block>>& gameBlocks) { gameBlockList_ = gameBlocks; }
+    void SetGameBlocks(std::list<std::shared_ptr<Block>>* gameBlocks) { gameBlockList_ = gameBlocks; }
     void SetEffectState(EffectState state);
     void ResetBlock();
     void SetPlayerID(uint8_t id);
@@ -104,5 +104,5 @@ private:
     float horizontalVelocity_{ 0.0f };
 
     SDL_FRect intersectResultRect_{};
-    std::list<std::shared_ptr<Block>> gameBlockList_{ };
+    std::list<std::shared_ptr<Block>>* gameBlockList_;
 };

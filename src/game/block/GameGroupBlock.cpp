@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include "../../utils/Logger.hpp"
 
 
 GameGroupBlock::GameGroupBlock()
@@ -151,10 +152,10 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
         bool canMove = true;
 
         // 충돌 체크
-        for (const auto& block : gameBlockList_) 
+        for (const auto& block : *gameBlockList_) 
         {
-            if (SDL_HasRectIntersectionFloat(&leftCollRects[0], &block->GetRect()) == true ||
-                SDL_HasRectIntersectionFloat(&leftCollRects[1], &block->GetRect()) == true)
+            if (SDL_GetRectIntersectionFloat(&leftCollRects[0], &block->GetRect(), &leftCollRects[0]) == true ||
+                SDL_GetRectIntersectionFloat(&leftCollRects[1], &block->GetRect(), &leftCollRects[1]) == true)
             {
                 canMove = false;
                 break;
@@ -216,10 +217,10 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
         bool canMove = true;
 
-        for (const auto& block : gameBlockList_) 
+        for (const auto& block : *gameBlockList_) 
         {
-            if (SDL_HasRectIntersectionFloat(&rightCollRects[Standard], &block->GetRect()) == true ||
-                SDL_HasRectIntersectionFloat(&rightCollRects[Satellite], &block->GetRect()) == true) 
+            if (SDL_GetRectIntersectionFloat(&rightCollRects[Standard], &block->GetRect(), &rightCollRects[0]) == true ||
+                SDL_GetRectIntersectionFloat(&rightCollRects[Satellite], &block->GetRect(), &rightCollRects[1]) == true)
             {
                 canMove = false;
                 break;
@@ -277,14 +278,19 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
     {
     case RotateState::Default:
         // 위-아래 배치일 때의 충돌 체크
-        for (const auto& block : gameBlockList_) 
+        for (const auto& block : *gameBlockList_) 
         {
             if (!block)
             {
                 continue;
             }
 
-            if (SDL_HasRectIntersectionFloat(&blocks_[Satellite]->GetRect(), &block->GetRect()))
+            auto& rect = block->GetRect();
+            auto& control_rect = blocks_[Satellite]->GetRect();
+
+            SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "컨트롤 rect: {}, 고정 rect: {}", rect, control_rect);
+
+            if (SDL_GetRectIntersectionFloat(&control_rect, &rect, &resultRect))
             {
                 hasCollision = true;
                 resultRect = block->GetRect();
@@ -321,11 +327,11 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
 
     case RotateState::Top:
         // 아래-위 배치일 때의 충돌 체크
-        for (const auto& block : gameBlockList_) 
+        for (const auto& block : *gameBlockList_) 
         {
             if (!block) continue;
 
-            if (SDL_HasRectIntersectionFloat(&blocks_[Standard]->GetRect(), &block->GetRect()))
+            if (SDL_GetRectIntersectionFloat(&blocks_[Standard]->GetRect(), &block->GetRect(), &resultRect))
             {
                 hasCollision = true;
                 resultRect = block->GetRect();
@@ -358,7 +364,7 @@ void GameGroupBlock::HandleHorizontalCollision()
     bool collision2 = false;
     SDL_FRect resultRect;
 
-    for (const auto& block : gameBlockList_) 
+    for (const auto& block : *gameBlockList_) 
     {
         if (!block) continue;
 
@@ -792,7 +798,7 @@ void GameGroupBlock::SetGroupBlock(GroupBlock* block)
     {
         if (sourceBlocks[i]) 
         {
-            blocks_[i] = std::make_shared<Block>(*sourceBlocks[i]);
+            blocks_[i] = sourceBlocks[i]->Clone();
         }
     }
 
@@ -811,7 +817,7 @@ void GameGroupBlock::HandleSingleBlockFalling()
 
     SDL_FRect resultRect{};
 
-    for (const auto& block : gameBlockList_) 
+    for (const auto& block : *gameBlockList_) 
     {
         if (!block)
         {
@@ -878,7 +884,7 @@ void GameGroupBlock::HandleDefaultTopRotation()
     GetCollisionRect(blocks_[static_cast<size_t>(BlockIndex::Standard)].get(), &leftCollRect, Constants::Direction::Left);
     GetCollisionRect(blocks_[static_cast<size_t>(BlockIndex::Standard)].get(), &rightCollRect, Constants::Direction::Right);
 
-    for (const auto& block : gameBlockList_) 
+    for (const auto& block : *gameBlockList_) 
     {
         if (!block)
         {

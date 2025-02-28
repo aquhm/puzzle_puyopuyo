@@ -11,7 +11,7 @@
 
 Block::Block() 
 {
-    sourceRect_ = { 1, 1, static_cast<int>(Constants::Block::SIZE), static_cast<int>(Constants::Block::SIZE) };
+    sourceRect_ = { 1, 1,Constants::Block::SIZE, Constants::Block::SIZE };
     blockOriginPos_ = { 1, 1 };
 
     InitializeEffectPositions();
@@ -26,40 +26,60 @@ Block& Block::operator=(const Block& other)
 {
     if (this != &other) 
     {
-        sourceRect_ = other.sourceRect_;
-        blockOriginPos_ = other.blockOriginPos_;
-        std::copy(std::begin(other.blockEffectPos_), std::end(other.blockEffectPos_), std::begin(blockEffectPos_));
-
-        blockType_ = other.blockType_;
-        state_ = other.state_;
-        linkState_ = other.linkState_;
-        effectState_ = other.effectState_;
-
-        level_ = other.level_;
-        texture_ = other.texture_;
-
-        isScaled_ = other.isScaled_;
-        isRecursionCheck_ = other.isRecursionCheck_;
-        isStandard_ = other.isStandard_;
-        isChanged_ = other.isChanged_;
-
-        indexX_ = other.indexX_;
-        indexY_ = other.indexY_;
-
-        accumTime_ = other.accumTime_;
-        accumEffectTime_ = other.accumEffectTime_;
-        rotationAngle_ = other.rotationAngle_;
-        scaleVelocity_ = other.scaleVelocity_;
-        downVelocity_ = other.downVelocity_;
-
-        playerID_ = other.playerID_;
+        auto temp = other.Clone();
+    
+        std::swap(*this, *temp);
     }
+
     return *this;
+}
+
+std::shared_ptr<Block> Block::Clone() const
+{
+    auto newBlock = std::make_shared<Block>();
+
+    newBlock->position_ = position_;
+    newBlock->size_ = size_;
+    newBlock->destination_rect_ = destination_rect_;
+    newBlock->is_visible_ = is_visible_;
+
+    newBlock->sourceRect_ = sourceRect_;
+    newBlock->blockOriginPos_ = blockOriginPos_;
+
+    for (size_t i = 0; i < static_cast<size_t>(EffectState::Max); i++) 
+    {
+        newBlock->blockEffectPos_[i] = blockEffectPos_[i];
+    }
+
+    newBlock->blockType_ = blockType_;
+    newBlock->state_ = state_;
+    newBlock->linkState_ = linkState_;
+    newBlock->effectState_ = effectState_;
+
+    newBlock->level_ = level_;
+    newBlock->texture_ = texture_;
+
+    newBlock->isScaled_ = isScaled_;
+    newBlock->isRecursionCheck_ = isRecursionCheck_;
+    newBlock->isStandard_ = isStandard_;
+    newBlock->isChanged_ = isChanged_;
+
+    newBlock->indexX_ = indexX_;
+    newBlock->indexY_ = indexY_;
+
+    newBlock->accumTime_ = accumTime_;
+    newBlock->accumEffectTime_ = accumEffectTime_;
+    newBlock->rotationAngle_ = rotationAngle_;
+    newBlock->scaleVelocity_ = scaleVelocity_;
+    newBlock->downVelocity_ = downVelocity_;
+
+    newBlock->playerID_ = playerID_;
+
+    return newBlock;
 }
 
 void Block::InitializeEffectPositions() 
 {
-    // 각 이펙트 상태별 위치 초기화
     blockEffectPos_[static_cast<int>(EffectState::Sparkle)] = { 1, 1 + (static_cast<int>(Constants::Block::SIZE) + 1) * 9 };
     blockEffectPos_[static_cast<int>(EffectState::Compress)] = { 1, 1 };
 }
@@ -184,7 +204,7 @@ void Block::UpdateDestroyingRotate(float deltaTime)
     float scaleDelta = Constants::Block::DESTROY_DELTA_SIZE / 360.0f * rotationAngle_;
     float posDelta = Constants::Block::DESTROY_POS_VELOCITY * deltaTime;
 
-    SetSize(Constants::Block::SIZE - scaleDelta, Constants::Block::SIZE - scaleDelta);
+    SetScale(Constants::Block::SIZE - scaleDelta, Constants::Block::SIZE - scaleDelta);
     position_.x += posDelta;
     position_.y += posDelta;
 
@@ -198,7 +218,6 @@ void Block::UpdateDestroyingRotate(float deltaTime)
 
 void Block::UpdateDownMoving(float deltaTime)
 {
-    // 낙하 속도 계산 및 위치 업데이트
     float fallSpeed = deltaTime * (static_cast<float>(Constants::Board::BOARD_Y_COUNT) + Constants::Block::SHATTERING_DOWN_SPEED -static_cast<float>(indexY_));
 
     downVelocity_ += fallSpeed;
@@ -206,7 +225,6 @@ void Block::UpdateDownMoving(float deltaTime)
 
     SetY(position_.y);
 
-    // 게임 보드 블록 배열 가져오기
     Block* (*blocks)[Constants::Board::BOARD_X_COUNT] = nullptr;
 
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
@@ -219,8 +237,6 @@ void Block::UpdateDownMoving(float deltaTime)
         return;
     }
 
-
-    // 충돌 검사
     bool hasCollision = false;
     bool canMove = true;
 
@@ -249,26 +265,20 @@ void Block::UpdateDownMoving(float deltaTime)
         }
     }
 
-    // 바닥 충돌 검사
     if (!hasCollision && position_.y + Constants::Block::SIZE >= Constants::Board::HEIGHT) 
     {
         SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
         canMove = false;
     }
 
-    // 이동 불가능한 경우 처리
     if (canMove == false) 
     {
-        // 기존 위치의 블록 제거
         blocks[indexY_][indexX_] = nullptr;
 
-        // 새 Y 인덱스 계산 및 위치 업데이트
         indexY_ = (Constants::Board::BOARD_Y_COUNT - 2) - static_cast<int>(position_.y / Constants::Block::SIZE);
 
-        // 현재 블록을 새 위치에 설정
         blocks[indexY_][indexX_] = this;
 
-        // 상태 변경
         SetState(BlockState::Stationary);
     }    
 }
@@ -304,7 +314,6 @@ void Block::SetBlockType(BlockType type)
     const float baseX = static_cast<float>(1);
     const float blockOffset = static_cast<float>(blockSize + 1);
 
-    // 블록 타입에 따른 텍스처 위치 설정
     switch (blockType_) 
     {
     case BlockType::Red:
@@ -366,13 +375,12 @@ void Block::SetBlockType(BlockType type)
     }
 }
 
-void Block::SetSize(float width, float height)
+void Block::SetScale(float width, float height)
 {
-    RenderableObject::SetSize(width, height);
+    RenderableObject::SetScale(width, height);
     UpdateDestinationRect();
     isScaled_ = true;
 }
-
 
 void Block::SetState(BlockState state) 
 {
@@ -423,6 +431,7 @@ void Block::UpdateLinkStateForDownMoving()
     }
 
     Block* (*gameBoard)[Constants::Board::BOARD_X_COUNT] = nullptr;
+    
     // 게임 보드에서 연결된 블록들의 링크 상태 업데이트
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
     {

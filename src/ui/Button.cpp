@@ -25,7 +25,7 @@ void Button::Init(std::shared_ptr<ImageTexture> texture, float x, float y, float
     }
 
     SetPosition(x, y);
-    SetSize(width, height);
+    SetScale(width, height);
 }
 
 void Button::Update(float deltaTime)

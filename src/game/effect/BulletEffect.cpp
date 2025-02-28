@@ -130,7 +130,7 @@ void BulletEffect::UpdateMovement(float delta_time)
     if (accumulated_angle_ >= 180.0f) 
     {
         current_state_ = State::Shocking;
-        SetSize(scale_, scale_);
+        SetScale(scale_, scale_);
         SetPosition(shock_pos_.x - (scale_ / 2), shock_pos_.y - (scale_ / 2));
         accumulated_time_ = 0.0f;
         return;
@@ -170,7 +170,7 @@ void BulletEffect::UpdateShockwave(float delta_time)
         current_rect.y -= pos_velocity;
 
         SetPosition(current_rect.x, current_rect.y);
-        SetSize(current_rect.w, current_rect.h);
+        SetScale(current_rect.w, current_rect.h);
 
         float new_alpha = static_cast<float>(alpha_) - (pos_velocity * 10.0f);
         new_alpha = std::max<float>(0.0f, new_alpha);

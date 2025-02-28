@@ -21,7 +21,7 @@ bool TextBox::Init(float x, float y, float width, float height)
     try 
     {
         SetPosition(x, y);
-        SetSize(width, height);
+        SetScale(width, height);
 
         input_title_texture_ = std::make_unique<StringTexture>();
         ime_composition_texture_ = std::make_unique<StringTexture>();
