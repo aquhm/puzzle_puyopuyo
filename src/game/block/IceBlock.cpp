@@ -4,6 +4,7 @@
 #include "../../core/manager/StateManager.hpp"
 #include "../../texture/ImageTexture.hpp"
 #include "../../game/system/GamePlayer.hpp"
+#include "../../utils/RectUtil.hpp"
 
 
 void IceBlock::SetState(BlockState state) 
@@ -95,6 +96,8 @@ void IceBlock::UpdateDownMoving(float deltaTime)
     bool hasCollision = false;
     bool canMove = true;
 
+    SDL_Rect targetRect, controlRect;
+
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y) 
     {
         Block* block = blocks[y][indexX_];
@@ -103,9 +106,13 @@ void IceBlock::UpdateDownMoving(float deltaTime)
             continue;
         }
 
+
         if (block->GetState() == BlockState::Stationary) 
         {
-            if (SDL_HasRectIntersectionFloat(&destination_rect_, &block->GetRect())) 
+            RectUtils::ConvertFRectToRect(destination_rect_, &controlRect);
+            RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+            if (SDL_HasRectIntersection(&controlRect, &targetRect))
             {
                 SetY(block->GetY() - Constants::Block::SIZE);
                 canMove = false;

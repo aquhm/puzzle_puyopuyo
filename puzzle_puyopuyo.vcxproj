@@ -92,6 +92,7 @@
     <ClInclude Include="src\ui\TextBox.hpp" />
     <ClInclude Include="src\utils\Logger.hpp" />
     <ClInclude Include="src\utils\PathUtil.hpp" />
+    <ClInclude Include="src\utils\RectUtil.hpp" />
     <ClInclude Include="src\utils\StringUtils.hpp" />
     <ClInclude Include="src\utils\Timer.hpp" />
   </ItemGroup>

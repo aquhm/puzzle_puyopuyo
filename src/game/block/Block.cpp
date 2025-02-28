@@ -8,6 +8,7 @@
 #include "../system/GamePlayer.hpp"
 
 #include <stdexcept>
+#include "../../utils/RectUtil.hpp"
 
 Block::Block() 
 {
@@ -240,6 +241,10 @@ void Block::UpdateDownMoving(float deltaTime)
     bool hasCollision = false;
     bool canMove = true;
 
+    SDL_Rect intersectResult;
+    SDL_Rect destinationRect;
+    SDL_Rect targetRect;
+
     for (int y = 0; y < Constants::Board::HEIGHT; ++y) 
     {
         Block* targetBlock = blocks[y][indexX_];
@@ -253,10 +258,11 @@ void Block::UpdateDownMoving(float deltaTime)
         {
             continue;
         }
+       
+        RectUtils::ConvertFRectToRect(destination_rect_, &destinationRect);
+        RectUtils::ConvertFRectToRect(targetBlock->GetRect(), &targetRect);
 
-        SDL_FRect intersectResult;
-
-        if (SDL_GetRectIntersectionFloat(&destination_rect_, &targetBlock->GetRect(), &intersectResult) == true) 
+        if (SDL_GetRectIntersection(&destinationRect, &targetRect, &intersectResult) == true)
         {
             SetY(intersectResult.y - Constants::Block::SIZE);
             canMove = false;

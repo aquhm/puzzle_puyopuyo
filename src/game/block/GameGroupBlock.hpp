@@ -66,7 +66,7 @@ public:
     void UpdateFallingBlock(uint8_t fallingIdx, bool falling);
 
 protected:
-    void GetCollisionRect(Block* block, SDL_FRect* rect, Constants::Direction dir);
+    void GetCollisionRect(Block* block, SDL_Rect* rect, Constants::Direction dir);
 
 private:
     void HandleHorizontalCollision();

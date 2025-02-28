@@ -14,6 +14,7 @@
 #include <cmath>
 #include <stdexcept>
 #include "../../utils/Logger.hpp"
+#include "../../utils/RectUtil.hpp"
 
 
 GameGroupBlock::GameGroupBlock()
@@ -144,7 +145,9 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
 
     if (collisionCheck) 
     {
-        SDL_FRect leftCollRects[2];
+        
+        SDL_Rect leftCollRects[2];
+        SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &leftCollRects[0], Constants::Direction::Left);
         GetCollisionRect(blocks_[Satellite].get(), &leftCollRects[1], Constants::Direction::Left);
@@ -154,8 +157,10 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
         // 충돌 체크
         for (const auto& block : *gameBlockList_) 
         {
-            if (SDL_GetRectIntersectionFloat(&leftCollRects[0], &block->GetRect(), &leftCollRects[0]) == true ||
-                SDL_GetRectIntersectionFloat(&leftCollRects[1], &block->GetRect(), &leftCollRects[1]) == true)
+            RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+            if (SDL_HasRectIntersection(&leftCollRects[0], &targetRect) == true ||
+                SDL_HasRectIntersection(&leftCollRects[1], &targetRect) == true)
             {
                 canMove = false;
                 break;
@@ -209,8 +214,8 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
     if (collisionCheck) 
     {   
-
-        SDL_FRect rightCollRects[2];
+        SDL_Rect rightCollRects[2];
+        SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &rightCollRects[0], Constants::Direction::Right);
         GetCollisionRect(blocks_[Satellite].get(), &rightCollRects[1], Constants::Direction::Right);
@@ -219,8 +224,10 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
         for (const auto& block : *gameBlockList_) 
         {
-            if (SDL_GetRectIntersectionFloat(&rightCollRects[Standard], &block->GetRect(), &rightCollRects[0]) == true ||
-                SDL_GetRectIntersectionFloat(&rightCollRects[Satellite], &block->GetRect(), &rightCollRects[1]) == true)
+            RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+            if (SDL_GetRectIntersection(&rightCollRects[Standard], &targetRect, &rightCollRects[0]) == true ||
+                SDL_GetRectIntersection(&rightCollRects[Satellite], &targetRect, &rightCollRects[1]) == true)
             {
                 canMove = false;
                 break;
@@ -269,7 +276,9 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
 
     bool hasCollision = false;
     bool canMove = true;
-    SDL_FRect resultRect{};
+    SDL_Rect resultRect{};
+    SDL_Rect controlRect{};
+    SDL_Rect targetRect{};
 
     float standardY = blocks_[Standard]->GetY();
     float satelliteY = blocks_[Satellite]->GetY();
@@ -285,23 +294,20 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
                 continue;
             }
 
-            auto& rect = block->GetRect();
-            auto& control_rect = blocks_[Satellite]->GetRect();
+            RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect);
+            RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
-            SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "컨트롤 rect: {}, 고정 rect: {}", rect, control_rect);
-
-            if (SDL_GetRectIntersectionFloat(&control_rect, &rect, &resultRect))
+            if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect))
             {
                 hasCollision = true;
-                resultRect = block->GetRect();
                 break;
             }
         }
 
         if (hasCollision) 
         {
-            blocks_[Standard]->SetY(resultRect.y - Constants::Block::SIZE * 2);
-            blocks_[Satellite]->SetY(resultRect.y - Constants::Block::SIZE);
+            blocks_[Standard]->SetY(targetRect.y - Constants::Block::SIZE * 2);
+            blocks_[Satellite]->SetY(targetRect.y - Constants::Block::SIZE);
             canMove_ = false;
         }
         else if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT) 
@@ -329,20 +335,25 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
         // 아래-위 배치일 때의 충돌 체크
         for (const auto& block : *gameBlockList_) 
         {
-            if (!block) continue;
+            if (!block)
+            {
+                continue;
+            }
 
-            if (SDL_GetRectIntersectionFloat(&blocks_[Standard]->GetRect(), &block->GetRect(), &resultRect))
+            RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect);
+            RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+            if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect))
             {
                 hasCollision = true;
-                resultRect = block->GetRect();
                 break;
             }
         }
 
         if (hasCollision) 
         {
-            blocks_[Standard]->SetY(resultRect.y - Constants::Block::SIZE);
-            blocks_[Satellite]->SetY(resultRect.y - Constants::Block::SIZE * 2);
+            blocks_[Standard]->SetY(targetRect.y - Constants::Block::SIZE);
+            blocks_[Satellite]->SetY(targetRect.y - Constants::Block::SIZE * 2);
             canMove_ = false;
         }
         else if (satelliteY + Constants::Block::SIZE * 2 >= Constants::Board::HEIGHT) 
@@ -362,21 +373,31 @@ void GameGroupBlock::HandleHorizontalCollision()
 {
     bool collision1 = false;
     bool collision2 = false;
-    SDL_FRect resultRect;
+    SDL_Rect resultRect;
+    SDL_Rect controlRect;
+    SDL_Rect targetRect;
 
     for (const auto& block : *gameBlockList_) 
     {
-        if (!block) continue;
-
-        if (SDL_GetRectIntersectionFloat(&blocks_[Standard]->GetRect(), &block->GetRect(), &resultRect) == true)
+        if (!block)
         {
-            intersectResultRect_ = resultRect;
+            continue;
+        }
+
+        RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect);
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+        if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect) == true)
+        {
+            SDL_RectToFRect(&resultRect, &intersectResultRect_);
             collision1 = true;
         }
 
-        if (SDL_GetRectIntersectionFloat(&blocks_[Satellite]->GetRect(), &block->GetRect(), &resultRect) == true)
+        RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect);
+
+        if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect) == true)
         {
-            intersectResultRect_ = resultRect;
+            SDL_RectToFRect(&resultRect, &intersectResultRect_);
             collision2 = true;
         }
 
@@ -661,7 +682,7 @@ void GameGroupBlock::ProcessBlockPlacement()
     }
 }
 
-void GameGroupBlock::GetCollisionRect(Block* block, SDL_FRect* rect, Constants::Direction dir) 
+void GameGroupBlock::GetCollisionRect(Block* block, SDL_Rect* rect, Constants::Direction dir) 
 {
     if (!block || !rect)
     {
@@ -815,7 +836,9 @@ void GameGroupBlock::HandleSingleBlockFalling()
 {
     bool hasCollision = false;
 
-    SDL_FRect resultRect{};
+    SDL_Rect resultRect;
+    SDL_Rect controlRect;
+    SDL_Rect targetRect;
 
     for (const auto& block : *gameBlockList_) 
     {
@@ -824,7 +847,10 @@ void GameGroupBlock::HandleSingleBlockFalling()
             continue;
         }
 
-        if (SDL_GetRectIntersectionFloat(&blocks_[fallingIdx_]->GetRect(),&block->GetRect(), &resultRect) == true)
+        RectUtils::ConvertFRectToRect(blocks_[fallingIdx_]->GetRect(), &controlRect);
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
+        if (SDL_GetRectIntersection(&controlRect,&targetRect, &resultRect) == true)
         {
             hasCollision = true;
             break;
@@ -878,7 +904,7 @@ void GameGroupBlock::Rotate()
 
 void GameGroupBlock::HandleDefaultTopRotation() 
 {
-    SDL_FRect rightCollRect{}, leftCollRect{}, resultRect{};
+    SDL_Rect rightCollRect{}, leftCollRect{}, resultRect{}, targetRect{};
     bool rightColl = false, leftColl = false;
 
     GetCollisionRect(blocks_[static_cast<size_t>(BlockIndex::Standard)].get(), &leftCollRect, Constants::Direction::Left);
@@ -891,17 +917,19 @@ void GameGroupBlock::HandleDefaultTopRotation()
             continue;
         }
 
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+
         // 좌측 충돌 체크
-        if (SDL_GetRectIntersectionFloat(&leftCollRect, &block->GetRect(), &resultRect)) 
+        if (SDL_GetRectIntersection(&leftCollRect, &targetRect, &resultRect))
         {
-            intersectResultRect_ = resultRect;
+            SDL_RectToFRect(&resultRect, &intersectResultRect_);
             leftColl = true;
         }
 
         // 우측 충돌 체크
-        if (SDL_GetRectIntersectionFloat(&rightCollRect, &block->GetRect(), &resultRect)) 
+        if (SDL_GetRectIntersection(&rightCollRect, &targetRect, &resultRect))
         {
-            intersectResultRect_ = resultRect;
+            SDL_RectToFRect(&resultRect, &intersectResultRect_);
             rightColl = true;
         }
 
