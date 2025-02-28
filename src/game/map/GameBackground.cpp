@@ -63,27 +63,27 @@ bool GameBackground::LoadBackgroundTextures()
 
         for (int i = 0; i < 2; ++i)
         {
-            // ResourceManager를 통해 리소스 로드
             auto bg_filename = std::format("{}/bg{:02d}/bg{:02d}_{:02d}.png", bgPath, map_index_, map_index_, i);
             auto mask_filename = std::format("{}/bg{:02d}/bg{:02d}_mask{}.png", bgPath, map_index_, map_index_, i == 0 ? "" : "_2");
 
             background_textures_[i] = ImageTexture::Create(bg_filename);
-            block_preview_textures_[i] = ImageTexture::Create(mask_filename);
+            mask_textures_[i] = ImageTexture::Create(mask_filename);
 
-            if (!background_textures_[i] || !block_preview_textures_[i])
+            if (!background_textures_[i] || !mask_textures_[i])
             {
                 throw std::runtime_error("Failed to load background or mask texture");
             }
         }
 
-        // Setup background rectangles
-        background_rects_[0] = {
+        background_rects_[0] = 
+        {
             0, 0,
             background_textures_[0]->GetWidth(),
             static_cast<float>(GAME_APP.GetWindowHeight())
         };
 
-        background_rects_[1] = {
+        background_rects_[1] = 
+        {
             0, 0,
             static_cast<float>(background_textures_[1]->GetWidth()),
             background_rects_[0].h
@@ -115,7 +115,8 @@ bool GameBackground::CreateRenderTarget()
 
     SDL_SetTextureBlendMode(render_target_.get(), SDL_BLENDMODE_BLEND);
 
-    render_target_rect_ = {
+    render_target_rect_ = 
+    {
         Constants::Background::MASK_POSITION_X,
         Constants::Background::MASK_POSITION_Y,
         Constants::Background::MASK_WIDTH,
@@ -154,12 +155,11 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
     bool can_erase = false;
     bool move_finished = false;
 
-    // Big block update
     if (big_block)
     {
         float y = big_block->GetY();
         y -= delta_time * Constants::Background::NEW_BLOCK_VELOCITY;
-        big_block->SetY(y);
+        big_block->SetPosY(y);
 
         if (y < -(Constants::Block::SIZE * 3))
         {
@@ -167,43 +167,44 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
         }
     }
 
-    // Small block update
     if (small_block)
     {
         float x = small_block->GetX();
         float y = small_block->GetY();
+
         float width = small_block->GetWidth();
         float height = small_block->GetHeight();
 
         x += delta_time * direction_vector_.x * Constants::Background::NEW_BLOCK_VELOCITY;
         y += delta_time * direction_vector_.y * Constants::Background::NEW_BLOCK_VELOCITY;
+
         width += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
         height += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
 
         x = std::max<float>(x, static_cast<float>(Constants::GroupBlock::NEXT_BLOCK_POS_X));
         y = std::max<float>(y, static_cast<float>(Constants::GroupBlock::NEXT_BLOCK_POS_Y));
-        width = min(width, static_cast<float>(Constants::Block::SIZE));
-        height = min(height, static_cast<float>(Constants::Block::SIZE));
+        width = std::min<float>(width, static_cast<float>(Constants::Block::SIZE));
+        height = std::min<float>(height, static_cast<float>(Constants::Block::SIZE));
 
-        small_block->SetPosition(x, y);
+        small_block->SetPosXY(x, y);
         small_block->SetScale(width, height);
 
-        if (x == Constants::GroupBlock::NEXT_BLOCK_POS_X && y == Constants::GroupBlock::NEXT_BLOCK_POS_Y &&
+        if (static_cast<int>(x) == Constants::GroupBlock::NEXT_BLOCK_POS_X && 
+            static_cast<int>(y) == Constants::GroupBlock::NEXT_BLOCK_POS_Y &&
             width == Constants::Block::SIZE && height == Constants::Block::SIZE)
         {
             move_finished = true;
         }
     }
 
-    // New block update
     if (new_block)
     {
         float y = new_block->GetY();
         y -= delta_time * Constants::Background::NEW_BLOCK_VELOCITY;
 
-        if (y < Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y)
+        if (static_cast<int>(y) < Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y)
         {
-            y = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y;
+            y = static_cast<float>(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y);
 
             if (can_erase && move_finished)
             {
@@ -216,7 +217,7 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
                 }
             }
         }
-        new_block->SetY(y);
+        new_block->SetPosY(y);
     }
 }
 
@@ -234,12 +235,11 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
     bool can_erase = false;
     bool move_finished = false;
 
-    // Big block update
     if (big_block)
     {
         float y = big_block->GetY();
         y -= delta_time * Constants::Background::NEW_BLOCK_VELOCITY;
-        big_block->SetY(y);
+        big_block->SetPosY(y);
 
         if (y < -(Constants::Block::SIZE * 3))
         {
@@ -247,7 +247,6 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         }
     }
 
-    // Small block update
     if (small_block)
     {
         float x = small_block->GetX();
@@ -265,7 +264,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         width = std::min<float>(width, Constants::Block::SIZE);
         height = std::min<float>(height, Constants::Block::SIZE);
 
-        small_block->SetPosition(x, y);
+        small_block->SetPosXY(x, y);
         small_block->SetScale(width, height);
 
         if (x == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X && y == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y &&
@@ -275,7 +274,6 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         }
     }
 
-    // New block update
     if (new_block)
     {
         float y = new_block->GetY();
@@ -299,7 +297,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
                 }
             }
         }
-        new_block->SetY(y);
+        new_block->SetPosY(y);
     }
 }
 
@@ -310,7 +308,6 @@ void GameBackground::Render()
         return;
     }
 
-    // Render background layers
     for (size_t i = 0; i < background_textures_.size(); ++i) 
     {
         if (background_textures_[i]) 
@@ -319,21 +316,19 @@ void GameBackground::Render()
         }
     }
 
-    // Render block preview area
     if (!group_blocks_.empty() && !player_group_blocks_.empty() && render_target_) 
     {
-        SDL_SetRenderTarget(GAME_APP.GetRenderer(), render_target_.get());
-        SDL_SetRenderDrawColor(GAME_APP.GetRenderer(), 0xFF, 0xFF, 0xFF, 0);
-        SDL_RenderClear(GAME_APP.GetRenderer());
+        auto renderer = GAME_APP.GetRenderer();
+        SDL_SetRenderTarget(renderer, render_target_.get());
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0);
+        SDL_RenderClear(renderer);
 
-        // Render mask background
-        if (block_preview_textures_[0]) 
+        if (mask_textures_[0])
         {
-            block_preview_textures_[0]->Render(0, 0);
-            block_preview_textures_[0]->Render(32, 0, nullptr, 0.0f, nullptr, SDL_FLIP_HORIZONTAL);
+            mask_textures_[0]->Render(0, 0);
+            mask_textures_[0]->Render(32, 0, nullptr, 0.0f, nullptr, SDL_FLIP_HORIZONTAL);
         }
 
-        // Render blocks
         for (const auto& block : group_blocks_) 
         {
             if (block) block->Render();
@@ -344,14 +339,13 @@ void GameBackground::Render()
             if (block) block->Render();
         }
 
-        SDL_SetRenderTarget(GAME_APP.GetRenderer(), nullptr);
-        SDL_RenderTexture(GAME_APP.GetRenderer(), render_target_.get(), nullptr, &render_target_rect_);
+        SDL_SetRenderTarget(renderer, nullptr);
+        SDL_RenderTexture(renderer, render_target_.get(), nullptr, &render_target_rect_);
     }
 
-    // Render block preview mask overlay
-    if (block_preview_textures_[1]) 
+    if (mask_textures_[1])
     {
-        block_preview_textures_[1]->Render(Constants::Background::MASK_POSITION_X, Constants::Background::MASK_POSITION_Y);
+        mask_textures_[1]->Render(Constants::Background::MASK_POSITION_X, Constants::Background::MASK_POSITION_Y);
     }
 }
 
@@ -359,8 +353,8 @@ void GameBackground::Release()
 {
     background_textures_[0].reset();
     background_textures_[1].reset();
-    block_preview_textures_[0].reset();
-    block_preview_textures_[1].reset();
+    mask_textures_[0].reset();
+    mask_textures_[1].reset();
 
     group_blocks_.clear();
     player_group_blocks_.clear();
@@ -382,7 +376,7 @@ void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block)
         return;
     }
 
-    group_blocks_.push_back(std::move(block));
+    group_blocks_.emplace_back(block);
     is_changing_block_ = true;
 }
 
@@ -393,7 +387,7 @@ void GameBackground::SetPlayerNextBlock(const std::shared_ptr<GroupBlock>& block
         return;
     }
 
-    player_group_blocks_.push_back(std::move(block));
+    player_group_blocks_.push_back(block);
     is_player_changing_block_ = true;
 }
 

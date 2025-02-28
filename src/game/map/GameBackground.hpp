@@ -63,7 +63,7 @@ protected:
 
 
     std::array<std::shared_ptr<ImageTexture>, 2> background_textures_;
-    std::array<std::shared_ptr<ImageTexture>, 2> block_preview_textures_;
+    std::array<std::shared_ptr<ImageTexture>, 2> mask_textures_;
     std::array<SDL_FRect, 2> background_rects_;
 
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> render_target_;

@@ -1034,12 +1034,13 @@ void GameState::InitNextBlock()
         return;
     }
 
-    nextBlock1->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_X, Constants::GroupBlock::NEXT_BLOCK_POS_Y);
-    nextBlock2->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y);
+    nextBlock1->SetPosXY(Constants::GroupBlock::NEXT_BLOCK_POS_X, Constants::GroupBlock::NEXT_BLOCK_POS_Y);
+    nextBlock1->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
+    nextBlock2->SetPosXY(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y);
     nextBlock2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
-    next_blocks_.push_back(std::move(nextBlock1));
-    next_blocks_.push_back(std::move(nextBlock2));
+    next_blocks_.emplace_back(nextBlock1);
+    next_blocks_.emplace_back(nextBlock2);
 
     if (background_) 
     {
@@ -1063,16 +1064,17 @@ void GameState::CreateNextBlock()
         return;
     }
 
-    nextBlock->SetPosition(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, 100);
+    nextBlock->SetPosXY(Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X, 100);
     nextBlock->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_) 
     {
-        next_blocks_.push_back(nextBlock);
+        next_blocks_.emplace_back(nextBlock);
         background_->SetNextBlock(nextBlock);
     }
 
-    if (gameboard_) {
+    if (gameboard_) 
+    {
         gameboard_->SetRenderTargetMark(false);
     }
 
@@ -2328,11 +2330,14 @@ void GameState::HandleGameOver()
 }
 
 
+//-------------------------------------------------------------
+//		다음에 나올 블록 삭제 하면서 게임보드내 블록 추가
+//-------------------------------------------------------------
 void GameState::DestroyNextBlock() 
 {
     if (next_blocks_.size() == 3) 
     {
-        auto nextBlock = std::move(next_blocks_.front());
+        auto nextBlock = std::move(next_blocks_.front());        
         next_blocks_.pop_front();
 
         if (nextBlock && control_block_) 
@@ -2349,6 +2354,7 @@ void GameState::DestroyNextBlock()
             }
 
             UpdateTargetPosIdx();
+
         }
     }
 }

@@ -32,24 +32,14 @@ bool GameBoard::Initialize(float xPos, float yPos, std::list<std::shared_ptr<Blo
         blockList_ = &blockList;
         playerID_ = playerId;
 
-        // 배경 텍스처 로드
         sourceBlock_ = ImageTexture::Create("FIELD/BG_00.png");
         if (!sourceBlock_)
         {
             throw std::runtime_error("Failed to load background texture");
         }
 
-        newBlockPosition_ = std::make_unique<AnimatedObject>();
-        if (!newBlockPosition_)
-        {
-            throw std::runtime_error("Failed to create animation object");
-        }
-
         InitializeRenderTarget();
         InitializePositions(xPos, yPos);
-
-        // 새 블록 위치 설정
-        newBlockPosition_->SetPosition(Constants::Board::NEW_BLOCK_POS_X, Constants::Board::NEW_BLOCK_POS_Y);
 
         return true;
     }
@@ -107,22 +97,6 @@ void GameBoard::InitializePositions(float xPos, float yPos)
 
 void GameBoard::SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture) 
 {
-    if (newBlockPosition_) 
-    {
-        SDL_FRect srcRect = { 225, 384, 160, 30 };
-        SDL_FRect viewRect = { 0, 0, 31, 30 };
-
-        newBlockPosition_->SetTextureInfo(
-            texture,
-            viewRect,
-            srcRect,
-            {1,0}            
-        );
-
-        newBlockPosition_->SetFrameTime(Constants::Board::NEW_BLOCK_ANIM_SPEED);
-        newBlockPosition_->Play();
-    }
-
     puyoSourceTexture_ = texture;
 }
 
@@ -153,7 +127,6 @@ void GameBoard::CreateNewBlockInGame(const std::shared_ptr<GroupBlock>& block)
     }
 }
 
-// GameBoard.cpp
 void GameBoard::UpdateNormalState(float deltaTime) 
 {
 }
@@ -231,11 +204,6 @@ void GameBoard::UpdateLosingState(float deltaTime)
 
 void GameBoard::Update(float deltaTime) 
 {
-    if (newBlockPosition_) 
-    {
-        newBlockPosition_->Update(deltaTime);
-    }
-
     switch (state_) 
     {
     case BoardState::Normal:
@@ -308,9 +276,6 @@ void GameBoard::Render()
     // 배경 렌더링
     RenderBackground();
 
-    // 새로운 블록 위치 표시 렌더링
-    RenderNewBlockPosition();
-
     // 타겟 마크 렌더링
     RenderTargetMarks();
 
@@ -320,10 +285,8 @@ void GameBoard::Render()
         activeGroupBlock_->Render();
     }
 
-    // 고정된 블록들 렌더링
     RenderFixedBlocks();
 
-    // 파티클 렌더링     
     GAME_APP.GetParticleManager().RenderForPlayer(playerID_);
 
     // 렌더 타겟 복원 및 최종 렌더링
@@ -345,20 +308,6 @@ void GameBoard::RenderBackground()
     if (sourceBlock_) 
     {
         sourceBlock_->RenderScaled(&backgroundSourceRect_, &destination_rect_);
-    }
-}
-
-void GameBoard::RenderNewBlockPosition() 
-{
-    if (newBlockPosition_) 
-    {
-        // 첫 번째 블록 위치
-        newBlockPosition_->SetPosition(Constants::Board::NEW_BLOCK_POS_X, Constants::Board::NEW_BLOCK_POS_Y);
-        newBlockPosition_->Render();
-
-        // 두 번째 블록 위치
-        newBlockPosition_->SetPosition(Constants::Board::NEW_BLOCK_POS_X + Constants::Block::SIZE, Constants::Board::NEW_BLOCK_POS_Y);
-        newBlockPosition_->Render();
     }
 }
 
@@ -386,7 +335,6 @@ void GameBoard::Release()
     try 
     {
         sourceBlock_.reset();
-        newBlockPosition_.reset();
 
         if (targetRenderTexture_) 
         {
@@ -394,12 +342,10 @@ void GameBoard::Release()
             targetRenderTexture_ = nullptr;
         }
 
-        // 기타 멤버 변수 초기화
         blockList_->clear();
         activeGroupBlock_.reset();
         puyoSourceTexture_.reset();
 
-        // 상태 관련 변수 초기화
         state_ = BoardState::Normal;
         isTargetMark_ = false;
         accumTime_ = 0.0f;

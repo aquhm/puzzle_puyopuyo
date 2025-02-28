@@ -78,7 +78,6 @@ private:
     void UpdateRenderTarget();
     void RenderBackground();
     void InitializePositions(float xPos, float yPos);
-    void RenderNewBlockPosition();
     void RenderTargetMarks();
     void RenderFixedBlocks();
 
@@ -88,7 +87,6 @@ private:
     std::array<BlockTargetMark, 2> targetBlockMarks_{};
 
     std::shared_ptr<ImageTexture> sourceBlock_;
-    std::unique_ptr<AnimatedObject> newBlockPosition_;
     std::shared_ptr<ImageTexture> puyoSourceTexture_;
 
     SDL_Texture* targetRenderTexture_{ nullptr };
