@@ -1395,41 +1395,36 @@ void GameState::UpdateLinkState(Block* block)
         {Constants::Direction::Bottom, {x, y - 1}}
     } };
 
-    for (const auto& [dir, pos] : directions) {
+    for (const auto& [dir, pos] : directions) 
+    {
         const auto [checkX, checkY] = pos;
 
         if (checkX >= 0 && checkX < Constants::Board::BOARD_X_COUNT &&
             checkY >= 0 && checkY < Constants::Board::BOARD_Y_COUNT)
         {
             Block* checkBlock = board_blocks_[checkY][checkX];
-            if (checkBlock && checkBlock->GetState() == BlockState::Stationary &&
-                checkBlock->GetBlockType() == blockType)
+            if (checkBlock && checkBlock->GetState() == BlockState::Stationary && checkBlock->GetBlockType() == blockType)
             {
                 // 연결 상태 업데이트
-                switch (dir) {
+                auto checkBlockLinkState = static_cast<uint8_t>(checkBlock->GetLinkState());
+                switch (dir) 
+                {
                 case Constants::Direction::Left:
-                    linkState |= static_cast<uint8_t>(LinkState::Left);
-                    checkBlock->SetLinkState(static_cast<LinkState>(
-                        static_cast<uint8_t>(checkBlock->GetLinkState()) |
-                        static_cast<uint8_t>(LinkState::Right)));
+                    linkState |= static_cast<uint8_t>(LinkState::Right);
+
+                    checkBlock->SetLinkState(static_cast<LinkState>(checkBlockLinkState | static_cast<uint8_t>(LinkState::Left)));
                     break;
                 case Constants::Direction::Right:
-                    linkState |= static_cast<uint8_t>(LinkState::Right);
-                    checkBlock->SetLinkState(static_cast<LinkState>(
-                        static_cast<uint8_t>(checkBlock->GetLinkState()) |
-                        static_cast<uint8_t>(LinkState::Left)));
+                    linkState |= static_cast<uint8_t>(LinkState::Left);
+                    checkBlock->SetLinkState(static_cast<LinkState>(checkBlockLinkState | static_cast<uint8_t>(LinkState::Right)));
                     break;
                 case Constants::Direction::Top:
-                    linkState |= static_cast<uint8_t>(LinkState::Top);
-                    checkBlock->SetLinkState(static_cast<LinkState>(
-                        static_cast<uint8_t>(checkBlock->GetLinkState()) |
-                        static_cast<uint8_t>(LinkState::Bottom)));
+                    linkState |= static_cast<uint8_t>(LinkState::Bottom);
+                    checkBlock->SetLinkState(static_cast<LinkState>(checkBlockLinkState |  static_cast<uint8_t>(LinkState::Top)));
                     break;
                 case Constants::Direction::Bottom:
-                    linkState |= static_cast<uint8_t>(LinkState::Bottom);
-                    checkBlock->SetLinkState(static_cast<LinkState>(
-                        static_cast<uint8_t>(checkBlock->GetLinkState()) |
-                        static_cast<uint8_t>(LinkState::Top)));
+                    linkState |= static_cast<uint8_t>(LinkState::Top);
+                    checkBlock->SetLinkState(static_cast<LinkState>(checkBlockLinkState | static_cast<uint8_t>(LinkState::Bottom)));
                     break;
                 }
             }
