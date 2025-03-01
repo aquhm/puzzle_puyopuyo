@@ -108,7 +108,10 @@ void Block::Update(float deltaTime)
 
 void Block::UpdatePlayingState(float deltaTime) 
 {
-    if (!isStandard_) return;
+    if (!isStandard_)
+    {
+        return;
+    }
 
     accumTime_ += deltaTime;
 
@@ -117,13 +120,9 @@ void Block::UpdatePlayingState(float deltaTime)
         accumTime_ = 0.0f;
         isChanged_ = !isChanged_;
 
-        sourceRect_.x = isChanged_ ?
-            blockEffectPos_[static_cast<int>(EffectState::Sparkle)].x :
-            blockOriginPos_.x;
+        sourceRect_.x = isChanged_ ? blockEffectPos_[static_cast<int>(EffectState::Sparkle)].x : blockOriginPos_.x;
 
-        sourceRect_.y = isChanged_ ?
-            blockEffectPos_[static_cast<int>(EffectState::Sparkle)].y :
-            blockOriginPos_.y;
+        sourceRect_.y = isChanged_ ? blockEffectPos_[static_cast<int>(EffectState::Sparkle)].y :blockOriginPos_.y;
     }
 }
 
@@ -148,9 +147,8 @@ void Block::UpdateBlockEffect(float deltaTime)
     {
         if (accumEffectTime_ <= Constants::Block::EFFECT_EXPAND_TIME)
         {
-            sourceRect_.x = blockEffectPos_[static_cast<int>(EffectState::Compress)].x +
-                static_cast<int>(Constants::Block::SIZE);
-            sourceRect_.y = blockEffectPos_[static_cast<int>(EffectState::Compress)].y;
+            sourceRect_.x = blockEffectPos_[static_cast<int>(EffectState::Compress)].x + static_cast<int>(Constants::Block::SIZE);
+            sourceRect_.y = blockEffectPos_[static_cast<int>(EffectState::Compress)].y;        
         }
         else 
         {
@@ -195,7 +193,9 @@ void Block::UpdateDestroyingExpand(float deltaTime)
     position_.x -= posVelocity;
     position_.y -= posVelocity;
 
-    UpdateDestinationRect();
+    SetScale(size_.x, size_.y);
+    SetPosition(position_.x, position_.y);
+    //UpdateDestinationRect();
 }
 
 void Block::UpdateDestroyingRotate(float deltaTime) 
@@ -206,10 +206,12 @@ void Block::UpdateDestroyingRotate(float deltaTime)
     float posDelta = Constants::Block::DESTROY_POS_VELOCITY * deltaTime;
 
     SetScale(Constants::Block::SIZE - scaleDelta, Constants::Block::SIZE - scaleDelta);
+
     position_.x += posDelta;
     position_.y += posDelta;
 
-    UpdateDestinationRect();
+    //UpdateDestinationRect();
+    SetPosition(position_.x, position_.y);
 
     if (rotationAngle_ >= 360.0f) 
     {
@@ -219,7 +221,7 @@ void Block::UpdateDestroyingRotate(float deltaTime)
 
 void Block::UpdateDownMoving(float deltaTime)
 {
-    float fallSpeed = deltaTime * (static_cast<float>(Constants::Board::BOARD_Y_COUNT) + Constants::Block::SHATTERING_DOWN_SPEED -static_cast<float>(indexY_));
+    float fallSpeed = deltaTime * (static_cast<float>(Constants::Board::BOARD_Y_COUNT) + Constants::Block::SHATTERING_DOWN_SPEED - static_cast<float>(indexY_));
 
     downVelocity_ += fallSpeed;
     position_.y += downVelocity_;
@@ -245,7 +247,7 @@ void Block::UpdateDownMoving(float deltaTime)
     SDL_Rect destinationRect;
     SDL_Rect targetRect;
 
-    for (int y = 0; y < Constants::Board::HEIGHT; ++y) 
+    for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y) 
     {
         Block* targetBlock = blocks[y][indexX_];
 
@@ -423,63 +425,60 @@ void Block::SetState(BlockState state)
     }
 }
 
-void Block::UpdateLinkStateForDownMoving() 
+void Block::UpdateLinkStateForDownMoving()
 {
     // 현재 블록이 좌우 연결 상태를 가지고 있는지 확인
-    const bool hasHorizontalLinks =(static_cast<int>(linkState_) &
-            (static_cast<int>(LinkState::Left) | static_cast<int>(LinkState::Right))) != 0;
+    const bool hasHorizontalLinks = (static_cast<int>(linkState_) &
+        (static_cast<int>(LinkState::Left) |
+            static_cast<int>(LinkState::Right))) != 0;
 
-    if (!hasHorizontalLinks) 
+    // 수평 링크가 있는 경우에만 이웃 블록 상태 업데이트 수행
+    if (hasHorizontalLinks)
     {
-        // 좌우 연결이 없으면 처리할 필요 없음
-        SetLinkState(LinkState::Normal);
-        return;
-    }
+        Block* (*gameBoard)[Constants::Board::BOARD_X_COUNT] = nullptr;
 
-    Block* (*gameBoard)[Constants::Board::BOARD_X_COUNT] = nullptr;
-    
-    // 게임 보드에서 연결된 블록들의 링크 상태 업데이트
-    if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
-    {
-        gameBoard = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
-    }
-    
-    if (!gameBoard)
-    {
-        return;
-    }
-
-    // 좌측 블록 체크
-    if (indexX_ > 0 && (static_cast<int>(linkState_) & static_cast<int>(LinkState::Left))) 
-    {
-        if (auto leftBlock = gameBoard[indexY_][indexX_ - 1])
+        // 게임 보드에서 연결된 블록들의 링크 상태 업데이트
+        if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (leftBlock->GetBlockType() == blockType_) 
+            gameBoard = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
+        }
+
+        if (gameBoard)
+        {
+            // 좌측 블록 체크
+            if (indexX_ > 0 && (static_cast<int>(linkState_) & static_cast<int>(LinkState::Left)))
             {
-                // 좌측 블록의 우측 링크 제거
-                auto leftLinkState = leftBlock->GetLinkState();
-                leftLinkState = static_cast<LinkState>(static_cast<int>(leftLinkState) & ~static_cast<int>(LinkState::Right));
-                leftBlock->SetLinkState(leftLinkState);
+                if (auto leftBlock = gameBoard[indexY_][indexX_ - 1])
+                {
+                    if (leftBlock->GetBlockType() == blockType_)
+                    {
+                        // 좌측 블록의 우측 링크 제거
+                        auto leftLinkState = leftBlock->GetLinkState();
+                        leftLinkState = static_cast<LinkState>(static_cast<int>(leftLinkState) &  ~static_cast<int>(LinkState::Right));
+                        leftBlock->SetLinkState(leftLinkState);
+                    }
+                }
+            }
+
+            // 우측 블록 체크
+            if (indexX_ < Constants::Board::BOARD_X_COUNT - 1 &&
+                (static_cast<int>(linkState_) & static_cast<int>(LinkState::Right)))
+            {
+                if (auto rightBlock = gameBoard[indexY_][indexX_ + 1])
+                {
+                    if (rightBlock->GetBlockType() == blockType_)
+                    {
+                        // 우측 블록의 좌측 링크 제거
+                        auto rightLinkState = rightBlock->GetLinkState();
+                        rightLinkState = static_cast<LinkState>(static_cast<int>(rightLinkState) & ~static_cast<int>(LinkState::Left));
+                        rightBlock->SetLinkState(rightLinkState);
+                    }
+                }
             }
         }
     }
 
-    // 우측 블록 체크
-    if (indexX_ < Constants::Board::BOARD_X_COUNT - 1 && (static_cast<int>(linkState_) & static_cast<int>(LinkState::Right))) 
-    {
-        if (auto rightBlock = gameBoard[indexY_][indexX_ + 1])
-        {
-            if (rightBlock->GetBlockType() == blockType_) 
-            {
-                // 우측 블록의 좌측 링크 제거
-                auto rightLinkState = rightBlock->GetLinkState();
-                rightLinkState = static_cast<LinkState>(static_cast<int>(rightLinkState) & ~static_cast<int>(LinkState::Left));
-                rightBlock->SetLinkState(rightLinkState);
-            }
-        }
-    }
-
-    // 현재 블록의 링크 상태 초기화
+    // 항상 실행 - 기존 코드와 동일한 동작 보장
     SetLinkState(LinkState::Normal);
 }
 
@@ -496,7 +495,7 @@ void Block::UpdateSourceRectForLinkState()
 
     switch (linkState_) 
     {
-    case LinkState::Normal:          sourceRect_.x = 1; break;
+    case LinkState::Normal:         sourceRect_.x = 1; break;
     case LinkState::Left:           sourceRect_.x = 1 + baseOffset * 4; break;
     case LinkState::Top:            sourceRect_.x = 1 + baseOffset; break;
     case LinkState::Right:          sourceRect_.x = 1 + baseOffset * 8; break;

@@ -387,7 +387,7 @@ void GameBackground::SetPlayerNextBlock(const std::shared_ptr<GroupBlock>& block
         return;
     }
 
-    player_group_blocks_.push_back(block);
+    player_group_blocks_.emplace_back(block);
     is_player_changing_block_ = true;
 }
 

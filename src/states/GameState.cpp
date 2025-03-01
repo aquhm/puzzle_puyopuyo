@@ -504,34 +504,34 @@ void GameState::UpdateIceBlockPhase(float deltaTime)
     }
 }
 
-void GameState::UpdateShatteringPhase(float deltaTime) 
+void GameState::UpdateShatteringPhase(float deltaTime)
 {
-    if (matched_blocks_.empty() == false) 
+    if (!matched_blocks_.empty())
     {
         std::vector<SDL_FPoint> positions;
         std::list<SDL_Point> indexList;
 
         // 매칭된 블록 그룹 처리
         auto groupIter = matched_blocks_.begin();
-        while (groupIter != matched_blocks_.end()) 
+        while (groupIter != matched_blocks_.end())
         {
             // 그룹 내 모든 블록이 PlayOut 상태인지 확인
             bool allPlayedOut = std::all_of(groupIter->begin(), groupIter->end(),
-                [](const Block* block) 
+                [](const Block* block)
                 {
-                    return block->GetState() == BlockState::PlayOut; 
+                    return block->GetState() == BlockState::PlayOut;
                 });
 
-            if (allPlayedOut) 
+            if (allPlayedOut)
             {
                 // 첫 번째 블록으로 총알 생성
-                if (!groupIter->empty()) 
+                if (!groupIter->empty())
                 {
                     CreateBullet(groupIter->front());
                 }
 
                 // 그룹 내 모든 블록 처리
-                for (auto* block : *groupIter) 
+                for (auto* block : *groupIter)
                 {
                     // 위치 정보 저장
                     SDL_FPoint pos{ block->GetX(), block->GetY() };
@@ -546,25 +546,38 @@ void GameState::UpdateShatteringPhase(float deltaTime)
 
                     // 게임 보드에서 블록 제거
                     board_blocks_[idx.y][idx.x] = nullptr;
-                    block_list_.remove(std::shared_ptr<Block>(block));
+
+                    // 메모리 관리 오류 수정: 올바른 방법으로 shared_ptr 찾아서 제거
+                    auto it = std::find_if(block_list_.begin(), block_list_.end(),
+                        [block](const std::shared_ptr<Block>& ptr) {
+                            return ptr.get() == block;
+                        });
+
+                    if (it != block_list_.end()) {
+                        block_list_.erase(it);
+                    }
+
                     indexList.push_back(idx);
                 }
 
                 // 콤보 표시 업데이트
-                if (combo_view_ && scoreInfo_.comboCount > 0 && !groupIter->empty()) 
+                if (combo_view_ && scoreInfo_.comboCount > 0 && !groupIter->empty())
                 {
                     auto* firstBlock = groupIter->front();
                     combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), scoreInfo_.comboCount);
                 }
 
                 // 방해 블록 처리
-                if (!ice_blocks_.empty()) 
+                if (!ice_blocks_.empty())
                 {
-                    for (const auto& iceBlock : ice_blocks_) 
+                    for (const auto& iceBlock : ice_blocks_)
                     {
-                        SDL_Point iceIdx{ iceBlock->GetPosIdx_X(), iceBlock->GetPosIdx_Y()};
+                        SDL_Point iceIdx{ iceBlock->GetPosIdx_X(), iceBlock->GetPosIdx_Y() };
                         board_blocks_[iceIdx.y][iceIdx.x] = nullptr;
+
+                        // 여기도 마찬가지로 메모리 관리 방식 수정
                         block_list_.remove(iceBlock);
+
                         indexList.push_back(iceIdx);
                     }
                     ice_blocks_.clear();
@@ -572,23 +585,23 @@ void GameState::UpdateShatteringPhase(float deltaTime)
 
                 groupIter = matched_blocks_.erase(groupIter);
             }
-            else {
+            else
+            {
                 ++groupIter;
             }
         }
 
         // 삭제된 블록 위의 블록들 낙하 상태로 변경
-        if (matched_blocks_.empty()) 
+        if (matched_blocks_.empty())
         {
-            for (const auto& idx : indexList) 
+            for (const auto& idx : indexList)
             {
-                for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++) 
+                for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
                 {
-                    auto* block = board_blocks_[y][idx.x]
-                        ;
-                    if (block && y > idx.y) 
+                    auto* block = board_blocks_[y][idx.x];
+                    if (block && y > idx.y)
                     {
-                        if (block->GetState() != BlockState::DownMoving) 
+                        if (block->GetState() != BlockState::DownMoving)
                         {
                             block->SetState(BlockState::DownMoving);
                         }
@@ -597,35 +610,39 @@ void GameState::UpdateShatteringPhase(float deltaTime)
             }
         }
     }
-    else 
+    else
     {
         // 정렬 및 상태 체크
         block_list_.sort(BlockComp());
 
-        if (!block_list_.empty()) {
+        if (!block_list_.empty())
+        {
             // 모든 블록이 정지 상태인지 확인
             bool allStationary = std::all_of(block_list_.begin(), block_list_.end(),
                 [](const auto& block) { return block->GetState() == BlockState::Stationary; });
 
-            if (allStationary) {
+            if (allStationary)
+            {
                 // 블록 링크 상태 업데이트
-                for (const auto& block : block_list_) {
-                    if (block->GetBlockType() != BlockType::Ice) {
+                for (const auto& block : block_list_)
+                {
+                    if (block->GetBlockType() != BlockType::Ice)
+                    {
                         block->SetLinkState();
                         UpdateLinkState(block.get());
                     }
                 }
 
                 // 게임 상태 체크 및 다음 단계 처리
-                if (!CheckGameBlockState()) 
+                if (!CheckGameBlockState())
                 {
-                    if (!stateInfo_.shouldQuit) 
+                    if (!stateInfo_.shouldQuit)
                     {
                         if (scoreInfo_.totalInterruptBlockCount > 0 && !stateInfo_.isComboAttack && !stateInfo_.isDefending)
                         {
                             GenerateIceBlocks();
                         }
-                        else 
+                        else
                         {
                             CreateNextBlock();
                         }
@@ -633,15 +650,15 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                 }
             }
         }
-        else 
+        else
         {
-            if (stateInfo_.shouldQuit) 
+            if (stateInfo_.shouldQuit)
             {
                 stateInfo_.currentPhase = GamePhase::Standing;
             }
-            else 
+            else
             {
-                if (NETWORK.IsRunning()) 
+                if (NETWORK.IsRunning())
                 {
                     NETWORK.StopComboAttack();
                 }
@@ -653,7 +670,7 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                 {
                     GenerateIceBlocks();
                 }
-                else 
+                else
                 {
                     CreateNextBlock();
                 }
@@ -1213,7 +1230,7 @@ void GameState::RenderDebugGrid()
 
 bool GameState::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGroups) 
 {
-    matchedGroups.clear();
+    //matchedGroups.clear();
     std::vector<Block*> currentGroup;
     int blockCount = 0;
 
@@ -1228,12 +1245,20 @@ bool GameState::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGroup
             }
 
             Block* block = board_blocks_[y][x];
-            if (!block || block->GetBlockType() == BlockType::Ice ||block->IsRecursionCheck()) 
+            if (block == nullptr)
             {
                 continue;
             }
+            else
+            {
+                blockCount++;
+            }
 
-            blockCount++;
+            if (block->GetBlockType() == BlockType::Ice || block->IsRecursionCheck() == true) 
+            {
+                continue;
+            }
+            
             block->SetRecursionCheck(true);
             currentGroup.clear();
 
@@ -1246,7 +1271,9 @@ bool GameState::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGroup
             else 
             {
                 block->SetRecursionCheck(false);
-                for (auto* matchedBlock : currentGroup) {
+
+                for (auto* matchedBlock : currentGroup) 
+                {
                     matchedBlock->SetRecursionCheck(false);
                 }
             }
@@ -1268,27 +1295,32 @@ short GameState::RecursionCheckBlock(short x, short y, Constants::Direction dire
     short matchCount = 0;
 
     // 각 방향 검사
-    const std::array<std::pair<Constants::Direction, std::pair<short, short>>, 4> directions = { {
+    const std::array<std::pair<Constants::Direction, std::pair<short, short>>, 4> directions = 
+    { {
         {Constants::Direction::Left,   {x - 1, y}},
         {Constants::Direction::Right,  {x + 1, y}},
         {Constants::Direction::Top,    {x, y + 1}},
         {Constants::Direction::Bottom, {x, y - 1}}
     } };
 
-    for (const auto& [dir, pos] : directions) {
-        if (direction == dir) {
+    for (const auto& [dir, pos] : directions) 
+    {
+        if (direction == dir)
+        {
             continue;
         }
 
         const auto [checkX, checkY] = pos;
         if (checkX < 0 || checkX >= Constants::Board::BOARD_X_COUNT ||
-            checkY < 0 || checkY >= Constants::Board::BOARD_Y_COUNT) {
+            checkY < 0 || checkY >= Constants::Board::BOARD_Y_COUNT) 
+        {
             continue;
         }
 
         Block* checkBlock = board_blocks_[checkY][checkX];
         if (!checkBlock || checkBlock->IsRecursionCheck() ||
-            checkBlock->GetState() != BlockState::Stationary) {
+            checkBlock->GetState() != BlockState::Stationary) 
+        {
             continue;
         }
 
@@ -1296,7 +1328,8 @@ short GameState::RecursionCheckBlock(short x, short y, Constants::Direction dire
         {
             checkBlock->SetRecursionCheck(true);
             matchedBlocks.push_back(checkBlock);
-            matchCount += 1 + RecursionCheckBlock(checkX, checkY, GameStateDetail::GetOppositeDirection(dir), matchedBlocks);
+            matchCount++;
+            matchCount += RecursionCheckBlock(checkX, checkY, GameStateDetail::GetOppositeDirection(dir), matchedBlocks);
         }
     }
 
@@ -1454,8 +1487,10 @@ void GameState::CalculateScore()
     short comboBonus = GetComboConstant(scoreInfo_.comboCount);
 
     // 매칭된 블록들에 대한 보너스 계산
-    for (const auto& group : matched_blocks_) {
-        for (auto* block : group) {
+    for (const auto& group : matched_blocks_) 
+    {
+        for (auto* block : group) 
+        {
             block->SetState(BlockState::Destroying);
         }
 
@@ -2052,7 +2087,13 @@ void GameState::CalculateIceBlockCount()
     short comboBonus = GetComboConstant(scoreInfo_.comboCount);
 
     // 매칭된 블록 그룹별 보너스 계산
-    for (const auto& group : matched_blocks_) {
+    for (const auto& group : matched_blocks_) 
+    {
+        for (auto block : group)
+        {
+            block->SetState(BlockState::Destroying);
+        }
+
         linkBonus += GetLinkBonus(group.size());
         blockCount += static_cast<uint8_t>(group.size());
     }
@@ -2066,21 +2107,37 @@ void GameState::CalculateIceBlockCount()
     scoreInfo_.totalScore += currentScore;
 
     // 방해 블록 상태 업데이트
-    if (scoreInfo_.totalInterruptBlockCount > 0) {
+    if (scoreInfo_.totalInterruptBlockCount > 0) 
+    {
         scoreInfo_.totalInterruptBlockCount -= scoreInfo_.addInterruptBlockCount;
 
-        if (scoreInfo_.totalInterruptBlockCount < 0) {
+        if (scoreInfo_.totalInterruptBlockCount < 0) 
+        {
             scoreInfo_.addInterruptBlockCount = std::abs(scoreInfo_.totalInterruptBlockCount);
             stateInfo_.hasIceBlock = false;
             scoreInfo_.totalInterruptBlockCount = 0;
 
-            if (NETWORK.IsServer()) {
+            if (NETWORK.IsServer()) 
+            {
                 scoreInfo_.totalEnemyInterruptBlockCount += scoreInfo_.addInterruptBlockCount;
             }
         }
-        else {
+        else 
+        {
             stateInfo_.hasIceBlock = true;
         }
+    }
+    else
+    {
+        if (NETWORK.IsServer())
+        {
+            if (scoreInfo_.addInterruptBlockCount > 0)
+            {
+                scoreInfo_.totalEnemyInterruptBlockCount += scoreInfo_.addInterruptBlockCount;
+            }
+        }
+        stateInfo_.hasIceBlock = false;
+        scoreInfo_.totalInterruptBlockCount = 0;
     }
 }
 
@@ -2136,20 +2193,23 @@ void GameState::ProcessMatchedBlocks()
             }
         }
 
-        matched_blocks_.clear();
+        //MARK
+        //matched_blocks_.clear();
         UpdateBlockPositions();
     }
 }
 
-void GameState::HandlePhaseTransition(GamePhase newPhase) {
-    if (stateInfo_.currentPhase == newPhase) {
+void GameState::HandlePhaseTransition(GamePhase newPhase) 
+{
+    if (stateInfo_.currentPhase == newPhase)
+    {
         return;
     }
 
     stateInfo_.previousPhase = stateInfo_.currentPhase;
     stateInfo_.currentPhase = newPhase;
 
-    switch (newPhase) {
+    /*switch (newPhase) {
     case GamePhase::Shattering:
         ProcessBlockMatching();
         break;
@@ -2161,18 +2221,21 @@ void GameState::HandlePhaseTransition(GamePhase newPhase) {
     case GamePhase::GameOver:
         HandleGameOver();
         break;
-    }
+    }*/
 }
 
 bool GameState::CheckGameBlockState() 
 {
-    if (gameboard_) {
+    if (gameboard_) 
+    {
         gameboard_->SetRenderTargetMark(false);
     }
 
     // 게임 종료 체크
-    if (stateInfo_.shouldQuit) {
-        if (NETWORK.IsRunning()) {
+    if (stateInfo_.shouldQuit) 
+    {
+        if (NETWORK.IsRunning()) 
+        {
             NETWORK.StopComboAttack();
         }
         stateInfo_.currentPhase = GamePhase::Standing;
@@ -2182,14 +2245,15 @@ bool GameState::CheckGameBlockState()
     // 최소 블록 수 체크
     if (block_list_.size() < Constants::Game::MIN_MATCH_COUNT) 
     {
-        ResetComboState();
         stateInfo_.currentPhase = GamePhase::Playing;
         stateInfo_.previousPhase = GamePhase::Playing;
+        ResetComboState();
         return false;
     }
 
     // 매칭 블록 찾기
-    if (FindMatchedBlocks(matched_blocks_)) {
+    if (FindMatchedBlocks(matched_blocks_)) 
+    {
         stateInfo_.previousPhase = stateInfo_.currentPhase;
         HandlePhaseTransition(GamePhase::Shattering);
 
@@ -2197,7 +2261,8 @@ bool GameState::CheckGameBlockState()
         CalculateIceBlockCount();
 
         // 연계 블록 처리
-        if (!stateInfo_.isDefending) {
+        //if (!stateInfo_.isDefending) 
+        {
             CollectRemoveIceBlocks();
         }
 
@@ -2361,7 +2426,7 @@ void GameState::DestroyNextBlock()
 
 void GameState::ProcessBlockMatching() 
 {
-    matched_blocks_.clear();
+    //matched_blocks_.clear();
     std::vector<Block*> currentGroup;
     bool hasMatches = false;
 
@@ -2908,7 +2973,7 @@ void GameState::PushBlockInGame(GameGroupBlock* groupBlock)
     }
 
     // 삭제 여부 체크
-    if (!CheckGameBlockState() && stateInfo_.currentPhase == GamePhase::Playing)
+    if (CheckGameBlockState() == false && stateInfo_.currentPhase == GamePhase::Playing)
     {
         if (stateInfo_.isDefending)
         {

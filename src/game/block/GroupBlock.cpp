@@ -51,11 +51,11 @@ bool GroupBlock::Create()
                 throw std::runtime_error("Block initialization failed");
             }
 
-//#ifdef _APP_DEBUG_
-//            block->SetBlockType(BlockType::Purple);
-//#else
+#ifdef _APP_DEBUG_
+            block->SetBlockType(BlockType::Purple);
+#else
             block->SetBlockType(static_cast<BlockType>(distribution(randEngine)));
-//#endif
+#endif
 
             block->SetBlockTex(texture);
             block->SetPlayerID(GAME_APP.GetPlayerManager().GetMyPlayer()->GetId());
