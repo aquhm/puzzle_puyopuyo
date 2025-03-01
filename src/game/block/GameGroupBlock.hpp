@@ -103,6 +103,6 @@ private:
     float rotateVelocity_{ 0.0f };
     float horizontalVelocity_{ 0.0f };
 
-    SDL_FRect intersectResultRect_{};
+    SDL_FRect intersectResultRect_[2]{};
     std::list<std::shared_ptr<Block>>* gameBlockList_;
 };

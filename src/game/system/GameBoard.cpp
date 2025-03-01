@@ -256,8 +256,6 @@ void GameBoard::SetState(BoardState newState)
     accumTime_ = 0.0f;
 }
 
-// GameBoard.cpp
-
 void GameBoard::Render() 
 {
     if (!is_visible_ || !targetRenderTexture_) 
@@ -289,7 +287,6 @@ void GameBoard::Render()
 
     GAME_APP.GetParticleManager().RenderForPlayer(playerID_);
 
-    // ·»´õ Å¸°Ù º¹¿ø ¹× ÃÖÁ¾ ·»´õ¸µ
     SDL_SetRenderTarget(GAME_APP.GetRenderer(), nullptr);
 
     SDL_RenderTextureRotated(

@@ -18,13 +18,6 @@ ExplosionContainer::ExplosionContainer()
         Constants::Particle::Explosion::SIZE,
         Constants::Particle::Explosion::SIZE,
     };
-
-    explosionRect_ = 
-    {
-        0, 0,
-        Constants::Block::SIZE,
-        Constants::Block::SIZE
-    };
 }
 
 bool ExplosionContainer::InitializeParticles() 
@@ -58,7 +51,7 @@ bool ExplosionContainer::InitializeParticles()
         };
 
         const float size = static_cast<float>(GameUtils::Random::Range(7, 15)); // 7 ~ 15
-        particle->SetSize(size);
+        particle->SetScale(size, size);
 
         particle->lifetime_ = 0.0f;
         particle->isAlive_ = true;
@@ -71,32 +64,37 @@ bool ExplosionContainer::InitializeParticles()
 
 void ExplosionContainer::UpdateParticlePhysics(ExplosionParticle& particle, float deltaTime) 
 {
-    if (particle.lifetime_ >= initialLifetime_) 
+
+    particle.lifetime_ += deltaTime;
+
+    if (particle.lifetime_ >= initialLifetime_)
     {
         particle.isAlive_ = false;
         return;
     }
 
-    accumulatedLifetime_ += deltaTime;
-
-    // 물리 계산
+    float particleTime = particle.lifetime_;
     particle.velocity_ = 
     {
-        particle.direction_.x * accumulatedLifetime_,
-        particle.direction_.y * accumulatedLifetime_ + (Constants::Particle::Explosion::GRAVITY / 2.0f * accumulatedLifetime_ * accumulatedLifetime_)
+        particle.direction_.x * particleTime,
+        particle.direction_.y * particleTime +
+        (Constants::Particle::Explosion::GRAVITY / 2.0f * particleTime * particleTime)
     };
 
-    SDL_FPoint newPosition{ position_.x + particle.velocity_.x, position_.y + particle.velocity_.y };
-    particle.SetPosition(newPosition.x, newPosition.y);
+    SDL_FPoint newPosition
+    {
+        position_.x + particle.velocity_.x,
+        position_.y + particle.velocity_.y
+    };
 
-    particle.lifetime_ += deltaTime;
+    particle.SetPosition(newPosition.x, newPosition.y);
 }
 
 void ExplosionContainer::Update(float deltaTime) 
 {
     for (auto& particle : particles_) 
     {
-        if (auto* explosionParticle = dynamic_cast<ExplosionParticle*>(particle.get())) 
+        if (auto explosionParticle = dynamic_cast<ExplosionParticle*>(particle.get())) 
         {
             UpdateParticlePhysics(*explosionParticle, deltaTime);
         }
@@ -105,63 +103,47 @@ void ExplosionContainer::Update(float deltaTime)
 
 void ExplosionContainer::Render()
 {
-    if (!sourceTexture_)
+    if (!sourceTexture_ || particles_.empty()) 
+    {
+        return;
+    }
+
+    bool hasVisibleParticles = false;
+    for (const auto& particle : particles_) 
+    {
+        if (particle && particle->IsAlive()) 
+        {
+            hasVisibleParticles = true;
+            break;
+        }
+    }
+
+    if (!hasVisibleParticles) 
     {
         return;
     }
 
     for (const auto& particle : particles_) 
     {
-        if (particle->IsAlive())
+        if (particle && particle->IsAlive()) 
         {
-            sourceTexture_->RenderScaled(&sourceRect_, &particle->GetRect());
+            SDL_FRect destRect = particle->GetRect();
+
+            sourceTexture_->RenderScaled(&sourceRect_, &destRect);
         }
     }
 }
 
-SDL_FRect ExplosionContainer::GetTextureRectForType(BlockType type) const
+void ExplosionContainer::SetBlockType(BlockType type) 
 {
-    const int baseX = 1;
-    const int baseY = 1;
-    const int stride = static_cast<int>(Constants::Block::SIZE) + 1;
-
-    SDL_FRect rect = std::move(explosionRect_);
-
-    switch (type) {
-    case BlockType::Red:
-        rect.x = baseX + stride * 6;
-        rect.y = baseY + stride * 10;
-        break;
-    case BlockType::Green:
-        rect.x = baseX + stride * 8;
-        rect.y = baseY + stride * 10;
-        break;
-    case BlockType::Blue:
-        rect.x = baseX + stride * 10;
-        rect.y = baseY + stride * 10;
-        break;
-    case BlockType::Yellow:
-        rect.x = baseX + stride * 12;
-        rect.y = baseY + stride * 10;
-        break;
-    case BlockType::Purple:
-        rect.x = baseX + stride * 14;
-        rect.y = baseY + stride * 10;
-        break;
-    }
-
-    return rect;
-}
-
-void ExplosionContainer::SetBlockType(BlockType type) {
     type_ = type;
 
     const int particleX = Constants::Particle::Explosion::TEXTURE_POS_X;
     const int particleY = Constants::Particle::Explosion::TEXTURE_POS_Y;
     const int spacing = Constants::Particle::Explosion::TEXTURE_SPACING;
 
-    // 파티클 텍스처 위치 설정
-    switch (type) {
+    switch (type) 
+    {
     case BlockType::Red:
         sourceRect_.x = particleX;
         sourceRect_.y = particleY;
@@ -183,6 +165,4 @@ void ExplosionContainer::SetBlockType(BlockType type) {
         sourceRect_.y = particleY;
         break;
     }
-
-    explosionRect_ = GetTextureRectForType(type);
 }

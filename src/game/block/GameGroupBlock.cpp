@@ -373,9 +373,9 @@ void GameGroupBlock::HandleHorizontalCollision()
 {
     bool collision1 = false;
     bool collision2 = false;
-    SDL_Rect resultRect;
-    SDL_Rect controlRect;
-    SDL_Rect targetRect;
+    SDL_Rect resultRect[2];
+    SDL_Rect controlRect[2];
+    SDL_Rect targetRect[2];
 
     for (const auto& block : *gameBlockList_) 
     {
@@ -384,20 +384,19 @@ void GameGroupBlock::HandleHorizontalCollision()
             continue;
         }
 
-        RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect);
-        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
+        RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect[0]);
+        RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect[1]);
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect[0]);
 
-        if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect) == true)
+        if (SDL_GetRectIntersection(&controlRect[0], &targetRect[0], &resultRect[0]) == true)
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_);
+            SDL_RectToFRect(&resultRect[0], &intersectResultRect_[0]);
             collision1 = true;
-        }
+        }                
 
-        RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect);
-
-        if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect) == true)
+        if (SDL_GetRectIntersection(&controlRect[1], &targetRect[1], &resultRect[1]) == true)
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_);
+            SDL_RectToFRect(&resultRect[1], &intersectResultRect_[1]);
             collision2 = true;
         }
 
@@ -412,32 +411,32 @@ void GameGroupBlock::HandleHorizontalCollision()
 
 void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool collision2) 
 {
-    if (collision1 && collision2) 
+    if (collision1 == true && collision2 == true)
     {
-        blocks_[Standard]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
-        blocks_[Satellite]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
+        blocks_[Standard]->SetY(intersectResultRect_[0].y - Constants::Block::SIZE);
+        blocks_[Satellite]->SetY(intersectResultRect_[1].y - Constants::Block::SIZE);
         canMove_ = false;
     }
-    else if (collision1 && !collision2) 
+    else if (collision1 == true && collision2 == false) 
     {
-        blocks_[Standard]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
+        blocks_[Standard]->SetY(intersectResultRect_[0].y - Constants::Block::SIZE);
         fallingIdx_ = Satellite;
         isFalling_ = true;
         NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
     }
-    else if (!collision1 && collision2) 
+    else if (collision1 == false && collision2 == true) 
     {
-        blocks_[Satellite]->SetY(intersectResultRect_.y - Constants::Block::SIZE);
+        blocks_[Satellite]->SetY(intersectResultRect_[1].y - Constants::Block::SIZE);
         fallingIdx_ = Standard;
         isFalling_ = true;
         NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
     }
     else
     {
-        int satelliteY = blocks_[Satellite]->GetPosIdx_Y();
+        int satelliteY = blocks_[Satellite]->GetY();
         if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT)
         {
-            blocks_[Standard]->SetX(Constants::Board::HEIGHT - Constants::Block::SIZE);
+            blocks_[Standard]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
             blocks_[Satellite]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
 
             canMove_ = false;
@@ -922,14 +921,14 @@ void GameGroupBlock::HandleDefaultTopRotation()
         // 좌측 충돌 체크
         if (SDL_GetRectIntersection(&leftCollRect, &targetRect, &resultRect))
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_);
+            SDL_RectToFRect(&resultRect, &intersectResultRect_[0]);
             leftColl = true;
         }
 
         // 우측 충돌 체크
         if (SDL_GetRectIntersection(&rightCollRect, &targetRect, &resultRect))
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_);
+            SDL_RectToFRect(&resultRect, &intersectResultRect_[1]);
             rightColl = true;
         }
 

@@ -129,6 +129,7 @@ public:
     void DestroyNextBlock();
     void CreateBlocksFromFile(); // 파일로 부터 블록 셋팅
     void PushBlockInGame(GameGroupBlock* groupBlock);
+    void CreateExplosionEffect(Block* block);
 
     // 블록 연결 검사 관련
     void CollectRemoveIceBlocks();
@@ -168,8 +169,8 @@ private:
     bool CheckGameBlockState();
     void UpdateBlockPositions();
     void CheckGameOverCondition();
-    void HandleGameOver();
 
+    void HandleGameOver();
     void HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet);
     void HandleAddNewBlock(uint8_t connectionId, const AddNewBlockPacket* packet);
     void HandleUpdateBlockMove(uint8_t connectionId, const MoveBlockPacket* packet);
@@ -182,7 +183,6 @@ private:
     void UpdateIceBlockPhase(float deltaTime);
     void UpdateShatteringPhase(float deltaTime);
     void UpdateGameOverPhase(float deltaTime);
-
     void UpdateInterruptBlockState();
 
     // 블록 관리

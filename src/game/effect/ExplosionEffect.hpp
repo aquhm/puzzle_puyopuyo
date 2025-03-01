@@ -37,8 +37,8 @@ private:
     friend class ExplosionContainer;
 
     BlockType type_;
-    SDL_FPoint direction_;
-    SDL_FPoint velocity_;
+    SDL_FPoint direction_{};
+    SDL_FPoint velocity_{};
     float force_{ 0.0f };
 };
 
@@ -63,8 +63,6 @@ private:
     void UpdateParticlePhysics(ExplosionParticle& particle, float deltaTime);
 
 private:
-    SDL_FRect GetTextureRectForType(BlockType type) const;
 
     BlockType type_;
-    SDL_FRect explosionRect_;
 };

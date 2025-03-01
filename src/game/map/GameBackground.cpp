@@ -251,23 +251,26 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
     {
         float x = small_block->GetX();
         float y = small_block->GetY();
+
         float width = small_block->GetWidth();
         float height = small_block->GetHeight();
 
         x += delta_time * player_direction_vector_.x * Constants::Background::NEW_BLOCK_VELOCITY;
         y += delta_time * player_direction_vector_.y * Constants::Background::NEW_BLOCK_VELOCITY;
+
         width += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
         height += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
 
-        x = std::max<float>(x, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X);
-        y = std::max<float>(y, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
-        width = std::min<float>(width, Constants::Block::SIZE);
-        height = std::min<float>(height, Constants::Block::SIZE);
+        x = std::max<float>(x, static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X));
+        y = std::max<float>(y, static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y));
+        width = std::min<float>(width, static_cast<float>(Constants::Block::SIZE));
+        height = std::min<float>(height, static_cast<float>(Constants::Block::SIZE));
 
         small_block->SetPosXY(x, y);
         small_block->SetScale(width, height);
 
-        if (x == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X && y == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y &&
+        if (static_cast<int>(x) == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X && 
+            static_cast<int>(y) == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y &&
             width == Constants::Block::SIZE && height == Constants::Block::SIZE)
         {
             move_finished = true;
@@ -279,9 +282,9 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         float y = new_block->GetY();
         y -= delta_time * Constants::Background::NEW_BLOCK_VELOCITY;
 
-        if (y < Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y)
+        if (static_cast<int>(y) < Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y)
         {
-            y = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y;
+            y = static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
 
             if (can_erase && move_finished)
             {

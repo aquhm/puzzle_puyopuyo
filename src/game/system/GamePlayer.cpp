@@ -130,12 +130,13 @@ void GamePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blocktype1
         throw std::runtime_error("Failed to create next blocks");
     }
 
-    next_block1->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
+    next_block1->SetPosXY(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
+    next_block1->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
     next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
     next_block2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
-    new_blocks_.push_back(std::move(next_block1));
-    new_blocks_.push_back(std::move(next_block2));
+    new_blocks_.emplace_back(std::move(next_block1));
+    new_blocks_.emplace_back(std::move(next_block2));
 
     if (background_)
     {
@@ -237,7 +238,7 @@ void GamePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
         throw std::runtime_error("Failed to create next block");
     }
 
-    next_block->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, 100);
+    next_block->SetPosXY(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, 100);
     next_block->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
     if (background_)

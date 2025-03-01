@@ -533,7 +533,6 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                 // 그룹 내 모든 블록 처리
                 for (auto* block : *groupIter)
                 {
-                    // 위치 정보 저장
                     SDL_FPoint pos{ block->GetX(), block->GetY() };
                     SDL_Point idx{ block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
@@ -547,13 +546,14 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                     // 게임 보드에서 블록 제거
                     board_blocks_[idx.y][idx.x] = nullptr;
 
-                    // 메모리 관리 오류 수정: 올바른 방법으로 shared_ptr 찾아서 제거
                     auto it = std::find_if(block_list_.begin(), block_list_.end(),
-                        [block](const std::shared_ptr<Block>& ptr) {
+                        [block](const std::shared_ptr<Block>& ptr) 
+                        {
                             return ptr.get() == block;
                         });
 
-                    if (it != block_list_.end()) {
+                    if (it != block_list_.end()) 
+                    {
                         block_list_.erase(it);
                     }
 
@@ -575,7 +575,6 @@ void GameState::UpdateShatteringPhase(float deltaTime)
                         SDL_Point iceIdx{ iceBlock->GetPosIdx_X(), iceBlock->GetPosIdx_Y() };
                         board_blocks_[iceIdx.y][iceIdx.x] = nullptr;
 
-                        // 여기도 마찬가지로 메모리 관리 방식 수정
                         block_list_.remove(iceBlock);
 
                         indexList.push_back(iceIdx);
@@ -619,7 +618,10 @@ void GameState::UpdateShatteringPhase(float deltaTime)
         {
             // 모든 블록이 정지 상태인지 확인
             bool allStationary = std::all_of(block_list_.begin(), block_list_.end(),
-                [](const auto& block) { return block->GetState() == BlockState::Stationary; });
+                [](const auto& block) 
+                { 
+                    return block->GetState() == BlockState::Stationary; 
+                });
 
             if (allStationary)
             {
@@ -1128,7 +1130,6 @@ void GameState::Render()
         game_player_->Render();
     }
 
-    // 3. 총알 렌더링
     for (const auto& bullet : bullets_) 
     {
         if (bullet) 
@@ -2159,35 +2160,36 @@ void GameState::ProcessMatchedBlocks()
                 break;
             }
         }
-        if (!allProcessed) break;
+        if (!allProcessed)
+        {
+            break;
+        }
     }
 
-    if (allProcessed) {
+    if (allProcessed) 
+    {
         // 점수 계산 및 이펙트 생성
-        for (const auto& group : matched_blocks_) {
-            if (!group.empty()) {
+        for (const auto& group : matched_blocks_) 
+        {
+            if (!group.empty()) 
+            {
                 CreateBullet(group[0]);  // 대표 블록으로 총알 생성
             }
 
             // 블록 제거 처리
-            for (auto* block : group) {
+            for (auto block : group) 
+            {
+                CreateExplosionEffect(block);
+                
                 auto posX = block->GetPosIdx_X();
                 auto posY = block->GetPosIdx_Y();
 
-                // 파티클 생성
-                SDL_FPoint pos{ block->GetX(), block->GetY() };
-
-                auto particle_container = std::make_shared<ExplosionContainer>();
-                particle_container->SetBlockType(block->GetBlockType());
-                particle_container->SetPlayerID(GAME_APP.GetPlayerManager().GetMyPlayer()->GetId());
-                
-                GAME_APP.GetParticleManager().AddParticleContainer(std::move(particle_container), pos);
-
                 // 게임 보드에서 제거
                 board_blocks_[posY][posX] = nullptr;
-                auto it = std::find(block_list_.begin(), block_list_.end(),
-                    std::shared_ptr<Block>(block));
-                if (it != block_list_.end()) {
+
+                auto it = std::find(block_list_.begin(), block_list_.end(), std::shared_ptr<Block>(block));
+                if (it != block_list_.end()) 
+                {
                     block_list_.erase(it);
                 }
             }
@@ -2197,6 +2199,27 @@ void GameState::ProcessMatchedBlocks()
         //matched_blocks_.clear();
         UpdateBlockPositions();
     }
+}
+
+void GameState::CreateExplosionEffect(Block* block)
+{
+    if (!block)
+    {
+        return;
+    }
+
+    // 게임 보드 좌표를 화면 좌표로 변환
+    SDL_FPoint screenPos
+    {
+        Constants::Board::POSITION_X + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
+        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
+    };
+
+    auto particleContainer = std::make_shared<ExplosionContainer>();
+    particleContainer->SetBlockType(block->GetBlockType());
+    particleContainer->SetPlayerID(GAME_APP.GetPlayerManager().GetMyPlayer()->GetId());
+
+    GAME_APP.GetParticleManager().AddParticleContainer(std::move(particleContainer), screenPos);
 }
 
 void GameState::HandlePhaseTransition(GamePhase newPhase) 
@@ -2478,84 +2501,6 @@ void GameState::ProcessBlockMatching()
     }
 }
 
-//void GameState::UpdateBlockLinks()
-//{
-//    for (auto& block : block_list_)
-//    {
-//        if (block && block->GetBlockType() != BlockType::Ice)
-//        {
-//            block->SetLinkState(LinkState::Max);
-//        }
-//    }
-//
-//    // 각 블록의 링크 상태 업데이트
-//    for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
-//    {
-//        for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
-//        {
-//            Block* block = board_blocks_[y][x];
-//            if (!block || block->GetBlockType() == BlockType::Ice)
-//            {
-//                continue;
-//            }
-//
-//            BlockType blockType = block->GetBlockType();
-//            uint8_t linkState = 0;
-//
-//            // 각 방향 검사
-//            const std::array<std::pair<Constants::Direction, std::pair<int, int>>, 4> directions = { {
-//                {Constants::Direction::Left,   {x - 1, y}},
-//                {Constants::Direction::Right,  {x + 1, y}},
-//                {Constants::Direction::Top,    {x, y + 1}},
-//                {Constants::Direction::Bottom, {x, y - 1}}
-//            } };
-//
-//            for (const auto& [dir, pos] : directions) {
-//                const auto [checkX, checkY] = pos;
-//
-//                if (checkX >= 0 && checkX < Constants::Board::BOARD_X_COUNT &&
-//                    checkY >= 0 && checkY < Constants::Board::BOARD_Y_COUNT)
-//                {
-//                    Block* neighborBlock = board_blocks_[checkY][checkX];
-//                    if (neighborBlock &&
-//                        neighborBlock->GetBlockType() == blockType &&
-//                        neighborBlock->GetState() == BlockState::Stationary)
-//                    {
-//                        // 방향에 따른 링크 상태 업데이트
-//                        switch (dir) {
-//                        case Constants::Direction::Left:
-//                            linkState |= static_cast<uint8_t>(LinkState::Left);
-//                            neighborBlock->SetLinkState(static_cast<LinkState>(
-//                                static_cast<uint8_t>(neighborBlock->GetLinkState()) |
-//                                static_cast<uint8_t>(LinkState::Right)));
-//                            break;
-//                        case Constants::Direction::Right:
-//                            linkState |= static_cast<uint8_t>(LinkState::Right);
-//                            neighborBlock->SetLinkState(static_cast<LinkState>(
-//                                static_cast<uint8_t>(neighborBlock->GetLinkState()) |
-//                                static_cast<uint8_t>(LinkState::Left)));
-//                            break;
-//                        case Constants::Direction::Top:
-//                            linkState |= static_cast<uint8_t>(LinkState::Top);
-//                            neighborBlock->SetLinkState(static_cast<LinkState>(
-//                                static_cast<uint8_t>(neighborBlock->GetLinkState()) |
-//                                static_cast<uint8_t>(LinkState::Bottom)));
-//                            break;
-//                        case Constants::Direction::Bottom:
-//                            linkState |= static_cast<uint8_t>(LinkState::Bottom);
-//                            neighborBlock->SetLinkState(static_cast<LinkState>(
-//                                static_cast<uint8_t>(neighborBlock->GetLinkState()) |
-//                                static_cast<uint8_t>(LinkState::Top)));
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//
-//            block->SetLinkState(static_cast<LinkState>(linkState));
-//        }
-//    }
-//}
 
 void GameState::HandleSystemEvent(const SDL_Event & event)
 {

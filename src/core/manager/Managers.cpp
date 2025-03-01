@@ -100,7 +100,7 @@ void Managers::RenderAll(SDL_Renderer* renderer)
     SDL_RenderClear(renderer);
 
     // 캐시된 렌더러블 목록 사용
-    for (auto* renderable : renderables_) 
+    for (auto renderable : renderables_) 
     {
         renderable->Render();
     }

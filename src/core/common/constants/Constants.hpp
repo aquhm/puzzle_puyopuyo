@@ -208,8 +208,8 @@ namespace Constants
             constexpr int TEXTURE_POS_X = 161;
             constexpr int TEXTURE_POS_Y = 353;
             constexpr int TEXTURE_SPACING = 14;
-            constexpr float GRAVITY = 150.0f;
-            constexpr float DEFAULT_LIFETIME = 20.0f;
+            constexpr float GRAVITY = 98.0f;
+            constexpr float DEFAULT_LIFETIME = 5.0f;
             constexpr size_t PARTICLE_COUNT = 10;
         }
     }

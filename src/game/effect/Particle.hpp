@@ -25,9 +25,6 @@ public:
     [[nodiscard]] bool IsAlive() const { return isAlive_; }
     void SetAlive(bool alive) { isAlive_ = alive; }
 
-    [[nodiscard]] float GetSize() const { return size_; }
-    void SetSize(float size) { size_ = size; }
-
     [[nodiscard]] float GetLifetime() const { return lifetime_; }
     void SetLifetime(float lifetime) { lifetime_ = lifetime; }
 
