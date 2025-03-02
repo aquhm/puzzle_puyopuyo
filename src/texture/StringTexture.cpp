@@ -79,11 +79,7 @@ void StringTexture::RenderUnicode(std::u16string_view text, const SDL_Color& tex
     {
         Unload();
 
-        auto& fontManager = GAME_APP.GetFontManager();
-        if (&fontManager == nullptr)
-        {
-            throw std::runtime_error("Font manager not available");
-        }
+        auto& fontManager = GAME_APP.GetFontManager();        
 
         TTF_Font* font = fontManager.GetFont(fontType);
         if (!font)

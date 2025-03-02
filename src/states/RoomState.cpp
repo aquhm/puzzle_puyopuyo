@@ -13,8 +13,10 @@
 #include "../ui/Button.hpp"
 #include "../texture/ImageTexture.hpp"
 
-#include <format>
 #include "../utils/Logger.hpp"
+#include "../utils/StringUtils.hpp"
+
+#include <format>
 
 
 RoomState::RoomState()
@@ -197,7 +199,9 @@ bool RoomState::SendChatMessage()
 {
     if (!ui_elements_.chat_box->IsEmpty()) 
     {
-        NETWORK.ChatMessage(ui_elements_.chat_box->GetText(TextType::UTF8));
+        std::string message = ui_elements_.chat_box->GetText(TextType::UTF8);
+
+        NETWORK.ChatMessage(message);
         return true;
     }
     return false;
@@ -332,9 +336,16 @@ void RoomState::HandleNetworkMessage(uint8_t connectionId, std::span<const char>
 
 void RoomState::HandleChatMessage(uint8_t connectionId, const ChatMessagePacket* packet)
 {
-    if (ui_elements_.chat_box) 
+    if (GAME_APP.GetPlayerManager().GetMyPlayer()->GetId() != packet->player_id)
     {
-        ui_elements_.chat_box->InputContent(packet->message.data());
+        if (ui_elements_.chat_box)
+        {
+            std::string formatted_message = std::format("[{}]: {}",
+                packet->player_id,
+                packet->message.data());
+
+            ui_elements_.chat_box->InputContent(formatted_message);
+        }
     }
 }
 
@@ -342,8 +353,11 @@ void RoomState::HandlePlayerJoined(uint8_t connectionId, const AddPlayerPacket* 
 {
     if (const auto player = GAME_APP.GetPlayerManager().CreatePlayer(packet->player_id))
     {
-        auto message = std::format(" {}님이 입장하셨습니다.", packet->player_id);
-        if (ui_elements_.chat_box) {
+        std::wstring wideMessage = std::format(L"[시스템]: {}번 플레이어가 입장했습니다.", packet->player_id);
+        std::string message = StringUtils::WideToUtf8(wideMessage);
+
+        if (ui_elements_.chat_box)
+        {
             ui_elements_.chat_box->InputContent(message);
         }
     }
@@ -353,8 +367,11 @@ void RoomState::HandlePlayerLeft(uint8_t connectionId, const RemovePlayerInRoomP
 {
     if (GAME_APP.GetPlayerManager().RemovePlayer(packet->id))
     {
-        auto message = std::format(" {}님이 퇴장하셨습니다.", packet->id);
-        if (ui_elements_.chat_box) {
+        std::wstring wideMessage = std::format(L"[시스템]: {}번 플레이어가 퇴장했습니다.", packet->id);
+        std::string message = StringUtils::WideToUtf8(wideMessage);
+
+        if (ui_elements_.chat_box)
+        {
             ui_elements_.chat_box->InputContent(message);
         }
     }
