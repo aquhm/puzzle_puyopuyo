@@ -85,7 +85,7 @@ void IceBlock::UpdateDownMoving(float deltaTime)
 
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
     {
-        blocks = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
+        blocks = gameState->GetGameBlocks(playerID_);
     }
 
     if (!blocks)

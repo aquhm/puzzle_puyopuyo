@@ -15,8 +15,10 @@
 #include "../../../core/manager/PlayerManager.hpp"
 #include "../../../states/GameState.hpp"
 #include "../../../network/NetworkController.hpp"
-#include "../../../network/player/Player.hpp"
-#include "../../../game/system/GamePlayer.hpp"
+#include "../../../game/system/BasePlayer.hpp"
+#include "../../../game/system/RemotePlayer.hpp"
+//#include "../../../network/player/Player.hpp"
+//#include "../../../game/system/GamePlayer.hpp"
 
 class AttackInterruptProcessor : public IPacketProcessor 
 {
@@ -33,32 +35,53 @@ public:
         }
 
         // 서버의 게임 상태에 공격 처리
-        if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
-        {
+        //if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
+        //{
 
-            // 클라 -> 서버 공격 발사체 생성
-            gameState->AddInterruptBlockCount(
-                attack_packet.count,
-                attack_packet.position_x,
-                attack_packet.position_y,
-                attack_packet.block_type
-            );
+        //    if (const auto& remotePlayer = gameState->GetRemotePlayer())
+        //    {
+        //        remotePlayer->AddInterruptBlock(
+        //            attack_packet.count,
+        //            attack_packet.position_x,
+        //            attack_packet.position_y,
+        //            attack_packet.block_type
+        //        );
+        //    }
+        //    // 클라 -> 서버 공격 발사체 생성
+        //    gameState->AddInterruptBlockCount(
+        //        attack_packet.count,
+        //        attack_packet.position_x,
+        //        attack_packet.position_y,
+        //        attack_packet.block_type
+        //    );
 
-            // 서버가 공격당해 갱신된 블록 개수를 클라들에게 전송
-            AttackResultPlayerInterruptBlocCountPacket resultPacket;
-            resultPacket.id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
-            resultPacket.count = gameState->GetTotalInterruptBlockCount();
-            resultPacket.attackerCount = gameState->GetTotalInterruptEnemyBlockCount();
+        //    // 서버가 공격당해 감소된 블록 개수를 클라들에게 전송
+        //    AttackResultPlayerInterruptBlocCountPacket resultPacket;
+        //    resultPacket.id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
 
-            auto& playerManager = GAME_APP.GetPlayerManager();
-            {
-                CriticalSection::Lock lock(playerManager.GetCriticalSection());
-                for (const auto& [_, player] : playerManager.GetPlayers())
-                {
-                    NETWORK.SendToClient(player->GetNetInfo(), resultPacket);
-                }
-            }
-        }
+        //    // 게임 코어로부터 현재 상태 정보 가져오기
+        //    if (localPlayer && localPlayer->GetGameCore()) {
+        //        auto gameCore = localPlayer->GetGameCore();
+        //        resultPacket.count = gameCore->GetTotalInterruptBlockCount();
+        //        // 이 부분은 실제 구현에 맞게 조정 필요
+        //        resultPacket.attackerCount = gameCore->GetTotalInterruptBlockCount();
+        //    }
+
+        //    // 서버가 공격당해 갱신된 블록 개수를 클라들에게 전송
+        //    AttackResultPlayerInterruptBlocCountPacket resultPacket;
+        //    resultPacket.id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
+        //    resultPacket.count = gameState->GetTotalInterruptBlockCount();
+        //    resultPacket.attackerCount = gameState->GetTotalInterruptEnemyBlockCount();
+
+        //    auto& playerManager = GAME_APP.GetPlayerManager();
+        //    {
+        //        CriticalSection::Lock lock(playerManager.GetCriticalSection());
+        //        for (const auto& [_, player] : playerManager.GetPlayers())
+        //        {
+        //            NETWORK.SendToClient(player->GetNetInfo(), resultPacket);
+        //        }
+        //    }
+        //}
     }
 
     void Release() override {}
@@ -75,33 +98,33 @@ public:
     void Initialize() override {}
 
     void Process(const PacketBase& packet, struct ClientInfo* client) override {
-        const auto& Defense_packet = static_cast<const DefenseInterruptPacket&>(packet);
+        //const auto& Defense_packet = static_cast<const DefenseInterruptPacket&>(packet);
 
-        if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game)
-        {
-            return;
-        }
+        //if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game)
+        //{
+        //    return;
+        //}
 
-        if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
-        {
+        //if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
+        //{
 
-            // 클라에서 서버로 클라 본인의 개수 갱신
-            gameState->DefenseInterruptBlockCount(Defense_packet.count, Defense_packet.position_x, Defense_packet.position_y, Defense_packet.block_type);
+        //    // 클라에서 서버로 클라 본인의 개수 갱신
+        //    gameState->DefenseInterruptBlockCount(Defense_packet.count, Defense_packet.position_x, Defense_packet.position_y, Defense_packet.block_type);
 
-            // 클라 방해블록 갱신된 블록 개수 다시 클라로 전송
-            DefenseResultInterruptBlockCountPacket result_packet;
-            result_packet.id = Defense_packet.player_id;
-            result_packet.count = gameState->GetTotalInterruptEnemyBlockCount();
+        //    // 클라 방해블록 갱신된 블록 개수 다시 클라로 전송
+        //    DefenseResultInterruptBlockCountPacket result_packet;
+        //    result_packet.id = Defense_packet.player_id;
+        //    result_packet.count = gameState->GetTotalInterruptEnemyBlockCount();
 
-            auto& playerManager = GAME_APP.GetPlayerManager();
-            {
-                CriticalSection::Lock lock(playerManager.GetCriticalSection());
-                for (const auto& [_, player] : playerManager.GetPlayers())
-                {
-                    NETWORK.SendToClient(player->GetNetInfo(), result_packet);
-                }
-            }
-        }
+        //    auto& playerManager = GAME_APP.GetPlayerManager();
+        //    {
+        //        CriticalSection::Lock lock(playerManager.GetCriticalSection());
+        //        for (const auto& [_, player] : playerManager.GetPlayers())
+        //        {
+        //            NETWORK.SendToClient(player->GetNetInfo(), result_packet);
+        //        }
+        //    }
+        //}
     }
 
     void Release() override {}
@@ -120,48 +143,48 @@ public:
 
     void Process(const PacketBase& packet, struct ClientInfo* client) override 
     {
-        const auto& interrupt_packet = static_cast<const AddInterruptBlockPacket&>(packet);
+        //const auto& interrupt_packet = static_cast<const AddInterruptBlockPacket&>(packet);
 
-        if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game) 
-        {
-            return;
-        }
+        //if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game) 
+        //{
+        //    return;
+        //}
 
-        // 다른 플레이어들에게 전달
-        auto& playerManager = GAME_APP.GetPlayerManager();
-        {
-            CriticalSection::Lock lock(playerManager.GetCriticalSection());
-            for (const auto& [_, player] : playerManager.GetPlayers())
-            {
-                if (player->GetId() != interrupt_packet.player_id) 
-                {
-                    NETWORK.SendToClient(player->GetNetInfo(),interrupt_packet);
-                }
-            }
-        }
+        //// 다른 플레이어들에게 전달
+        //auto& playerManager = GAME_APP.GetPlayerManager();
+        //{
+        //    CriticalSection::Lock lock(playerManager.GetCriticalSection());
+        //    for (const auto& [_, player] : playerManager.GetPlayers())
+        //    {
+        //        if (player->GetId() != interrupt_packet.player_id) 
+        //        {
+        //            NETWORK.SendToClient(player->GetNetInfo(),interrupt_packet);
+        //        }
+        //    }
+        //}
 
-        // 게임 상태 업데이트
-        if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
-        {
+        //// 게임 상태 업데이트
+        //if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
+        //{
 
-            // 현재 블록 카운트 업데이트
-            short current_enemy_block_count = gameState->GetTotalInterruptEnemyBlockCount();
-            short total_count = interrupt_packet.y_row_count * 6 + interrupt_packet.x_count;
-            current_enemy_block_count -= total_count;
+        //    // 현재 블록 카운트 업데이트
+        //    short current_enemy_block_count = gameState->GetTotalInterruptEnemyBlockCount();
+        //    short total_count = interrupt_packet.y_row_count * 6 + interrupt_packet.x_count;
+        //    current_enemy_block_count -= total_count;
 
-            if (current_enemy_block_count < 0) 
-            {
-                current_enemy_block_count = 0;
-            }
+        //    if (current_enemy_block_count < 0) 
+        //    {
+        //        current_enemy_block_count = 0;
+        //    }
 
-            gameState->SetTotalInterruptEnemyBlockCount(current_enemy_block_count);
+        //    gameState->SetTotalInterruptEnemyBlockCount(current_enemy_block_count);
 
-            // 블록 추가
-            if (const auto& player = gameState->GetPlayer()) 
-            {
-                player->AddInterruptBlock(current_enemy_block_count);
-            }
-        }
+        //    // 블록 추가
+        //    if (const auto& remotePlayer = gameState->GetRemotePlayer(interrupt_packet.player_id))
+        //    {
+        //        remotePlayer->AddInterruptBlock(current_enemy_block_count);
+        //    }
+        //}
     }
 
     void Release() override {}
@@ -201,7 +224,8 @@ public:
         // 콤보 상태 해제
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            gameState->SetAttackComboState(false);
+            //TODO
+            //gameState->GetLocalPlayer()->GetCoSetAttackComboState(false);
         }
     }
 
@@ -240,13 +264,13 @@ public:
         }
 
         // 게임 종료 처리
-        if (auto* game_state = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
+        if (auto* gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            game_state->GameQuit();
+            gameState->GameQuit();
 
-            if (const auto& player = game_state->GetPlayer()) 
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->LoseGame(false);
+                remotePlayer->LoseGame(false);
             }
         }
     }

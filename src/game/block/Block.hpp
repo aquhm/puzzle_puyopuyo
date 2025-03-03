@@ -9,6 +9,7 @@
 #include <memory>
 #include <cstdint>
 #include <array>
+#include <functional>
 #include "../RenderableObject.hpp"
 #include "../../texture/ImageTexture.hpp"
 

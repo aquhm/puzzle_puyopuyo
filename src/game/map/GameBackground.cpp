@@ -5,7 +5,9 @@
 #include "../../core/GameApp.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../states/GameState.hpp"
-#include "../../game/system/GamePlayer.hpp"
+#include "../../game/system/LocalPlayer.hpp"
+#include "../../game/system/RemotePlayer.hpp"
+//#include "../../game/system/GamePlayer.hpp"
 #include "../particles/BgParticleSystem.hpp"
 #include "../../core/GameUtils.hpp"
 #include "../../utils/Logger.hpp"
@@ -213,7 +215,10 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    gameState->DestroyNextBlock();                  
+                    if (auto player = gameState->GetLocalPlayer())
+                    {
+                        player->DestroyNextBlock();
+                    }
                 }
             }
         }
@@ -293,7 +298,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    if (auto player = gameState->GetPlayer())
+                    if (auto player = gameState->GetRemotePlayer())
                     {
                         player->DestroyNextBlock();
                     }

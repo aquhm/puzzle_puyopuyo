@@ -260,7 +260,8 @@ void CharacterSelectState::HandleCharacterSelection()
         return;
     }
 
-    if (current_pos_.x == 3 && current_pos_.y == 0) {  // Random selection
+    if (current_pos_.x == 3 && current_pos_.y == 0) 
+    {  
         SelectRandomCharacter();
     }
     else 
@@ -279,7 +280,8 @@ void CharacterSelectState::SelectRandomCharacter()
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    while (true) {
+    while (true) 
+    {
         current_pos_.x = std::uniform_int_distribution<>(0, 6)(gen);
         current_pos_.y = std::uniform_int_distribution<>(0, 3)(gen);
 
@@ -289,12 +291,10 @@ void CharacterSelectState::SelectRandomCharacter()
         }
     }
 
-    if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
-    {
-        auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
-        gameState->GetPlayer()->SetCharacterID(characterId);
-        NETWORK.DecideCharacter(current_pos_.x, current_pos_.y);
-    }
+    auto characterId = static_cast<uint16_t>(current_pos_.y * 7 + current_pos_.x);
+
+    GAME_APP.GetPlayerManager().GetMyPlayer()->SetCharacterId(characterId);
+    NETWORK.DecideCharacter(current_pos_.x, current_pos_.y);
 }
 
 void CharacterSelectState::UpdateStartButton() 

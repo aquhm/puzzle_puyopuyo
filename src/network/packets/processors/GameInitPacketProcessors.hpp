@@ -99,12 +99,12 @@ public:
         // 게임 재시작
         if (auto game_state = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            if (const auto& player = game_state->GetPlayer()) 
+            if (const auto& remotePlayer = game_state->GetRemotePlayer())
             {
                 std::span<const uint8_t, 2> blockType1{ restart_packet.block1 };
                 std::span<const uint8_t, 2> blockType2{ restart_packet.block2 };
 
-                player->Restart(blockType1, blockType2);
+                remotePlayer->Restart(blockType1, blockType2);
             }
         }
     }

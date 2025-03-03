@@ -1454,3 +1454,4 @@ void GamePlayer::RemoveIceBlocks(std::list<SDL_Point>& x_index_list)
 
     ice_block_set_.clear();
 }
+

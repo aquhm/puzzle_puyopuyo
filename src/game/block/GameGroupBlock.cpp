@@ -8,7 +8,8 @@
 #include "../../core/common/constants/Constants.hpp"
 #include "../../core/common/types/GameTypes.hpp"
 #include "../../core/manager/StateManager.hpp"
-#include "../system/GamePlayer.hpp"
+//#include "../system/GamePlayer.hpp"
+#include "../system/LocalPlayer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -181,13 +182,13 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get())) 
                 {
-                    if (blockIndexX_ > 0 && gameState->IsPossibleMove(blockIndexX_ - 1)) 
+                    if (blockIndexX_ > 0 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ - 1)) 
                     {
                         position_.x -= Constants::Block::SIZE;
 
                         SetPosX(position_.x);
 
-                        gameState->UpdateTargetPosIdx();
+                        gameState->GetLocalPlayer()->UpdateTargetPosIdx();
 
                         if (NETWORK.IsRunning())
                         {
@@ -247,17 +248,17 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
                 {
-                    if (blockIndexX_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->IsPossibleMove(blockIndexX_ + 1)) 
+                    if (blockIndexX_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ + 1)) 
                     {
                         position_.x += Constants::Block::SIZE;
                         SetPosX(position_.x);
 
-                        gameState->UpdateTargetPosIdx();
+                        gameState->GetLocalPlayer()->UpdateTargetPosIdx();
 
-                        /*if (NetworkManager::GetInstance().IsRunning()) 
+                        if (NETWORK.IsRunning())
                         {
-                            NetworkManager::GetInstance().MoveBlock(Constants::Direction::Right, position_.x);
-                        }*/
+                            NETWORK.MoveBlock(static_cast<uint8_t>(Constants::Direction::Right), position_.x);
+                        }
                     }
                 }
             }
@@ -387,6 +388,7 @@ void GameGroupBlock::HandleHorizontalCollision()
         RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect[0]);
         RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect[1]);
         RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect[0]);
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect[1]);
 
         if (SDL_GetRectIntersection(&controlRect[0], &targetRect[0], &resultRect[0]) == true)
         {
@@ -526,7 +528,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
-                gameState->UpdateTargetPosIdx();
+                gameState->GetLocalPlayer()->UpdateTargetPosIdx();
             }
         }
 
@@ -564,7 +566,7 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
-                gameState->UpdateTargetPosIdx();
+                gameState->GetLocalPlayer()->UpdateTargetPosIdx();
             }
         }
         
@@ -676,7 +678,7 @@ void GameGroupBlock::ProcessBlockPlacement()
 
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            gameState->PushBlockInGame(this);
+            gameState->GetLocalPlayer()->PushBlockInGame(this);
         }
     }
 }

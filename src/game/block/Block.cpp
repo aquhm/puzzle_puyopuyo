@@ -5,7 +5,10 @@
 #include "../../core/GameApp.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../states/GameState.hpp"
-#include "../system/GamePlayer.hpp"
+//#include "../system/GamePlayer.hpp"
+#include "../system/LocalPlayer.hpp"
+#include "../system/RemotePlayer.hpp"
+
 
 #include <stdexcept>
 #include "../../utils/RectUtil.hpp"
@@ -232,7 +235,7 @@ void Block::UpdateDownMoving(float deltaTime)
 
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
     {        
-        blocks = (playerID_ != 0) ? gameState->GetGameBlocks(): gameState->GetPlayer()->GetGameBlocks();
+        blocks = gameState->GetGameBlocks(playerID_);
     }
 
     if (!blocks)
@@ -440,7 +443,7 @@ void Block::UpdateLinkStateForDownMoving()
         // 게임 보드에서 연결된 블록들의 링크 상태 업데이트
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            gameBoard = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
+            gameBoard = gameState->GetGameBlocks(playerID_);
         }
 
         if (gameBoard)
