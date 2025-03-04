@@ -1263,6 +1263,13 @@ void GameState::InitializePacketHandlers()
         }
     );
 
+    packet_processor_.RegisterHandler<ChangeBlockStatePacket>(
+        PacketType::ChangeBlockState,
+        [this](uint8_t connectionId, const ChangeBlockStatePacket* packet) {
+            HandleCheckBlockState(connectionId, packet);
+        }
+    );
+
     packet_processor_.RegisterHandler<PacketBase>(
         PacketType::GameOver,
         [this](uint8_t connectionId, const PacketBase* packet) {
@@ -1395,6 +1402,21 @@ void GameState::HandleCheckBlockState(uint8_t connectionId, const CheckBlockStat
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->CheckGameBlockState();
+    }
+}
+
+void GameState::HandleChangeBlockStatePacket(uint8_t connectionId, const ChangeBlockStatePacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    // 원격 플레이어의 블록 상태 체크
+    if (player->GetId() != localPlayerId_ && remote_player_)
+    {
+        remote_player_->ChangeBlockState(packet->state);
     }
 }
 

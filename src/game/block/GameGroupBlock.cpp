@@ -669,10 +669,8 @@ void GameGroupBlock::ProcessBlockPlacement()
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
 
-        std::array<SDL_FPoint, 2> blockPositions;
-
-        std::array<float, 2> pos1 = { blockPositions[0].x, blockPositions[0].y };
-        std::array<float, 2> pos2 = { blockPositions[1].x, blockPositions[1].y };
+        std::array<float, 2> pos1 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
+        std::array<float, 2> pos2 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
 
         NETWORK.PushBlockInGame(pos1, pos2);
 
