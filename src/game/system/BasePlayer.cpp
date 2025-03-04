@@ -364,14 +364,17 @@ void BasePlayer::UpdateFallingBlocks(const std::list<SDL_Point>& x_index_list)
         {
             if (Block* block = board_blocks_[y][pos.x])
             {
-                if (block->GetState() == BlockState::DownMoving)
+                if (block != nullptr)
                 {
-                    continue;
-                }
+                    if (block->GetState() == BlockState::DownMoving)
+                    {
+                        continue;
+                    }
 
-                if (y > pos.y)
-                {
-                    block->SetState(BlockState::DownMoving);
+                    if (y > pos.y)
+                    {
+                        block->SetState(BlockState::DownMoving);
+                    }
                 }
             }
         }
