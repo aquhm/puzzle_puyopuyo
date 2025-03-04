@@ -848,12 +848,12 @@ void GameState::Enter()
     if (exit_button_) exit_button_->SetVisible(false);
 
     CreateGamePlayer(std::span<const uint8_t>(), std::span<const uint8_t>(), localPlayerId_, characterId);
-
+    ScheduleGameStart();
     // 상태 초기화
     shouldQuit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
-    SDL_StartTextInput(GAME_APP.GetWindow());
+    SDL_StartTextInput(GAME_APP.GetWindow());    
 }
 
 void GameState::Leave()
@@ -1468,7 +1468,6 @@ void GameState::ScheduleGameStart()
     TIMER_SCHEDULER.ScheduleTask(Constants::Game::PLAY_START_DELAY, 
         [this]()
         {
-
             if (NETWORK.IsRunning() && NETWORK.IsServer())
             {
                 NETWORK.StartGame();
