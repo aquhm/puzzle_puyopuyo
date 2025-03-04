@@ -121,3 +121,13 @@ uint8_t PlayerManager::RemovePlayerInRoom(ClientInfo* pNetInfo)
     }
     return 0;
 }
+
+bool PlayerManager::IsLocalPlayer(uint8_t playerId) 
+{ 
+    return my_player_->GetId() == playerId; 
+}
+
+bool PlayerManager::IsRemotePlayer(uint8_t playerId) 
+{ 
+    return my_player_->GetId() != playerId; 
+}

@@ -313,6 +313,7 @@ private:
     void HandleChangeBlockState(uint8_t connectionId, const ChangeBlockStatePacket* packet);
     void HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacket* packet);
     void HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet);
+    void HandleLose(uint8_t connectionId, const LoseGamePacket* packet);
     void HandleGameOver();
 
 private:

@@ -110,6 +110,8 @@ public:
 
     void SetScale(float width, float height) override;
 
+    
+    [[nodiscard]] uint8_t GetPlayerId() const { return playerID_; }
     [[nodiscard]] int GetPosIdx_X() const { return indexX_; }
     [[nodiscard]] int GetPosIdx_Y() const { return indexY_; }
     [[nodiscard]] BlockType GetBlockType() const { return blockType_; }

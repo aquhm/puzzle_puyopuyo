@@ -2,13 +2,14 @@
 
 #include "../../states/GameState.hpp"
 #include "../../network/NetworkController.hpp"
+#include "../../network/player/Player.hpp"
 
 #include "../../core/GameApp.hpp"
 #include "../../core/GameUtils.hpp"
 #include "../../core/common/constants/Constants.hpp"
 #include "../../core/common/types/GameTypes.hpp"
 #include "../../core/manager/StateManager.hpp"
-//#include "../system/GamePlayer.hpp"
+#include "../../core/manager/PlayerManager.hpp"
 #include "../system/LocalPlayer.hpp"
 
 #include <algorithm>
@@ -664,13 +665,16 @@ void GameGroupBlock::ResetVelocities()
 
 void GameGroupBlock::ProcessBlockPlacement() 
 {
-    if ((NETWORK.IsRunning() && playerID_))
+
+    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsRemotePlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
 
         std::array<float, 2> pos1 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
-        std::array<float, 2> pos2 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
+        std::array<float, 2> pos2 = { blocks_[1]->GetX(),  blocks_[1]->GetY() };
+
+        LOGGER.Info("ProcessBlockPlacement playerID_{} pos1 {} pos2 {}", playerID_, pos1, pos2);
 
         NETWORK.PushBlockInGame(pos1, pos2);
 
@@ -727,7 +731,16 @@ void GameGroupBlock::ResetBlock()
 {
     for (auto& block : blocks_) 
     {
-        block = nullptr;
+        if (block != nullptr)
+        {
+            auto playerId = block->GetPlayerId();
+            if (GAME_APP.GetPlayerManager().IsRemotePlayer(playerId) == true)
+            {
+                //LOGGER.Info("ResetBlock {}", playerId);
+            }
+
+            block = nullptr;
+        }
     }
 
     isFalling_ = false;

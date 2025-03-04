@@ -330,6 +330,8 @@ void RemotePlayer::PlayNextBlock()
         control_block_->SetState(BlockState::Playing);
         control_block_->SetEnableRotState(RotateState::Default, false, false);
 
+        //LOGGER.Info("RemotePlayer.PlayNextBlock");
+
         if (game_board_)
         {
             game_board_->CreateNewBlockInGame(control_block_);
@@ -591,6 +593,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
         return false;
     }
 
+    LOGGER.Info("RemotePlayer.PushBlockInGame pos1 : {} pos2: {} ", pos1, pos2);
+
     auto blocks = control_block_->GetBlocks();
     if (blocks[0] && blocks[1])
     {
@@ -627,6 +631,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
         {
             //DestroyNextBlock();
         }
+
+        
 
         return true;
     }

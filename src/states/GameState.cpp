@@ -643,13 +643,19 @@ void GameState::InitializePacketHandlers()
         }
     );
 
+    packet_processor_.RegisterHandler<LoseGamePacket>(
+        PacketType::LoseGame,
+        [this](uint8_t connectionId, const LoseGamePacket* packet) {
+            HandleLose(connectionId, packet);
+        }
+    );    
+
     packet_processor_.RegisterHandler<StopComboPacket>(
         PacketType::StopComboAttack,
         [this](uint8_t connectionId, const StopComboPacket* packet) {
             HandleStopCombo(connectionId, packet);
         }
     );
-    
 
     packet_processor_.RegisterHandler<PacketBase>(
         PacketType::GameOver,
@@ -811,6 +817,8 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
         std::span<const float, 2> pos1{ packet->position1 };
         std::span<const float, 2> pos2{ packet->position2 };
 
+        LOGGER.Info("GameState::HandlePushBlockInGame playerID_({}) pos1: {} pos2: {}", remote_player_->GetPlayerID(), pos1, pos2);
+
         remote_player_->PushBlockInGame(pos1, pos2);
     }
 }
@@ -829,6 +837,19 @@ void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* pac
     }
 }
 
+void GameState::HandleLose(uint8_t connectionId, const LoseGamePacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (player->GetId() != localPlayerId_ && remote_player_)
+    {
+        remote_player_->LoseGame(false);
+    }
+}
 
 void GameState::HandleGameOver()
 {
