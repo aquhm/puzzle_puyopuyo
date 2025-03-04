@@ -311,6 +311,8 @@ private:
     void HandleStartGame();
     void HandleCheckBlockState(uint8_t connectionId, const CheckBlockStatePacket* packet);
     void HandleChangeBlockState(uint8_t connectionId, const ChangeBlockStatePacket* packet);
+    void HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacket* packet);
+    void HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet);
     void HandleGameOver();
 
 private:

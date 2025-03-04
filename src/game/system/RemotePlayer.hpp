@@ -72,7 +72,7 @@ public:
     void UpdateBlockPosition(float pos1, float pos2) override;
     void UpdateFallingBlock(uint8_t fallingIdx, bool falling) override;
     void ChangeBlockState(uint8_t state) override;
-    bool PushBlockInGame(std::span<float> pos1, std::span<float> pos2);
+    bool PushBlockInGame(const std::span<const float>& pos1, const std::span<const float>& pos2);
     void AddNewBlock(const std::span<const uint8_t, 2>& block_type);
 
     void AttackInterruptBlock(float x, float y, uint8_t type) override;

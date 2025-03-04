@@ -91,6 +91,8 @@ public:
     void SetGameBoard(const std::shared_ptr<GameBoard>& board) { game_board_ = board; }
     void SetBackGround(const std::shared_ptr<GameBackground>& backGround) { background_ = backGround; }
 
+    void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
+
 protected:
     // 초기화 관련 메서드
     virtual bool InitializeViews();

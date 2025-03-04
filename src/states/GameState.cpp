@@ -1270,14 +1270,27 @@ void GameState::InitializePacketHandlers()
         }
     );
 
+    packet_processor_.RegisterHandler<PushBlockPacket>(
+        PacketType::PushBlockInGame,
+        [this](uint8_t connectionId, const PushBlockPacket* packet) {
+            HandlePushBlockInGame(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<StopComboPacket>(
+        PacketType::StopComboAttack,
+        [this](uint8_t connectionId, const StopComboPacket* packet) {
+            HandleStopCombo(connectionId, packet);
+        }
+    );
+    
+
     packet_processor_.RegisterHandler<PacketBase>(
         PacketType::GameOver,
         [this](uint8_t connectionId, const PacketBase* packet) {
             HandleGameOver();
         }
     );
-
-    // 나머지 패킷 핸들러 등록 - 추가 기능 필요시 구현
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -1413,12 +1426,43 @@ void GameState::HandleChangeBlockState(uint8_t connectionId, const ChangeBlockSt
         return;
     }
 
-    // 원격 플레이어의 블록 상태 체크
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->ChangeBlockState(packet->state);
     }
 }
+
+void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (player->GetId() != localPlayerId_ && remote_player_)
+    {
+        std::span<const float, 2> pos1{ packet->position1 };
+        std::span<const float, 2> pos2{ packet->position2 };
+
+        remote_player_->PushBlockInGame(pos1, pos2);
+    }
+}
+
+void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (player->GetId() != localPlayerId_ && remote_player_)
+    {
+        remote_player_->SetComboAttackState(false);
+    }
+}
+
 
 void GameState::HandleGameOver()
 {
