@@ -78,7 +78,7 @@ void GameClient::AddNewBlock(std::span<const uint8_t> block)
     AddNewBlockPacket packet;
 
     packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
-    packet.block_type;  // 블록 타입 2개
+    std::copy_n(block.begin(), std::min<size_t>(block.size(), 2), packet.block_type.begin());
 
     SendPacketInternal(packet);
 }
