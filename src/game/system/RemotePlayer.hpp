@@ -64,7 +64,7 @@ public:
         const std::span<const uint8_t>& blockType2) override;
 
     void CreateNextBlock() override;
-    void DestroyNextBlock() override;
+    void PlayNextBlock() override;
     bool CheckGameBlockState() override;
 
     void MoveBlock(uint8_t moveType, float position) override;

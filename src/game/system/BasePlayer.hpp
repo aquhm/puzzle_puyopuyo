@@ -51,7 +51,7 @@ public:
 
     // 블록 관리
     virtual void CreateNextBlock() = 0;
-    virtual void DestroyNextBlock() = 0;
+    virtual void PlayNextBlock() = 0;
     virtual bool CheckGameBlockState() = 0;
 
     // 블록 조작

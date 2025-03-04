@@ -204,7 +204,7 @@ void RemotePlayer::UpdateIceBlockDowningState()
     if (all_blocks_stationary)
     {
         game_state_ = GamePhase::Playing;
-        DestroyNextBlock();
+        PlayNextBlock();
     }
 }
 
@@ -313,7 +313,7 @@ void RemotePlayer::CreateNextBlock()
     // 원격 플레이어는 네트워크로부터 명령을 받아 블록을 생성하므로 구현 없음
 }
 
-void RemotePlayer::DestroyNextBlock()
+void RemotePlayer::PlayNextBlock()
 {
     if (new_blocks_.size() != 3 || !control_block_)
     {
@@ -625,7 +625,7 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
 
         if (!is_game_quit_ && !CheckGameBlockState() && game_state_ == GamePhase::Playing)
         {
-            DestroyNextBlock();
+            //DestroyNextBlock();
         }
 
         return true;
@@ -902,8 +902,7 @@ void RemotePlayer::CalculateIceBlockCount()
 void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 {
     auto next_block = std::make_shared<GroupBlock>();
-    if (!next_block->Create(static_cast<BlockType>(block_type[0]),
-        static_cast<BlockType>(block_type[1])))
+    if (!next_block->Create(static_cast<BlockType>(block_type[0]), static_cast<BlockType>(block_type[1])))
     {
         throw std::runtime_error("Failed to create next block");
     }
