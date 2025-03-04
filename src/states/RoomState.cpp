@@ -172,10 +172,17 @@ void RoomState::Enter()
 
 void RoomState::Leave()
 {
-    ui_elements_.start_button->SetVisible(false);
-    ui_elements_.exit_button->SetVisible(false);
-    ui_elements_.chat_box->SetVisible(false);
-    ui_elements_.chat_box->ClearContent();
+    if (ui_elements_.start_button)
+        ui_elements_.start_button->SetVisible(false);
+
+    if (ui_elements_.exit_button)
+        ui_elements_.exit_button->SetVisible(false);
+
+    if (ui_elements_.chat_box)
+        ui_elements_.chat_box->SetVisible(false);
+
+    if (ui_elements_.chat_box)
+        ui_elements_.chat_box->ClearContent();
 
     background_animation_.Reset();
     SDL_StopTextInput(GAME_APP.GetWindow());
