@@ -252,19 +252,24 @@ void RemotePlayer::UpdateMatchedBlocks()
 
 void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& group_it, SDL_FPoint& pos, SDL_Point& pos_idx, std::list<SDL_Point>& x_index_list)
 {
-    for (const auto& block : *group_it)
+    for (Block* block : *group_it)
     {
+        if (!block) continue;
+
         pos = block->GetPosition();
         pos_idx = { block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
-        CreateBlockClearEffect(block);
+        CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {}));
         RemoveBlock(block, pos_idx);
+
         x_index_list.push_back(pos_idx);
     }
 
     UpdateComboDisplay(pos);
     RemoveIceBlocks(x_index_list);
-    group_it = equal_block_list_.erase(group_it);
+
+    // 그룹 제거
+    group_it = equal_block_list_.erase(group_it);    
 }
 
 void RemotePlayer::UpdateComboDisplay(const SDL_FPoint& pos)
@@ -389,10 +394,7 @@ bool RemotePlayer::CheckGameBlockState()
             if (RecursionCheckBlock(x, y, -1, current_blocks) >= 3)
             {
                 current_blocks.push_back(current_block);
-                equal_block_list_.push_back(BlockVector(
-                    current_blocks.begin(),
-                    current_blocks.end()
-                ));
+                equal_block_list_.push_back(current_blocks);
             }
             else
             {
@@ -820,7 +822,7 @@ void RemotePlayer::CollectRemoveIceBlocks()
     }
 }
 
-void RemotePlayer::CollectAdjacentIceBlocks(const std::shared_ptr<Block>& block)
+void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
 {
     const int x = block->GetPosIdx_X();
     const int y = block->GetPosIdx_Y();

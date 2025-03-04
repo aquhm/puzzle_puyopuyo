@@ -48,7 +48,7 @@ class ImageTexture;
 class RemotePlayer : public BasePlayer {
 public:
     // 블록 그룹 벡터 타입 정의
-    using BlockVector = std::vector<std::shared_ptr<Block>>;
+    using BlockVector = std::vector<Block*>;
 
     RemotePlayer();
     ~RemotePlayer() override;
@@ -100,7 +100,7 @@ private:
     void CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& texture);
     void CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, std::span<uint8_t> x_idx, std::shared_ptr<ImageTexture>& texture);
     void CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTexture>& texture);
-    void CollectAdjacentIceBlocks(const std::shared_ptr<Block>& block);
+    void CollectAdjacentIceBlocks(Block* block);
 
     // 게임 상태 업데이트 메서드
     void UpdateStandingState(float deltaTime);

@@ -346,13 +346,25 @@ void BasePlayer::CreateBlockClearEffect(const std::shared_ptr<Block>& block)
     GAME_APP.GetParticleManager().AddParticleContainer(std::move(particle_container), block->GetPosition());
 }
 
-void BasePlayer::RemoveBlock(const std::shared_ptr<Block>& block, const SDL_Point& pos_idx)
+void BasePlayer::RemoveBlock(Block* block, const SDL_Point& pos_idx)
 {
-    if (block && pos_idx.x >= 0 && pos_idx.x < Constants::Board::BOARD_X_COUNT &&
+    if (!block) return;
+
+    if (pos_idx.x >= 0 && pos_idx.x < Constants::Board::BOARD_X_COUNT &&
         pos_idx.y >= 0 && pos_idx.y < Constants::Board::BOARD_Y_COUNT)
     {
         board_blocks_[pos_idx.y][pos_idx.x] = nullptr;
-        block_list_.remove(block);
+    }
+
+    auto it = std::find_if(block_list_.begin(), block_list_.end(),
+        [block](const std::shared_ptr<Block>& ptr) {
+            return ptr.get() == block;
+        });
+
+    if (it != block_list_.end()) 
+    
+    {
+        block_list_.erase(it);
     }
 }
 

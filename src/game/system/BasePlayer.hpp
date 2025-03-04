@@ -104,7 +104,7 @@ protected:
     void CreateBlockClearEffect(const std::shared_ptr<Block>& block);
 
     // 블록 관리 관련 메서드
-    void RemoveBlock(const std::shared_ptr<Block>& block, const SDL_Point& pos_idx);
+    void RemoveBlock(Block* block, const SDL_Point& pos_idx);
     void UpdateFallingBlocks(const std::list<SDL_Point>& x_index_list);
     void UpdateBlockLinks();
 

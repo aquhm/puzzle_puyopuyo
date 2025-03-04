@@ -666,7 +666,7 @@ void GameGroupBlock::ResetVelocities()
 void GameGroupBlock::ProcessBlockPlacement() 
 {
 
-    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsRemotePlayer(playerID_) == true)
+    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
