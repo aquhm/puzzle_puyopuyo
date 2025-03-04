@@ -1266,7 +1266,7 @@ void GameState::InitializePacketHandlers()
     packet_processor_.RegisterHandler<ChangeBlockStatePacket>(
         PacketType::ChangeBlockState,
         [this](uint8_t connectionId, const ChangeBlockStatePacket* packet) {
-            HandleChangeBlockStatePacket(connectionId, packet);
+            HandleChangeBlockState(connectionId, packet);
         }
     );
 
@@ -1405,7 +1405,7 @@ void GameState::HandleCheckBlockState(uint8_t connectionId, const CheckBlockStat
     }
 }
 
-void GameState::HandleChangeBlockStatePacket(uint8_t connectionId, const ChangeBlockStatePacket* packet)
+void GameState::HandleChangeBlockState(uint8_t connectionId, const ChangeBlockStatePacket* packet)
 {
     auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
     if (!player)

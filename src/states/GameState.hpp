@@ -310,7 +310,7 @@ private:
     void HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket* packet);
     void HandleStartGame();
     void HandleCheckBlockState(uint8_t connectionId, const CheckBlockStatePacket* packet);
-    void HandleChangeBlockStatePacket(uint8_t connectionId, const ChangeBlockStatePacket* packet);
+    void HandleChangeBlockState(uint8_t connectionId, const ChangeBlockStatePacket* packet);
     void HandleGameOver();
 
 private:
