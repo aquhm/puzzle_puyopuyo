@@ -1266,7 +1266,7 @@ void GameState::InitializePacketHandlers()
     packet_processor_.RegisterHandler<ChangeBlockStatePacket>(
         PacketType::ChangeBlockState,
         [this](uint8_t connectionId, const ChangeBlockStatePacket* packet) {
-            HandleCheckBlockState(connectionId, packet);
+            HandleChangeBlockStatePacket(connectionId, packet);
         }
     );
 
