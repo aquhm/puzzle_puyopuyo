@@ -29,6 +29,8 @@
 #include <stdexcept>
 #include <algorithm>
 #include <format>
+#include <iostream>
+#include <fstream>
 
 BasePlayer::BasePlayer()
 {
@@ -376,19 +378,16 @@ void BasePlayer::UpdateFallingBlocks(const std::list<SDL_Point>& x_index_list)
     {
         for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
         {
-            if (Block* block = board_blocks_[y][pos.x])
+            if (Block* block = board_blocks_[y][pos.x]; block != nullptr)
             {
-                if (block != nullptr)
+                if (block->GetState() == BlockState::DownMoving)
                 {
-                    if (block->GetState() == BlockState::DownMoving)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (y > pos.y)
-                    {
-                        block->SetState(BlockState::DownMoving);
-                    }
+                if (y > pos.y)
+                {
+                    block->SetState(BlockState::DownMoving);
                 }
             }
         }
@@ -526,3 +525,68 @@ bool BasePlayer::IsPossibleMove(int xIdx)
         board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][xIdx] == nullptr ||
         board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][xIdx] == nullptr ? true : false;
 }
+
+
+void BasePlayer::CreateBlocksFromFile()
+{
+    std::string currentPath = std::filesystem::current_path().string();
+    std::cout << "현재 작업 디렉토리: " << currentPath << std::endl;
+
+    std::ifstream file("./bin/puyo.txt");
+    if (!file)
+    {
+        throw std::runtime_error("Failed to open puyo.txt");
+    }
+
+    auto texture = ImageTexture::Create("PUYO/puyo_beta.png");
+    if (!texture)
+    {
+        throw std::runtime_error("Failed to load block texture");
+    }
+
+    std::string line;
+    for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
+    {
+        std::getline(file, line);
+        if (!file)
+        {
+            throw std::runtime_error("Failed to read line from file");
+        }
+
+        for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
+        {
+            if (x >= line.length())
+            {
+                break;
+            }
+
+            int type = line[x] - '0';
+            if (type <= 0)
+            {
+                continue;
+            }
+
+            std::shared_ptr<Block> block = (type == static_cast<int>(BlockType::Ice)) ?
+                std::make_shared<IceBlock>() : std::make_shared<Block>();
+
+            float x_pos = x * Constants::Block::SIZE + Constants::Board::WIDTH_MARGIN;
+            float y_pos = (y - 1) * Constants::Block::SIZE;
+
+            block->SetBlockType(static_cast<BlockType>(type));
+            block->SetPosIdx(x, Constants::Board::BOARD_Y_COUNT - 1 - y);
+            block->SetPosition(x_pos, y_pos);
+            block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
+            block->SetState(BlockState::Stationary);
+            block->SetBlockTex(texture);
+            block->SetPlayerID(player_id_);
+
+            board_blocks_[Constants::Board::BOARD_Y_COUNT - 1 - y][x] = block.get();
+            block_list_.push_back(block);
+
+            UpdateLinkState(block.get());
+        }
+    }
+
+    block_list_.sort([](const auto& a, const auto& b) { return *a < *b; });
+}
+

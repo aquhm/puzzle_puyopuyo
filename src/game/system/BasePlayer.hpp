@@ -118,6 +118,10 @@ protected:
     void CreateBullet(Block* block, bool isAttacking);
     void UpdateBullets(float delta_time);
 
+
+    // 블록 파일로 부터 생성
+    void CreateBlocksFromFile();
+
     // 게임 상태 관리 구조체
     struct GameStateInfo 
 {

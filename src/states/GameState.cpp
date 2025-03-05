@@ -179,17 +179,6 @@ bool GameState::CreateUI()
             return GameExit();
         });
 
-    // 채팅 박스 초기화
-    chatbox_ = std::make_unique<EditBox>();
-    if (!chatbox_)
-    {
-        LOGGER.Error("Failed to create EditBox");
-        return false;
-    }
-
-    chatbox_->Init((GAME_APP.GetWindowWidth() - 180) / 2.0f, 420.0f, 180.0f, 23.0f);
-    chatbox_->SetEventReturn([this]() { return SendChatMsg(); });
-
     return true;
 }
 
@@ -208,8 +197,6 @@ void GameState::Enter()
         }
     }
 
-    // UI 컴포넌트 초기화
-    if (chatbox_) chatbox_->SetVisible(true);
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
@@ -224,12 +211,7 @@ void GameState::Enter()
 
 void GameState::Leave()
 {
-    // UI 상태 초기화
-    if (chatbox_)
-    {
-        chatbox_->ClearContent();
-        chatbox_->SetVisible(false);
-    }
+    
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
@@ -270,12 +252,6 @@ void GameState::Update(float deltaTime)
         remote_player_->Update(deltaTime);
         remote_player_->UpdateGameState(deltaTime);
     }
-
-    // UI 업데이트
-    if (chatbox_)
-    {
-        chatbox_->Update(deltaTime);
-    }
 }
 
 void GameState::Render()
@@ -312,10 +288,6 @@ void GameState::Render()
 
 void GameState::RenderUI()
 {
-    if (chatbox_)
-    {
-        chatbox_->Render();
-    }
 
     if (restart_button_)
     {
@@ -395,14 +367,6 @@ void GameState::HandleEvent(const SDL_Event& event)
     case SDL_EVENT_KEY_DOWN:
         HandleKeyboardInput(event);
         break;
-
-    case SDL_EVENT_TEXT_INPUT:
-    case SDL_EVENT_TEXT_EDITING:
-        if (chatbox_)
-        {
-            chatbox_->HandleEvent(event);
-        }
-        break;
     }
 
     // 키보드 상태 처리
@@ -431,14 +395,6 @@ void GameState::HandleKeyboardInput(const SDL_Event& event)
         {
         case SDLK_UP:
             local_player_->RotateBlock(0, false);
-            break;
-
-        case SDLK_RETURN:
-        case SDLK_BACKSPACE:
-            if (chatbox_)
-            {
-                chatbox_->HandleEvent(event);
-            }
             break;
         }
     }
@@ -530,7 +486,6 @@ bool GameState::GameRestart()
     }
 
     // UI 상태 초기화
-    if (chatbox_) chatbox_->SetVisible(true);
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
@@ -567,17 +522,6 @@ void GameState::GameQuit()
     {
         exit_button_->SetVisible(true);
     }
-}
-
-bool GameState::SendChatMsg()
-{
-    if (!chatbox_ || chatbox_->IsEmpty())
-    {
-        return false;
-    }
-
-    NETWORK.ChatMessage(chatbox_->GetText(TextType::UTF8));
-    return true;
 }
 
 void GameState::HandleNetworkMessage(uint8_t connectionId, std::span<const char> data, uint32_t length)
@@ -867,7 +811,6 @@ void GameState::Release()
 
     restart_button_.reset();
     exit_button_.reset();
-    chatbox_.reset();
 
     background_.reset();
     local_player_.reset();

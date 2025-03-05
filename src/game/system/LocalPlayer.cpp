@@ -42,7 +42,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const s
         player_id_ = playerIdx;
         background_ = background;
 
-        InitializeNextBlocks(blocktype1, blocktype2);
+        InitializeNextBlocks(blocktype1, blocktype2);        
 
         // 게임 보드 초기화 - 로컬 플레이어는 왼쪽에 표시
         if (!InitializeGameBoard(Constants::Board::POSITION_X, Constants::Board::POSITION_Y))
@@ -62,6 +62,10 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const s
         {
             interrupt_view_->SetPosition(Constants::Board::POSITION_X, 0);
         }
+
+#ifdef _APP_DEBUG_
+        CreateBlocksFromFile();
+#endif
 
         // 게임 상태 초기화
         state_info_ = GameStateInfo{};
@@ -179,7 +183,7 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
 
 void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 {
-    if (!matched_blocks_.empty())
+    if (matched_blocks_.empty() == false)
     {
         std::vector<SDL_FPoint> positions;
         std::list<SDL_Point> indexList;
@@ -280,11 +284,16 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
             if (allStationary)
             {
+                /*for (const auto& block : block_list_)
+                {
+                    block->SetRecursionCheck(false);
+                }*/
+
                 // 블록 링크 상태 업데이트
                 UpdateBlockLinks();
 
                 // 게임 상태 체크 및 다음 단계 처리
-                if (!CheckGameBlockState())
+                if (CheckGameBlockState() == false)
                 {
                     if (!state_info_.shouldQuit)
                     {
@@ -433,8 +442,14 @@ bool LocalPlayer::CheckGameBlockState()
         return false;
     }
 
+    /*for (const auto& block : block_list_)
+    {
+        block->SetRecursionCheck(false);
+    }*/
+
     // 매치 블록 찾기
-    matched_blocks_.clear();
+    matched_blocks_.clear();      
+
     if (FindMatchedBlocks(matched_blocks_))
     {
         state_info_.previousPhase = state_info_.currentPhase;
@@ -513,13 +528,14 @@ bool LocalPlayer::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGro
 {
     std::vector<Block*> currentGroup;
     int blockCount = 0;
+    int blockListSize = block_list_.size();
 
     // 모든 블록 순회하며 매치 검사
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
         {
-            if (blockCount == block_list_.size())
+            if (blockCount == blockListSize)
             {
                 break;
             }
