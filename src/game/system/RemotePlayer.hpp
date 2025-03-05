@@ -1,32 +1,3 @@
-//#pragma once
-//
-//#include "BasePlayer.hpp"
-//
-//class RemotePlayer : public BasePlayer
-//{
-//public:
-//    RemotePlayer();
-//    ~RemotePlayer() override = default;
-//
-//    bool Initialize(float boardX, float boardY) override;
-//
-//    void HandleMoveBlock(uint8_t moveType, float position);
-//    void HandleRotateBlock(uint8_t rotateType, bool horizontalMoving);
-//    void HandleBlockState(uint8_t state);
-//    void UpdateBlockPosition(float pos1, float pos2);
-//    bool PushBlockInGame(std::span<float> pos1, std::span<float> pos2);
-//    void ChangeBlockState(uint8_t state);
-//    void RotateBlock(uint8_t rotate_type, bool horizontal_moving);
-//    void UpdateFallingBlock(uint8_t falling_idx, bool falling);
-//    void MoveBlock(uint8_t move_type, float position);
-//    bool Restart(const std::span<const uint8_t>& block_type1, const std::span<const uint8_t>& block_type2);
-//    void InitializeNextBlocks(std::span<const uint8_t> block_type1, std::span<const uint8_t> block_type2);
-//
-//private:
-//    float last_position_{ 0.0f };
-//};
-
-
 #pragma once
 /**
  *

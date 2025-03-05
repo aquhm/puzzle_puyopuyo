@@ -210,7 +210,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     SDL_Point idx{ block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
                     // 파티클 생성
-                    CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {})); // non-owning shared_ptr
+                    CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {}));
 
                     // 게임 보드에서 블록 제거
                     board_blocks_[idx.y][idx.x] = nullptr;

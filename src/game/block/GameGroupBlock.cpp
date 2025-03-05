@@ -674,7 +674,7 @@ void GameGroupBlock::ProcessBlockPlacement()
         std::array<float, 2> pos1 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
         std::array<float, 2> pos2 = { blocks_[1]->GetX(),  blocks_[1]->GetY() };
 
-        LOGGER.Info("ProcessBlockPlacement playerID_{} pos1 {} pos2 {}", playerID_, pos1, pos2);
+        //LOGGER.Info("ProcessBlockPlacement playerID_{} pos1 {} pos2 {}", playerID_, pos1, pos2);
 
         NETWORK.PushBlockInGame(pos1, pos2);
 

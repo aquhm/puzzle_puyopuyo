@@ -236,6 +236,12 @@ void RemotePlayer::UpdateMatchedBlocks()
 
         if (all_blocks_played_out)
         {
+            if (!it->empty())
+            {
+                auto firstBlock = it->front();
+                CreateBullet(firstBlock, !state_info_.hasIceBlock);                
+            }
+
             HandleClearedBlockGroup(it, pos, pos_idx, x_index_list);
         }
         else
@@ -595,7 +601,7 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
         return false;
     }
 
-    LOGGER.Info("RemotePlayer.PushBlockInGame pos1 : {} pos2: {} ", pos1, pos2);
+    //LOGGER.Info("RemotePlayer.PushBlockInGame pos1 : {} pos2: {} ", pos1, pos2);
 
     auto blocks = control_block_->GetBlocks();
     if (blocks[0] && blocks[1])

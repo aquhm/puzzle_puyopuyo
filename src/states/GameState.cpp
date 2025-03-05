@@ -817,7 +817,7 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
         std::span<const float, 2> pos1{ packet->position1 };
         std::span<const float, 2> pos2{ packet->position2 };
 
-        LOGGER.Info("GameState::HandlePushBlockInGame playerID_({}) pos1: {} pos2: {}", remote_player_->GetPlayerID(), pos1, pos2);
+        //LOGGER.Info("GameState::HandlePushBlockInGame playerID_({}) pos1: {} pos2: {}", remote_player_->GetPlayerID(), pos1, pos2);
 
         remote_player_->PushBlockInGame(pos1, pos2);
     }

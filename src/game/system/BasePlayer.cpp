@@ -339,6 +339,8 @@ void BasePlayer::UpdateBullets(float delta_time)
 
 void BasePlayer::CreateBlockClearEffect(const std::shared_ptr<Block>& block)
 {
+    //LOGGER.Info("BasePlayer::CreateBlockClearEffect player_id_ = {}", player_id_);
+
     auto particle_container = std::make_unique<ExplosionContainer>();
     particle_container->SetBlockType(block->GetBlockType());
     particle_container->SetPlayerID(player_id_);

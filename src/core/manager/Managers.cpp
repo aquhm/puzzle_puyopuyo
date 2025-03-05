@@ -22,10 +22,10 @@ bool Managers::CreateManagers()
         // 각 매니저 생성        
         createManager<ResourceManager>();
         createManager<FontManager>();
-        createManager<MapManager>();
-        createManager<ParticleManager>();
+        createManager<MapManager>();        
         createManager<PlayerManager>();
         createManager<StateManager>();
+        createManager<ParticleManager>();
 
 
         // 렌더러블 매니저 목록 한 번만 생성

@@ -1,32 +1,3 @@
-//#pragma once
-//
-//#include "BasePlayer.hpp"
-//#include <SDL3/SDL.h>
-//
-//class LocalPlayer : public BasePlayer
-//{
-//public:
-//    LocalPlayer();
-//    ~LocalPlayer() override;
-//
-//    bool Initialize(float boardX, float boardY) override;
-//    void Update(float deltaTime) override;
-//
-//    void HandleKeyboardInput(const SDL_Event& event);
-//    void HandleKeyboardState();
-//
-//    bool MoveBlockLeft();
-//    bool MoveBlockRight();
-//    bool RotateBlock();
-//    bool AddDropVelocity(float velocity);
-//
-//    void UpdateTargetPosIdx();
-//
-//private:
-//    uint64_t last_input_time_{ 0 };
-//};
-
-
 #pragma once
 /**
  *
