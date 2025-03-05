@@ -204,7 +204,10 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                 // 첫 번째 블록으로 총알 생성
                 if (!groupIter->empty())
                 {
-                    CreateBullet(groupIter->front(), !state_info_.hasIceBlock);
+                    auto* firstBlock = groupIter->front();
+                    bool isAttacking = !state_info_.hasIceBlock;
+
+                    CreateBullet(firstBlock, isAttacking);                    
                 }
 
                 // 그룹 내 모든 블록 처리
@@ -284,11 +287,6 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
             if (allStationary)
             {
-                /*for (const auto& block : block_list_)
-                {
-                    block->SetRecursionCheck(false);
-                }*/
-
                 // 블록 링크 상태 업데이트
                 UpdateBlockLinks();
 
@@ -297,8 +295,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                 {
                     if (!state_info_.shouldQuit)
                     {
-                        if (score_info_.totalInterruptBlockCount > 0 &&
-                            !state_info_.isComboAttack && !state_info_.isDefending)
+                        if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
                         {
                             GenerateIceBlocks();
                         }
@@ -329,8 +326,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                 game_state_ = GamePhase::Playing;
                 prev_game_state_ = GamePhase::Playing;
 
-                if (score_info_.totalInterruptBlockCount > 0 &&
-                    !state_info_.isComboAttack && !state_info_.isDefending)
+                if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
                 {
                     GenerateIceBlocks();
                 }
@@ -441,11 +437,6 @@ bool LocalPlayer::CheckGameBlockState()
         ResetComboState();
         return false;
     }
-
-    /*for (const auto& block : block_list_)
-    {
-        block->SetRecursionCheck(false);
-    }*/
 
     // 매치 블록 찾기
     matched_blocks_.clear();      
@@ -666,10 +657,8 @@ void LocalPlayer::CalculateScore()
         (comboBonus + linkBonus + typeBonus + 1));
 
     // 방해 블록 카운트 계산
-    score_info_.addInterruptBlockCount =
-        (currentScore + score_info_.restScore) / GetMargin();
-    score_info_.restScore =
-        (currentScore + score_info_.restScore) % GetMargin();
+    score_info_.addInterruptBlockCount = (currentScore + score_info_.restScore) / GetMargin();
+    score_info_.restScore = (currentScore + score_info_.restScore) % GetMargin();
     score_info_.totalScore += currentScore;
 
     // 방해 블록 상태 업데이트
@@ -1064,22 +1053,14 @@ void LocalPlayer::ResetComboState()
 
 void LocalPlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 {
-    // 로컬 플레이어가 공격하는 경우
-    CreateBullet(board_blocks_[static_cast<int>(y)][static_cast<int>(x)], true);
-
     // 네트워크 패킷 전송
-    NETWORK.AttackInterruptBlock(
-        score_info_.addInterruptBlockCount,
-        x,
-        y,
-        type);
+    NETWORK.AttackInterruptBlock(score_info_.addInterruptBlockCount, x, y, type);
 }
 
 void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
-    // 로컬 플레이어가 방어하는 경우
-    CreateBullet(board_blocks_[static_cast<int>(y)][static_cast<int>(x)], false);
 
+    //TODO total_enemy_interrupt_block_count_
     // 방해 블록 카운트 감소
     score_info_.totalInterruptBlockCount -= count;
     total_interrupt_block_count_ -= count;
@@ -1097,7 +1078,7 @@ void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, ui
     }
 
     // 네트워크 패킷 전송
-    NETWORK.DefenseInterruptBlock(count, x, y, type);
+    //NETWORK.DefenseInterruptBlock(count, x, y, type);
 }
 
 void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)
@@ -1211,5 +1192,113 @@ void LocalPlayer::UpdateTargetPosIdx()
     if (game_board_)
     {
         game_board_->UpdateTargetBlockMark(markPositions);
+    }
+}
+
+void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
+{
+    if (!block)
+    {
+        LOGGER.Error("LocalPlayer::CreateBullet - block is NULL");
+        return;
+    }
+
+    // 시작 위치와 목표 위치 계산
+    SDL_FPoint startPos
+    {
+        Constants::Board::POSITION_X + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
+        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
+    };
+
+    SDL_FPoint endPos;
+
+    if (!isAttacking)  // 방어 상태 (방해 블록이 있음)
+    {
+        // 자신의 보드 중앙으로 발사
+        endPos =
+        {
+            Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
+            Constants::Board::POSITION_Y
+        };
+
+        // 방어 패킷 전송
+        NETWORK.DefenseInterruptBlock(
+            score_info_.addInterruptBlockCount,
+            block->GetX(),
+            block->GetY(),
+            static_cast<uint8_t>(block->GetBlockType())
+        );
+
+        // 서버인 경우 방해 블록 갱신
+        if (NETWORK.IsServer())
+        {
+            // UI 갱신
+            if (interrupt_view_)
+            {
+                interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+            }
+        }
+
+        if (interrupt_view_)
+        {
+            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        }
+    }
+    else  // 공격 상태
+    {
+        // 상대방 보드 중앙으로 발사
+        endPos =
+        {
+            GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
+            Constants::Board::POSITION_Y
+        };
+
+        // 공격 패킷 전송
+        NETWORK.AttackInterruptBlock(
+            score_info_.addInterruptBlockCount,
+            block->GetX(),
+            block->GetY(),
+            static_cast<uint8_t>(block->GetBlockType())
+        );
+
+        //TODO 확인 필요.
+        //// 서버인 경우 상대방에게 방해 블록 추가
+        //if (NETWORK.IsServer())
+        //{
+        //    // 게임 상태 확인
+        //    if (auto* gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
+        //    {
+        //        if (auto remotePlayer = gameState->GetRemotePlayer())
+        //        {
+        //            remotePlayer->AddInterruptBlock(score_info_.addInterruptBlockCount);
+        //        }
+        //    }
+        //}
+
+        if (interrupt_view_)
+        {
+            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        }
+    }
+
+    // 방해 블록 카운트 리셋
+    score_info_.addInterruptBlockCount = 0;
+
+    // 총알 생성
+    auto bullet = std::make_shared<BulletEffect>();
+    if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
+    {
+        LOGGER.Error("Failed to create bullet effect");
+        return;
+    }
+
+    // 공격 상태 설정
+    bullet->SetAttacking(isAttacking);
+    bullet_list_.push_back(bullet);
+
+    // 게임보드 상태 업데이트
+    if (game_board_ && game_board_->GetState() != BoardState::Lose)
+    {
+        game_board_->SetState(BoardState::Attacking);
     }
 }

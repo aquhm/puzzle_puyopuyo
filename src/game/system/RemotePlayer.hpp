@@ -51,7 +51,8 @@ public:
     void CollectRemoveIceBlocks() override;
 
     // 방해 블록 관련 추가 메서드
-    void AddInterruptBlock(uint8_t y_row_cnt, std::span<uint8_t> x_idx);
+    void AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx);
+    void AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type);
 
     // 캐릭터 관련
     void SetCharacterID(int16_t charID) { character_id_ = charID; }
@@ -69,7 +70,7 @@ private:
 
     // 방해 블록 관련 메서드
     void CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& texture);
-    void CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, std::span<uint8_t> x_idx, std::shared_ptr<ImageTexture>& texture);
+    void CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx, std::shared_ptr<ImageTexture>& texture);
     void CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTexture>& texture);
     void CollectAdjacentIceBlocks(Block* block);
 

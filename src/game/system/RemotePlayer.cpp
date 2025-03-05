@@ -648,7 +648,7 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
     return false;
 }
 
-void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, std::span<uint8_t> x_idx)
+void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx)
 {
     if (total_interrupt_block_count_ <= 0)
     {
@@ -685,6 +685,27 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, std::span<uint8_t> x_idx
     }
 }
 
+void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
+{
+    // 방해 블록 카운트 증가
+    total_interrupt_block_count_ += cnt;
+    score_info_.totalInterruptBlockCount += cnt;
+
+    // 콤보 공격 상태 설정
+    state_info_.isComboAttack = true;
+
+    // UI 업데이트
+    if (interrupt_view_)
+    {
+        interrupt_view_->UpdateInterruptBlock(total_interrupt_block_count_);
+    }
+
+    if (game_board_ && game_board_->GetState() != BoardState::Lose)
+    {
+        game_board_->SetState(BoardState::Attacking);
+    }
+}
+
 void RemotePlayer::CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& texture)
 {
     for (int y = 0; y < 5; y++)
@@ -697,7 +718,7 @@ void RemotePlayer::CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& t
     total_interrupt_block_count_ -= 30;
 }
 
-void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, std::span<uint8_t> x_idx, std::shared_ptr<ImageTexture>& texture)
+void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx, std::shared_ptr<ImageTexture>& texture)
 {
     // Complete rows
     for (int y = 0; y < y_row_cnt; y++)

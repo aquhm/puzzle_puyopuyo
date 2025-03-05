@@ -76,6 +76,7 @@ public:
     GamePhase GetGameState() const { return game_state_; }
     uint8_t GetPlayerID() const { return player_id_; }
     int16_t GetTotalInterruptBlockCount() const { return total_interrupt_block_count_; }
+    int16_t GetTotalEnemyInterruptBlockCount() const { return total_enemy_interrupt_block_count_; }
     std::shared_ptr<GameBoard> GetGameBoard() const { return game_board_; }
     Block* (*GetGameBlocks())[Constants::Board::BOARD_X_COUNT] { return board_blocks_; }
 
@@ -115,7 +116,7 @@ protected:
     uint8_t GetMargin() const;
 
     // 총알 및 이펙트 관련 메서드
-    void CreateBullet(Block* block, bool isAttacking);
+    virtual void CreateBullet(Block* block, bool isAttacking);
     void UpdateBullets(float delta_time);
 
 
