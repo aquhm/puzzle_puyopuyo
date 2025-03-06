@@ -101,7 +101,7 @@ bool GameState::LoadResources()
 
 bool GameState::CreatePlayers()
 {
-    // ÇÃ·¹ÀÌ¾î ÃÊ±âÈ­
+    // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ê±ï¿½È­
     local_player_ = std::make_shared<LocalPlayer>();
     remote_player_ = std::make_shared<RemotePlayer>();
 
@@ -111,7 +111,7 @@ bool GameState::CreatePlayers()
 
 bool GameState::CreateUI()
 {
-    // Àç½ÃÀÛ ¹öÆ° ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° ï¿½Ê±ï¿½È­
     restart_button_ = std::make_unique<Button>();
     exit_button_ = std::make_unique<Button>();
 
@@ -128,11 +128,11 @@ bool GameState::CreateUI()
         return false;
     }
 
-    // ¹öÆ° À§Ä¡ ¹× Å©±â ¼³Á¤
+    // ï¿½ï¿½Æ° ï¿½ï¿½Ä¡ ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     restart_button_->Init(buttonTexture, GAME_APP.GetWindowWidth() / 2.0f - 68.0f, GAME_APP.GetWindowHeight() / 2.0f - 20.0f, 136.0f, 49.0f);
     exit_button_->Init(buttonTexture, GAME_APP.GetWindowWidth() / 2.0f - 68.0f, GAME_APP.GetWindowHeight() / 2.0f + 30.0f, 136.0f, 49.0f);
 
-    // ¹öÆ° »óÅÂ ¼³Á¤
+    // ï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     SDL_FRect normalRect{ 0, 0, 136, 49 };
     SDL_FRect hoverRect{ 0, 50, 136, 49 };
 
@@ -160,7 +160,7 @@ bool GameState::CreateUI()
 
 void GameState::Enter()
 {
-    // ·ÎÄÃ ÇÃ·¹ÀÌ¾îÀÇ ID ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ID ï¿½ï¿½ï¿½ï¿½
     localPlayerId_ = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     auto characterId = GAME_APP.GetPlayerManager().GetMyPlayer()->GetCharacterId();
     
@@ -178,7 +178,7 @@ void GameState::Enter()
 
     CreateGamePlayer(std::span<const uint8_t>(), std::span<const uint8_t>(), localPlayerId_, characterId);
     ScheduleGameStart();
-    // »óÅÂ ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     shouldQuit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
@@ -200,11 +200,11 @@ void GameState::Leave()
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
-    // ÇÃ·¹ÀÌ¾î Á¤¸®
+    // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (local_player_) local_player_->Reset();
     if (remote_player_) remote_player_->Reset();
 
-    // ¹è°æ Á¤¸®
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (background_)
     {
         background_->Reset();
@@ -218,20 +218,20 @@ void GameState::Update(float deltaTime)
 
     TIMER_SCHEDULER.Update();
 
-    // ¹è°æ ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     if (background_)
     {
         background_->Update(deltaTime);
     }
 
-    // ·ÎÄÃ ÇÃ·¹ÀÌ¾î ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     if (local_player_)
     {
         local_player_->Update(deltaTime);
         local_player_->UpdateGameLogic(deltaTime);
     }
 
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾î ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     if (remote_player_ && isNetworkGame_)
     {
         remote_player_->Update(deltaTime);
@@ -246,13 +246,13 @@ void GameState::Render()
         return;
     }
 
-    // ¹è°æ ·»´õ¸µ
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (background_)
     {
         background_->Render();
     }
 
-    // ÇÃ·¹ÀÌ¾î ·»´õ¸µ
+    // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (local_player_)
     {
         local_player_->Render();
@@ -263,7 +263,7 @@ void GameState::Render()
         remote_player_->Render();
     }
 
-    // UI ·»´õ¸µ
+    // UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     RenderUI();
 
 #ifdef _DEBUG
@@ -307,7 +307,7 @@ void GameState::RenderDebugGrid()
 
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 
-    // ¼öÁ÷¼±
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     for (int x = 0; x <= Constants::Board::BOARD_X_COUNT; ++x)
     {
         float xPos = Constants::Board::POSITION_X + Constants::Board::WIDTH_MARGIN + x * Constants::Block::SIZE;
@@ -319,7 +319,7 @@ void GameState::RenderDebugGrid()
             Constants::Board::POSITION_Y + Constants::Board::HEIGHT);
     }
 
-    // ¼öÆò¼±
+    // ï¿½ï¿½ï¿½ï¿½
     for (int y = 0; y <= Constants::Board::BOARD_Y_COUNT; ++y)
     {
         float yPos = Constants::Board::POSITION_Y + y * Constants::Block::SIZE;
@@ -354,7 +354,7 @@ void GameState::HandleEvent(const SDL_Event& event)
         break;
     }
 
-    // Å°º¸µå »óÅÂ Ã³¸®
+    // Å°ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
     HandleKeyboardState();
 }
 
@@ -373,7 +373,7 @@ void GameState::HandleMouseInput(const SDL_Event& event)
 
 void GameState::HandleKeyboardInput(const SDL_Event& event)
 {
-    // ·ÎÄÃ ÇÃ·¹ÀÌ¾î¿¡°Ô Å°º¸µå ÀÔ·Â Àü´Þ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ Å°ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (local_player_ && local_player_->GetGameState() == GamePhase::Playing)
     {
         switch (event.key.key)
@@ -406,10 +406,10 @@ void GameState::HandleKeyboardState()
 
     const bool* keyStates = SDL_GetKeyboardState(nullptr);
 
-    // ·ÎÄÃ ÇÃ·¹ÀÌ¾î¿¡°Ô Å°º¸µå »óÅÂ Àü´Þ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ Å°ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (local_player_)
     {
-        // ·ÎÄÃ ÇÃ·¹ÀÌ¾î°¡ °ÔÀÓ ÁßÀÏ ¶§ Ã³¸®
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã³ï¿½ï¿½
         if (local_player_->GetGameState() == GamePhase::Playing)
         {
             if (keyStates[SDL_SCANCODE_LEFT])
@@ -448,10 +448,10 @@ void GameState::HandleKeyboardState()
 
 bool GameState::GameRestart()
 {
-    // °ÔÀÓ »óÅÂ ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     if (local_player_ && remote_player_)
     {
-        // ÃÊ±â ºí·Ï Å¸ÀÔ »ý¼º (¼­¹ö¸¸ ¼öÇà)
+        // ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         if (NETWORK.IsServer())
         {
             std::array<uint8_t, 2> blockType1 = {
@@ -463,10 +463,10 @@ bool GameState::GameRestart()
                 static_cast<uint8_t>(rand() % 5 + 1)
             };
 
-            // ·ÎÄÃ ÇÃ·¹ÀÌ¾î Àç½ÃÀÛ
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
             local_player_->Restart(blockType1, blockType2);
 
-            // ³×Æ®¿öÅ©·Î Àç½ÃÀÛ ÆÐÅ¶ Àü¼Û
+            // ï¿½ï¿½Æ®ï¿½ï¿½Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ ï¿½ï¿½ï¿½ï¿½
            /* RestartGamePacket packet;
             packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
             memcpy(packet.block1, blockType1.data(), 2);
@@ -476,17 +476,17 @@ bool GameState::GameRestart()
         }
     }
 
-    // ¹è°æ ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     if (background_)
     {
         background_->Reset();
     }
 
-    // UI »óÅÂ ÃÊ±âÈ­
+    // UI ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
-    // °ÔÀÓ »óÅÂ ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     shouldQuit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
@@ -503,11 +503,6 @@ bool GameState::GameExit()
 void GameState::GameQuit()
 {
     shouldQuit_ = true;
-
-    if (local_player_)
-    {
-        local_player_->LoseGame(false);
-    }
 
     if (NETWORK.IsServer() && restart_button_)
     {
@@ -620,20 +615,20 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
         return;
     }
 
-    // ¹è°æ ¸Ê »ý¼º
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     background_ = GAME_APP.GetMapManager().CreateMap(packet->map_id);    
 
     if (background_ && background_->Initialize())
     {
         local_player_->SetBackGround(background_);
 
-        // ·ÎÄÃ ÇÃ·¹ÀÌ¾î ºí·Ï Á¤º¸ ¸Ê¿¡ ¼³Á¤
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½
         auto next_blocks = local_player_->GetNextBlock();
         background_->Reset();
         background_->SetNextBlock(next_blocks[0]);
         background_->SetNextBlock(next_blocks[1]);
 
-        // ÇÃ·¹ÀÌ¾î »ý¼º
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
         std::span<const uint8_t> blockType1(packet->block1);
         std::span<const uint8_t> blockType2(packet->block2);
 
@@ -646,7 +641,7 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
 void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
     uint8_t playerIdx, uint8_t characterIdx)
 {
-    // ·ÎÄÃ ÇÃ·¹ÀÌ¾îÀÎ °æ¿ì
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     if (playerIdx == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId())
     {
         if (!local_player_->Initialize(blocktype1, blocktype2, playerIdx, characterIdx, background_))
@@ -657,7 +652,7 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, con
         local_player_->AddEventListener(this);
         
     }
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾îÀÎ °æ¿ì
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     else
     {
         if (!remote_player_->Initialize(blocktype1, blocktype2, playerIdx, characterIdx, background_))
@@ -679,7 +674,7 @@ void GameState::HandleAddNewBlock(uint8_t connectionId, const AddNewBlockPacket*
         return;
     }
 
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾îÀÇ ºí·Ï Ãß°¡
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->AddNewBlock(packet->block_type);
@@ -694,7 +689,7 @@ void GameState::HandleUpdateBlockMove(uint8_t connectionId, const MoveBlockPacke
         return;
     }
 
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾îÀÇ ºí·Ï ÀÌµ¿
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->MoveBlock(packet->move_type, packet->position);
@@ -709,7 +704,7 @@ void GameState::HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket*
         return;
     }
 
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾îÀÇ ºí·Ï È¸Àü
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ È¸ï¿½ï¿½
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->RotateBlock(packet->rotate_type, packet->is_horizontal_moving);
@@ -718,10 +713,10 @@ void GameState::HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket*
 
 void GameState::HandleStartGame()
 {
-    // °ÔÀÓ ½ÃÀÛ Ã³¸®
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
     if (local_player_)
     {
-        // ·ÎÄÃ ÇÃ·¹ÀÌ¾î ´ÙÀ½ ºí·Ï »ý¼º
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         local_player_->CreateNextBlock();
     }
 }
@@ -734,7 +729,7 @@ void GameState::HandleCheckBlockState(uint8_t connectionId, const CheckBlockStat
         return;
     }
 
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾îÀÇ ºí·Ï »óÅÂ Ã¼Å©
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->CheckGameBlockState();
@@ -823,14 +818,14 @@ void GameState::HandleGameOver()
 
 void GameState::HandleSystemEvent(const SDL_Event& event)
 {
-    //TODO: ½Ã½ºÅÛ ÀÌº¥Æ® Ã³¸®
+    //TODO: ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® Ã³ï¿½ï¿½
 }
 
 void GameState::Release()
 {
     Leave();
 
-    // UI ¸®¼Ò½º ÇØÁ¦
+    // UI ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (restart_button_) {
         restart_button_->Release();
         restart_button_.reset();
@@ -841,7 +836,7 @@ void GameState::Release()
         exit_button_.reset();
     }
 
-    // ¹è°æ ¹× ÇÃ·¹ÀÌ¾î ¸®¼Ò½º ÇØÁ¦
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (background_) {
         background_->Release();
         background_.reset();
@@ -879,7 +874,7 @@ Block* (*GameState::GetGameBlocks(uint8_t playerId))[Constants::Board::BOARD_X_C
 
 void GameState::ScheduleGameStart() 
 {
-    // 2ÃÊ ÈÄ¿¡ °ÔÀÓ ½ÃÀÛ ·ÎÁ÷ ½ÇÇà
+    // 2ï¿½ï¿½ ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     TIMER_SCHEDULER.ScheduleTask(Constants::Game::PLAY_START_DELAY, 
         [this]()
         {

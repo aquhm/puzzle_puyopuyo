@@ -231,10 +231,19 @@ public:
         {
             gameState->GameQuit();
 
-            if (const auto& remotePlayer = gameState->GetRemotePlayer())
+            const auto& remotePlayer = gameState->GetRemotePlayer();
+            const auto& localPlayer = gameState->GetLocalPlayer();
+            
+            if (lose_packet.player_id == remotePlayer->GetPlayerID())
             {
                 remotePlayer->LoseGame(false);
+                localPlayer->LoseGame(true);
             }
+            else
+            {
+                remotePlayer->LoseGame(true);
+                localPlayer->LoseGame(false);
+            }            
         }
     }
 
