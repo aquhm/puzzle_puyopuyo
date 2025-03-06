@@ -301,6 +301,8 @@ void Block::Render()
         return;
     }
 
+    texture_->SetAlpha(255);
+
     if (isScaled_) 
     {
         texture_->RenderScaled(&sourceRect_, &destination_rect_, rotationAngle_);

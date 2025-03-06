@@ -38,6 +38,11 @@ GameGroupBlock::GameGroupBlock()
 {
 }
 
+GameGroupBlock::~GameGroupBlock() 
+{
+    //Release();
+}
+
 void GameGroupBlock::SetPosX(float x) 
 {
     position_.x = x;
@@ -739,6 +744,7 @@ void GameGroupBlock::ResetBlock()
                 //LOGGER.Info("ResetBlock {}", playerId);
             }
 
+            //block->Release();
             block = nullptr;
         }
     }
@@ -1051,4 +1057,10 @@ void GameGroupBlock::UpdateFallingBlock(uint8_t fallingIdx, bool falling)
 {
     fallingIdx_ = fallingIdx;
     isFalling_ = falling;
+}
+
+void GameGroupBlock::Release()
+{
+    ResetBlock();
+    GroupBlock::Release();
 }

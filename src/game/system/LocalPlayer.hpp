@@ -27,6 +27,8 @@ public:
         uint8_t characterIdx,
         const std::shared_ptr<GameBackground>& background) override;
 
+    void Release() override;
+
     bool Restart(const std::span<const uint8_t>& blockType1,
         const std::span<const uint8_t>& blockType2) override;
 

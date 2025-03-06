@@ -29,6 +29,7 @@ RemotePlayer::RemotePlayer() : BasePlayer(), character_id_(0), has_ice_block_(fa
 
 RemotePlayer::~RemotePlayer()
 {
+    Release();
 }
 
 bool RemotePlayer::Initialize(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
@@ -950,4 +951,15 @@ void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
         new_blocks_.push_back(next_block);
         background_->SetPlayerNextBlock(next_block);
     }
+}
+
+void RemotePlayer::Release()
+{
+    equal_block_list_.clear();
+
+    ReleaseContainer(del_bullet_array_);
+    ReleaseContainer(ice_block_set_);
+    ReleaseContainer(new_blocks_);
+
+    BasePlayer::Release();
 }

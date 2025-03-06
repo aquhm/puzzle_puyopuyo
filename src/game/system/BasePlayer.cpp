@@ -54,8 +54,12 @@ void BasePlayer::Reset()
         control_block_->ResetBlock();
     }
 
-    block_list_.clear();
-    bullet_list_.clear();
+    ReleaseContainer(block_list_);
+    ReleaseContainer(bullet_list_);
+    ReleaseContainer(draw_objects_);
+
+    // draw_objects_ º¤ÅÍ ºñ¿ì±â
+    draw_objects_.clear();
 
     std::memset(board_blocks_, 0, sizeof(Block*) * Constants::Board::BOARD_Y_COUNT * Constants::Board::BOARD_X_COUNT);
 
@@ -72,11 +76,34 @@ void BasePlayer::Release()
 {
     Reset();
 
-    game_board_.reset();
-    interrupt_view_.reset();
-    combo_view_.reset();
-    result_view_.reset();
-    control_block_.reset();
+    if (game_board_) {
+        game_board_->Release();
+        game_board_.reset();
+    }
+
+    if (interrupt_view_) {
+        interrupt_view_->Release();
+        interrupt_view_.reset();
+    }
+
+    if (combo_view_) {
+        combo_view_->Release();
+        combo_view_.reset();
+    }
+
+    if (result_view_) {
+        result_view_->Release();
+        result_view_.reset();
+    }
+
+    if (control_block_) {
+        control_block_->Release();
+        control_block_.reset();
+    }
+
+    background_.reset();
+
+    draw_objects_.clear();
 }
 
 void BasePlayer::Update(float deltaTime)
@@ -325,6 +352,7 @@ void BasePlayer::UpdateBullets(float delta_time)
 
             if (!bullet->IsAlive())
             {
+                bullet->Release();
                 it = bullet_list_.erase(it);
             }
             else
@@ -368,6 +396,7 @@ void BasePlayer::RemoveBlock(Block* block, const SDL_Point& pos_idx)
     if (it != block_list_.end()) 
     
     {
+        (*it)->Release();
         block_list_.erase(it);
     }
 }

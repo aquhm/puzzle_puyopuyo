@@ -19,12 +19,7 @@ struct SDL_FPoint;
 class BulletEffect : public RenderableObject 
 {
 public:
-    //static constexpr float BULLET_AMPLITUDE = 100.0f;       // 발사체 진폭 크기
-    //static constexpr float BULLET_FORCE = 1500.0f;          // 발사체 기본 힘
-    //static constexpr float SHOCK_EXPAND_TIME = 0.3f;
-    //static constexpr float SHOCK_EXPAND_DELTA_SIZE = 100.0f;
-    //static constexpr float SHOCK_EXPAND_POS_VELOCITY = (SHOCK_EXPAND_DELTA_SIZE * 0.5f) / SHOCK_EXPAND_TIME;
-    //static constexpr float PI = 3.14159265358979323846f;
+    
 
     enum class State 
     {

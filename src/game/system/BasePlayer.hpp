@@ -39,6 +39,9 @@ public:
     virtual void Reset();
     virtual void Release();
 
+    template<typename Container>
+    void ReleaseContainer(Container& container);
+
     // 초기화 및 재시작
     virtual bool Initialize(const std::span<const uint8_t>& blocktype1,
         const std::span<const uint8_t>& blocktype2,
@@ -85,6 +88,8 @@ public:
 
     [[nodiscard]] bool IsPossibleMove(int xIdx);
 
+
+    const std::shared_ptr<InterruptBlockView>& GetInterruptView() { return interrupt_view_; }
     // 컴포넌트 설정
     void SetInterruptView(const std::shared_ptr<InterruptBlockView>& view) { interrupt_view_ = view; }
     void SetComboView(const std::shared_ptr<ComboView>& view) { combo_view_ = view; }
@@ -93,6 +98,7 @@ public:
     void SetBackGround(const std::shared_ptr<GameBackground>& backGround) { background_ = backGround; }
 
     void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
+    void SetTotalInterruptBlockCount(uint16_t count) { score_info_.totalInterruptBlockCount += count; }
 
 protected:
     // 초기화 관련 메서드
@@ -191,3 +197,15 @@ protected:
     std::list<std::shared_ptr<Block>> block_list_;
     std::list<std::shared_ptr<BulletEffect>> bullet_list_;
 };
+
+template<typename Container>
+void BasePlayer::ReleaseContainer(Container& container) 
+{
+    for (auto& item : container) 
+    {
+        if (item) {
+            item->Release();
+        }
+    }
+    container.clear();
+}

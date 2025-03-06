@@ -73,11 +73,9 @@ void IceBlock::UpdateDestroying(float deltaTime)
 
 void IceBlock::UpdateDownMoving(float deltaTime) 
 {
-    float fallSpeed = deltaTime * (static_cast<float>(Constants::Board::BOARD_Y_COUNT) +
-        Constants::Block::SHATTERING_DOWN_SPEED -
-        static_cast<float>(indexY_));
+    float fallSpeed = deltaTime * static_cast<float>(Constants::Board::BOARD_Y_COUNT - indexY_);
 
-    downVelocity_ += fallSpeed;
+    downVelocity_ += fallSpeed * 0.1f;
     position_.y += downVelocity_;
     SetY(position_.y);
 
@@ -96,7 +94,7 @@ void IceBlock::UpdateDownMoving(float deltaTime)
     bool hasCollision = false;
     bool canMove = true;
 
-    SDL_Rect targetRect, controlRect;
+    SDL_Rect targetRect, controlRect, resultRect;
 
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y) 
     {
@@ -106,15 +104,14 @@ void IceBlock::UpdateDownMoving(float deltaTime)
             continue;
         }
 
-
         if (block->GetState() == BlockState::Stationary) 
         {
             RectUtils::ConvertFRectToRect(destination_rect_, &controlRect);
             RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
-            if (SDL_HasRectIntersection(&controlRect, &targetRect))
+            if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect))
             {
-                SetY(block->GetY() - Constants::Block::SIZE);
+                SetY(resultRect.y - Constants::Block::SIZE);
                 canMove = false;
                 hasCollision = true;
                 break;

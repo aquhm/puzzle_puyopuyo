@@ -125,6 +125,13 @@ void GroupBlock::Render()
 
 void GroupBlock::Release() 
 {
+    for (auto& block : blocks_) 
+    {
+        if (block) 
+        {
+            block->Release();
+        }
+    }
     blocks_.fill(nullptr);
 }
 

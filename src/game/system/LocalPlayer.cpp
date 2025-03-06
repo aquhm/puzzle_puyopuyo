@@ -29,7 +29,7 @@ LocalPlayer::LocalPlayer() : BasePlayer(), lastInputTime_(0)
 
 LocalPlayer::~LocalPlayer()
 {
-
+    Release();
 }
 
 bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
@@ -64,7 +64,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const s
         }
 
 #ifdef _APP_DEBUG_
-        CreateBlocksFromFile();
+        //CreateBlocksFromFile();
 #endif
 
         // 게임 상태 초기화
@@ -230,6 +230,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
                     if (it != block_list_.end())
                     {
+                        (*it)->Release();
                         block_list_.erase(it);
                     }
 
@@ -756,7 +757,6 @@ void LocalPlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>
             auto iceBlock = std::make_shared<IceBlock>();
             InitializeIceBlock(iceBlock.get(), texture, x, y, playerID);
             block_list_.push_back(iceBlock);
-            ice_blocks_.insert(iceBlock);
         }
     }
 }
@@ -774,7 +774,6 @@ void LocalPlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>
             auto iceBlock = std::make_shared<IceBlock>();
             InitializeIceBlock(iceBlock.get(), texture, x, y, playerID);
             block_list_.push_back(iceBlock);
-            ice_blocks_.insert(iceBlock);
         }
     }
 
@@ -798,7 +797,6 @@ void LocalPlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>
             auto iceBlock = std::make_shared<IceBlock>();
             InitializeIceBlock(iceBlock.get(), texture, pos, yCnt, playerID);
             block_list_.push_back(iceBlock);
-            ice_blocks_.insert(iceBlock);
             xIdxList[idx++] = static_cast<uint8_t>(pos);
         }
 
@@ -851,6 +849,11 @@ void LocalPlayer::CollectRemoveIceBlocks()
     {
         for (auto* block : group)
         {
+            if (block == nullptr)
+            {
+                continue;
+            }
+
             const int x = block->GetPosIdx_X();
             const int y = block->GetPosIdx_Y();
 
@@ -865,7 +868,7 @@ void LocalPlayer::CollectRemoveIceBlocks()
                 if (checkX >= 0 && checkX < Constants::Board::BOARD_X_COUNT &&
                     checkY >= 0 && checkY < Constants::Board::BOARD_Y_COUNT)
                 {
-                    if (auto* checkBlock = board_blocks_[checkY][checkX])
+                    if (auto checkBlock = board_blocks_[checkY][checkX])
                     {
                         if (checkBlock->GetBlockType() == BlockType::Ice &&
                             checkBlock->GetState() == BlockState::Stationary)
@@ -880,7 +883,8 @@ void LocalPlayer::CollectRemoveIceBlocks()
                                         return block.get() == iceBlock;
                                     });
 
-                                if (found != block_list_.end()) {
+                                if (found != block_list_.end()) 
+                                {
                                     ice_blocks_.insert(std::static_pointer_cast<IceBlock>(*found));
                                 }
                             }
@@ -1301,4 +1305,16 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
     {
         game_board_->SetState(BoardState::Attacking);
     }
+}
+
+void LocalPlayer::Release()
+{
+    bullets_to_delete_.clear();
+
+    matched_blocks_.clear();
+
+    ReleaseContainer(ice_blocks_);    
+    ReleaseContainer(next_blocks_);    
+
+    BasePlayer::Release();
 }

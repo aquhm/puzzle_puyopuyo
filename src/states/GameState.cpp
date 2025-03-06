@@ -40,7 +40,10 @@ GameState::GameState()
     InitializePacketHandlers();
 }
 
-GameState::~GameState() = default;
+GameState::~GameState()
+{
+    Release();
+}
 
 bool GameState::Init()
 {
@@ -396,6 +399,10 @@ void GameState::HandleKeyboardInput(const SDL_Event& event)
         case SDLK_UP:
             local_player_->RotateBlock(0, false);
             break;
+        case SDLK_1 :
+            local_player_->SetTotalInterruptBlockCount(4);
+			local_player_->GetInterruptView()->UpdateInterruptBlock(4);
+            break;
         }
     }
 }
@@ -601,12 +608,21 @@ void GameState::InitializePacketHandlers()
         }
     );
 
-    packet_processor_.RegisterHandler<PacketBase>(
+    packet_processor_.RegisterHandler<GameOverPacket>(
         PacketType::GameOver,
-        [this](uint8_t connectionId, const PacketBase* packet) {
+        [this](uint8_t connectionId, const GameOverPacket* packet) {
             HandleGameOver();
         }
     );
+
+    packet_processor_.RegisterHandler<AttackInterruptPacket>(
+        PacketType::AttackInterruptBlock,
+        [this](uint8_t connectionId, const AttackInterruptPacket* packet) {
+            HandleAttackInterrupt(connectionId, packet);
+        }
+    );
+
+    
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -767,6 +783,20 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
     }
 }
 
+void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterruptPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (player->GetId() != localPlayerId_ && local_player_)
+    {
+        local_player_->AddInterruptBlock(packet->count);
+    }
+}
+
 void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet)
 {
     auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
@@ -809,12 +839,48 @@ void GameState::Release()
 {
     Leave();
 
-    restart_button_.reset();
-    exit_button_.reset();
+    // UI 리소스 해제
+    if (restart_button_) {
+        restart_button_->Release();
+        restart_button_.reset();
+    }
 
-    background_.reset();
-    local_player_.reset();
-    remote_player_.reset();
+    if (exit_button_) {
+        exit_button_->Release();
+        exit_button_.reset();
+    }
+
+    // 배경 및 플레이어 리소스 해제
+    if (background_) {
+        background_->Release();
+        background_.reset();
+    }
+
+    if (local_player_) {
+        local_player_->Release();
+        local_player_.reset();
+    }
+
+    if (remote_player_) {
+        remote_player_->Release();
+        remote_player_.reset();
+    }
+
+    // ComboView, InterruptView, ResultView 해제
+    if (combo_view_) {
+        combo_view_->Release();
+        combo_view_.reset();
+    }
+
+    if (interrupt_view_) {
+        interrupt_view_->Release();
+        interrupt_view_.reset();
+    }
+
+    if (result_view_) {
+        result_view_->Release();
+        result_view_.reset();
+    }
 
     initialized_ = false;
     isNetworkGame_ = false;

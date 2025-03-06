@@ -237,6 +237,15 @@ struct StartGamePacket : PacketBase
     }
 };
 
+struct GameOverPacket : PacketBase
+{
+    GameOverPacket()
+    {
+        type = static_cast<uint16_t>(PacketType::GameOver);
+        size = sizeof(GameOverPacket);
+    }
+};
+
 struct RestartGamePacket : PacketBase
 {
     uint8_t player_id;
