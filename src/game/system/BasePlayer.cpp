@@ -518,7 +518,8 @@ void BasePlayer::LoseGame(bool isWin)
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
 
-    game_state_ = GamePhase::Standing;
+    game_state_ = GamePhase::GameOver;
+    state_info_.currentPhase = GamePhase::GameOver;
 }
 
 void BasePlayer::AddInterruptBlock(int16_t count)

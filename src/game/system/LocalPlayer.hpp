@@ -15,7 +15,8 @@ class IceBlock;
 class BulletEffect;
 class ImageTexture;
 
-class LocalPlayer : public BasePlayer {
+class LocalPlayer : public BasePlayer 
+{
 public:
     LocalPlayer();
     ~LocalPlayer() override;
@@ -77,6 +78,7 @@ private:
     void GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID);
     void GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID);
     void InitializeIceBlock(IceBlock* block, const std::shared_ptr<ImageTexture>& texture, int x, int y, uint8_t playerID);
+    bool IsGameOver() const;
 
 private:
     // 게임 데이터

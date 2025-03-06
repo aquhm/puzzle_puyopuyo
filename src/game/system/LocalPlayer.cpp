@@ -129,7 +129,7 @@ void LocalPlayer::UpdateGameLogic(float deltaTime)
 {
     switch (state_info_.currentPhase)
     {
-    case GamePhase::Standing:
+    case GamePhase::GameOver:
         if (result_view_)
         {
             result_view_->Update(deltaTime);
@@ -171,11 +171,20 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
         // 모든 블록이 정지 상태면 다음 블록 생성
         if (allStationary)
         {
-            if (!is_game_quit_)
+            if (IsGameOver() == false)
             {
                 state_info_.currentPhase = GamePhase::Playing;
                 game_state_ = GamePhase::Playing;
                 CreateNextBlock();
+            }
+            else
+            {
+                if (NETWORK.IsRunning())
+                {
+                    NETWORK.LoseGame();
+                }
+
+				LoseGame(false);
             }
         }
     }
@@ -250,6 +259,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     for (const auto& iceBlock : ice_blocks_)
                     {
                         SDL_Point iceIdx{ iceBlock->GetPosIdx_X(), iceBlock->GetPosIdx_Y() };
+                        LOGGER.Info("===========> iceblock position {} {}", iceIdx.x, iceIdx.y);
                         board_blocks_[iceIdx.y][iceIdx.x] = nullptr;
 
                         block_list_.remove(iceBlock);
@@ -312,8 +322,8 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
         {
             if (state_info_.shouldQuit)
             {
-                state_info_.currentPhase = GamePhase::Standing;
-                game_state_ = GamePhase::Standing;
+                state_info_.currentPhase = GamePhase::GameOver;
+                game_state_ = GamePhase::GameOver;
             }
             else
             {
@@ -423,8 +433,8 @@ bool LocalPlayer::CheckGameBlockState()
         {
             NETWORK.StopComboAttack();
         }
-        state_info_.currentPhase = GamePhase::Standing;
-        game_state_ = GamePhase::Standing;
+        state_info_.currentPhase = GamePhase::GameOver;
+        game_state_ = GamePhase::GameOver;
         return true;
     }
 
@@ -480,11 +490,13 @@ bool LocalPlayer::CheckGameBlockState()
     }
 
     // 게임 오버 체크
-    if (board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][2] != nullptr ||
-        board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][3] != nullptr ||
-        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][2] != nullptr ||
-        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][3] != nullptr)
+    if (IsGameOver() == true)
     {
+        if (NETWORK.IsRunning())
+        {
+            NETWORK.LoseGame();
+        }
+
         LoseGame(false);
         return true;
     }
@@ -1317,4 +1329,16 @@ void LocalPlayer::Release()
     ReleaseContainer(next_blocks_);    
 
     BasePlayer::Release();
+}
+
+bool LocalPlayer::IsGameOver() const
+{
+    // 게임 오버 조건 체크: 상단 중앙 2x2 영역에 블록이 있는 경우
+    bool isGameOverState = 
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][2] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][3] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][2] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][3] != nullptr;
+
+    return isGameOverState;
 }

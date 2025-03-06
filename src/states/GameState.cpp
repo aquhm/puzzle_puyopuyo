@@ -403,6 +403,14 @@ void GameState::HandleKeyboardInput(const SDL_Event& event)
             local_player_->SetTotalInterruptBlockCount(4);
 			local_player_->GetInterruptView()->UpdateInterruptBlock(4);
             break;
+        case SDLK_2:
+            local_player_->SetTotalInterruptBlockCount(40);
+            local_player_->GetInterruptView()->UpdateInterruptBlock(40);
+            break;
+        case SDLK_3:
+            local_player_->SetTotalInterruptBlockCount(100);
+            local_player_->GetInterruptView()->UpdateInterruptBlock(100);
+            break;
         }
     }
 }
@@ -437,7 +445,7 @@ void GameState::HandleKeyboardState()
                 local_player_->MoveBlock(static_cast<uint8_t>(Constants::Direction::Bottom), 0);
             }
         }
-        else if (local_player_->GetGameState() == GamePhase::Standing && shouldQuit_)
+        else if (local_player_->GetGameState() == GamePhase::GameOver && shouldQuit_)
         {
             if (keyStates[SDL_SCANCODE_RETURN] || keyStates[SDL_SCANCODE_SPACE])
             {

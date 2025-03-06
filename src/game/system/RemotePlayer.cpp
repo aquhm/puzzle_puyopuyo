@@ -64,6 +64,8 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blocktype1, const 
         }
 
         // 게임 상태 초기화
+        state_info_.currentPhase = GamePhase::Playing;
+        state_info_.previousPhase = state_info_.currentPhase;
         game_state_ = GamePhase::Playing;
         prev_game_state_ = game_state_;
         play_time_ = 0.0f;
@@ -130,7 +132,9 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
         InitializeViews();
 
         // 게임 상태 초기화
-        game_state_ = GamePhase::Playing;
+        state_info_.currentPhase = GamePhase::Playing;
+        state_info_.previousPhase = state_info_.currentPhase;
+        game_state_ = GamePhase::Playing;        
         prev_game_state_ = game_state_;
         play_time_ = 0.0f;
         total_score_ = 0;
@@ -151,8 +155,8 @@ void RemotePlayer::UpdateGameState(float deltaTime)
 {
     switch (game_state_)
     {
-    case GamePhase::Standing:
-        UpdateStandingState(deltaTime);
+    case GamePhase::GameOver:
+        UpdateGameOverState(deltaTime);
         break;
 
     case GamePhase::Playing:
@@ -172,7 +176,7 @@ void RemotePlayer::UpdateGameState(float deltaTime)
     }
 }
 
-void RemotePlayer::UpdateStandingState(float deltaTime)
+void RemotePlayer::UpdateGameOverState(float deltaTime)
 {
     if (result_view_)
     {
@@ -205,6 +209,7 @@ void RemotePlayer::UpdateIceBlockDowningState()
     if (all_blocks_stationary)
     {
         game_state_ = GamePhase::Playing;
+		state_info_.currentPhase = GamePhase::Playing;
         PlayNextBlock();
     }
 }
@@ -296,8 +301,11 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        game_state_ = is_game_quit_ ? GamePhase::Standing : GamePhase::Playing;
+        game_state_ = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
         prev_game_state_ = game_state_;
+
+        state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+        state_info_.previousPhase = state_info_.currentPhase;
         return;
     }
 
@@ -316,6 +324,9 @@ void RemotePlayer::UpdateAfterBlocksCleared()
         {
             game_state_ = GamePhase::Playing;
             prev_game_state_ = game_state_;
+
+            state_info_.currentPhase = GamePhase::Playing;
+            state_info_.previousPhase = state_info_.currentPhase;
         }
     }
 }
@@ -356,7 +367,9 @@ bool RemotePlayer::CheckGameBlockState()
 {
     if (is_game_quit_)
     {
-        game_state_ = GamePhase::Standing;
+        game_state_ = GamePhase::GameOver;
+        state_info_.currentPhase = GamePhase::Playing;
+
         return true;
     }
 
@@ -365,6 +378,9 @@ bool RemotePlayer::CheckGameBlockState()
     {
         game_state_ = GamePhase::Playing;
         prev_game_state_ = GamePhase::Playing;
+
+        state_info_.currentPhase = GamePhase::Playing;
+        state_info_.previousPhase = state_info_.currentPhase;
         return false;
     }
 
@@ -429,7 +445,10 @@ bool RemotePlayer::CheckGameBlockState()
 void RemotePlayer::HandleMatchedBlocks()
 {
     prev_game_state_ = game_state_;
-    game_state_ = GamePhase::Shattering;
+    game_state_ = GamePhase::Shattering;    
+
+    state_info_.previousPhase = state_info_.currentPhase;
+    state_info_.currentPhase = GamePhase::Shattering;    
 
     if (prev_game_state_ == GamePhase::Shattering)
     {
@@ -464,8 +483,11 @@ void RemotePlayer::ResetMatchState()
         rest_score_ = 0;
     }
 
-    game_state_ = is_game_quit_ ? GamePhase::Standing : GamePhase::Playing;
+    game_state_ = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
     prev_game_state_ = game_state_;
+    
+    state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+    state_info_.previousPhase = state_info_.currentPhase;
 }
 
 int16_t RemotePlayer::RecursionCheckBlock(int16_t x, int16_t y, int16_t direction, std::vector<Block*>& block_list)
@@ -679,6 +701,8 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
         }
 
         game_state_ = GamePhase::IceBlocking;
+
+        state_info_.currentPhase = GamePhase::IceBlocking;
     }
     catch (const std::exception& e)
     {

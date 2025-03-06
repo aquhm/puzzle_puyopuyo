@@ -77,7 +77,7 @@ private:
     void CollectAdjacentIceBlocks(Block* block);
 
     // 게임 상태 업데이트 메서드
-    void UpdateStandingState(float deltaTime);
+    void UpdateGameOverState(float deltaTime);
     void UpdatePlayingState(float deltaTime);
     void UpdateIceBlockDowningState();
     void UpdateShatteringState();
