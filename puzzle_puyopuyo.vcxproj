@@ -58,7 +58,6 @@
     <ClInclude Include="src\game\system\RemotePlayer.hpp" />
     <ClInclude Include="src\game\view\ComboView.hpp" />
     <ClInclude Include="src\game\system\GameBoard.hpp" />
-    <ClInclude Include="src\game\system\GamePlayer.hpp" />
     <ClInclude Include="src\game\view\InterruptBlockView.hpp" />
     <ClInclude Include="src\game\view\ResultView.hpp" />
     <ClInclude Include="src\math\Vector2.h" />
@@ -132,7 +131,6 @@
     <ClCompile Include="src\game\system\RemotePlayer.cpp" />
     <ClCompile Include="src\game\view\ComboView.cpp" />
     <ClCompile Include="src\game\system\GameBoard.cpp" />
-    <ClCompile Include="src\game\system\GamePlayer.cpp" />
     <ClCompile Include="src\game\view\InterruptBlockView.cpp" />
     <ClCompile Include="src\game\view\ResultView.cpp" />
     <ClCompile Include="src\main.cpp" />
