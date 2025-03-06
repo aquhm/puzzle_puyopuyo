@@ -189,10 +189,11 @@ bool BasePlayer::InitializeGameBoard(float posX, float posY)
 bool BasePlayer::InitializeViews()
 {
     interrupt_view_ = std::make_shared<InterruptBlockView>();    
+    interrupt_view_->Initialize();
 
     float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
         Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
-
+    
     interrupt_view_->SetPosition(boardPosX, 0);
     draw_objects_.push_back(interrupt_view_.get());
 
@@ -517,6 +518,8 @@ void BasePlayer::LoseGame(bool isWin)
 
     game_state_ = GamePhase::GameOver;
     state_info_.currentPhase = GamePhase::GameOver;
+
+    SetGameQuit();
 }
 
 void BasePlayer::AddInterruptBlock(int16_t count)

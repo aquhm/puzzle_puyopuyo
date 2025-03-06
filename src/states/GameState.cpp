@@ -506,7 +506,6 @@ void GameState::GameQuit()
 
     if (local_player_)
     {
-        local_player_->SetGameQuit();
         local_player_->LoseGame(false);
     }
 
@@ -858,22 +857,6 @@ void GameState::Release()
         remote_player_.reset();
     }
 
-    // ComboView, InterruptView, ResultView ÇØÁ¦
-    if (combo_view_) {
-        combo_view_->Release();
-        combo_view_.reset();
-    }
-
-    if (interrupt_view_) {
-        interrupt_view_->Release();
-        interrupt_view_.reset();
-    }
-
-    if (result_view_) {
-        result_view_->Release();
-        result_view_.reset();
-    }
-
     initialized_ = false;
     isNetworkGame_ = false;
 
@@ -930,7 +913,6 @@ void GameState::HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event
     if (remote_player_)
     {
         remote_player_->LoseGame(true);
-        remote_player_->SetGameQuit();                
     }
 
     exit_button_->SetVisible(true);
