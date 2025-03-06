@@ -3,12 +3,14 @@
 #include "../../core/manager/ResourceManager.hpp"
 #include "../../core/manager/ParticleManager.hpp"
 #include "../../core/manager/PlayerManager.hpp"
+#include "../../core/manager/StateManager.hpp"
 
 #include "../block/Block.hpp"
 #include "../block/IceBlock.hpp"
 #include "../block/GameGroupBlock.hpp"
 #include "../block/GroupBlock.hpp"
 
+#include "../event/IPlayerEventListener.hpp"
 #include "../system/GameBoard.hpp"
 #include "../view/InterruptBlockView.hpp"
 #include "../view/ComboView.hpp"
@@ -186,26 +188,21 @@ bool BasePlayer::InitializeGameBoard(float posX, float posY)
 
 bool BasePlayer::InitializeViews()
 {
-    // ÀÎÅÍ·´Æ® ºä ÃÊ±âÈ­
-    if (interrupt_view_)
-    {
-        interrupt_view_->Initialize();
-        draw_objects_.push_back(interrupt_view_.get());
-    }
+    interrupt_view_ = std::make_shared<InterruptBlockView>();    
 
-    // ÄÞº¸ ºä ÃÊ±âÈ­
-    if (combo_view_)
-    {
-        combo_view_->Initialize();
-        draw_objects_.push_back(combo_view_.get());
-    }
+    float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
+        Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
 
-    // °á°ú ºä ÃÊ±âÈ­
-    if (result_view_)
-    {
-        result_view_->Initialize();
-        draw_objects_.push_back(result_view_.get());
-    }
+    interrupt_view_->SetPosition(boardPosX, 0);
+    draw_objects_.push_back(interrupt_view_.get());
+
+    combo_view_ = std::make_shared<ComboView>();
+    combo_view_->Initialize();
+    draw_objects_.push_back(combo_view_.get());    
+
+    result_view_ = std::make_shared<ResultView>();
+    result_view_->Initialize();
+    draw_objects_.push_back(result_view_.get());
 
     return true;
 }
@@ -501,15 +498,14 @@ uint8_t BasePlayer::GetMargin() const
 
 void BasePlayer::LoseGame(bool isWin)
 {
-    if (game_board_)
+    if (isWin == false)
     {
-        if (NETWORK.IsRunning())
+        if (game_board_)
         {
-            NETWORK.LoseGame();
+            game_board_->SetState(BoardState::Lose);
         }
-        game_board_->SetState(BoardState::Lose);
     }
-
+    
     if (result_view_)
     {
         float result_x = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
@@ -517,6 +513,7 @@ void BasePlayer::LoseGame(bool isWin)
         float result_y = 100;
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
+    
 
     game_state_ = GamePhase::GameOver;
     state_info_.currentPhase = GamePhase::GameOver;
@@ -620,3 +617,31 @@ void BasePlayer::CreateBlocksFromFile()
     block_list_.sort([](const auto& a, const auto& b) { return *a < *b; });
 }
 
+
+void BasePlayer::NotifyEvent(const std::shared_ptr<BasePlayerEvent>& event)
+{
+    for (auto* listener : event_listeners_) 
+    {
+        if (listener) 
+        {
+            listener->OnPlayerEvent(event);
+        }
+    }
+}
+
+void BasePlayer::AddEventListener(IPlayerEventListener* listener)
+{
+    if (listener) 
+    {
+        event_listeners_.push_back(listener);
+    }
+}
+
+void BasePlayer::RemoveEventListener(IPlayerEventListener* listener)
+{
+    auto it = std::find(event_listeners_.begin(), event_listeners_.end(), listener);
+    if (it != event_listeners_.end()) 
+    {
+        event_listeners_.erase(it);
+    }
+}

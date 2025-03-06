@@ -54,7 +54,7 @@ bool GameState::Init()
 
     try
     {
-        if (LoadResources() == false || InitializeComponents() == false || CreateUI() == false)
+        if (LoadResources() == false || CreatePlayers() == false || CreateUI() == false)
         {
             return false;
         }
@@ -99,39 +99,12 @@ bool GameState::LoadResources()
     }
 }
 
-bool GameState::InitializeComponents()
+bool GameState::CreatePlayers()
 {
     // 플레이어 초기화
     local_player_ = std::make_shared<LocalPlayer>();
     remote_player_ = std::make_shared<RemotePlayer>();
 
-    // 뷰 컴포넌트 초기화
-    interrupt_view_ = std::make_shared<InterruptBlockView>();
-    if (!interrupt_view_ || !interrupt_view_->Initialize())
-    {
-        LOGGER.Error("Failed to create InterruptBlockView");
-        return false;
-    }
-    interrupt_view_->SetPosition(Constants::Board::POSITION_X, 0);
-
-    combo_view_ = std::make_shared<ComboView>();
-    if (!combo_view_ || !combo_view_->Initialize())
-    {
-        LOGGER.Error("Failed to create ComboView");
-        return false;
-    }
-
-    result_view_ = std::make_shared<ResultView>();
-    if (!result_view_ || !result_view_->Initialize())
-    {
-        LOGGER.Error("Failed to create ResultView");
-        return false;
-    }
-
-    // 로컬 플레이어에게 컴포넌트 설정
-    local_player_->SetInterruptView(interrupt_view_);
-    local_player_->SetComboView(combo_view_);
-    local_player_->SetResultView(result_view_);
 
     return true;
 }
@@ -214,7 +187,16 @@ void GameState::Enter()
 
 void GameState::Leave()
 {
-    
+    if (local_player_)
+    {
+        local_player_->RemoveEventListener(this);
+    }
+
+    if (remote_player_)
+    {
+        remote_player_->RemoveEventListener(this);
+    }
+
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
@@ -628,9 +610,7 @@ void GameState::InitializePacketHandlers()
         [this](uint8_t connectionId, const AttackInterruptPacket* packet) {
             HandleAttackInterrupt(connectionId, packet);
         }
-    );
-
-    
+    );    
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -674,6 +654,8 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, con
         {
             LOGGER.Error("Failed to initialize local player");
         }
+
+        local_player_->AddEventListener(this);
         
     }
     // 원격 플레이어인 경우
@@ -683,6 +665,8 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, con
         {
             LOGGER.Error("Failed to initialize remote player");
         }
+
+        remote_player_->AddEventListener(this);
 
         isNetworkGame_ = true;
     }
@@ -927,4 +911,32 @@ void GameState::ScheduleGameStart()
                 local_player_->SetRunning(true);
             }            
         });
+}
+
+void GameState::OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event)
+{
+    switch (event->GetType())
+    {
+    case PlayerEventType::GameOver:
+    {
+        HandlePlayerGameOver(std::dynamic_pointer_cast<GameOverEvent>(event));
+        break;
+    }
+    }
+}
+
+void GameState::HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event)
+{
+    if (remote_player_)
+    {
+        remote_player_->LoseGame(true);
+        remote_player_->SetGameQuit();                
+    }
+
+    exit_button_->SetVisible(true);
+
+    if (NETWORK.IsServer())
+    {
+		restart_button_->SetVisible(true);
+    }
 }

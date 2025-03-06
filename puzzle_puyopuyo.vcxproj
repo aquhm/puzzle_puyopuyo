@@ -42,6 +42,8 @@
     <ClInclude Include="src\game\effect\ExplosionEffect.hpp" />
     <ClInclude Include="src\game\effect\Particle.hpp" />
     <ClInclude Include="src\game\effect\ParticleContainer.hpp" />
+    <ClInclude Include="src\game\event\IPlayerEventListener.hpp" />
+    <ClInclude Include="src\game\event\PlayerEvent.hpp" />
     <ClInclude Include="src\game\map\BackgroundParticleSystem.hpp" />
     <ClInclude Include="src\game\map\GameBackground.hpp" />
     <ClInclude Include="src\game\map\GrasslandBackground.hpp" />

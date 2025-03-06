@@ -18,6 +18,7 @@
 #include "../network/NetworkController.hpp"
 #include "../game/block/Block.hpp"
 #include "../core/common/constants/Constants.hpp"
+#include "../game/event/IPlayerEventListener.hpp"
 
 class EditBox;
 class Button;
@@ -31,6 +32,7 @@ class RemotePlayer;
 class Player;
 class NetworkController;
 class ClientInfo;
+class OnPlayerEvent;
 
 namespace GameStateDetail
 {
@@ -72,7 +74,7 @@ struct BlockPositionMarker
 
 
 
-class GameState final : public BaseState
+class GameState final : public BaseState, public IPlayerEventListener
 {
 public:
     GameState();
@@ -115,7 +117,7 @@ private:
     // 초기화 관련
     bool LoadResources();
     bool CreateUI();
-    bool InitializeComponents();
+    bool CreatePlayers();
 
     // 이벤트 핸들링
     void HandleMouseInput(const SDL_Event& event);
@@ -146,6 +148,10 @@ private:
     void HandleLose(uint8_t connectionId, const LoseGamePacket* packet);
     void HandleAttackInterrupt(uint8_t connectionId, const AttackInterruptPacket* packet);
     void HandleGameOver();
+
+    // 이벤트 핸들러
+    void OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event) override;
+    void HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event);
 
 private:
     // 플레이어 구성 요소

@@ -79,6 +79,7 @@ private:
     void GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID);
     void InitializeIceBlock(IceBlock* block, const std::shared_ptr<ImageTexture>& texture, int x, int y, uint8_t playerID);
     bool IsGameOver() const;
+    bool ProcessGameOver();
 
 private:
     // 게임 데이터

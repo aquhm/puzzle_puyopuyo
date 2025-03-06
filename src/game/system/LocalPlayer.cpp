@@ -171,21 +171,12 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
         // 모든 블록이 정지 상태면 다음 블록 생성
         if (allStationary)
         {
-            if (IsGameOver() == false)
+            if (ProcessGameOver() == false)
             {
                 state_info_.currentPhase = GamePhase::Playing;
                 game_state_ = GamePhase::Playing;
                 CreateNextBlock();
-            }
-            else
-            {
-                if (NETWORK.IsRunning())
-                {
-                    NETWORK.LoseGame();
-                }
-
-				LoseGame(false);
-            }
+            }            
         }
     }
 }
@@ -490,14 +481,8 @@ bool LocalPlayer::CheckGameBlockState()
     }
 
     // 게임 오버 체크
-    if (IsGameOver() == true)
+    if (ProcessGameOver() == true)
     {
-        if (NETWORK.IsRunning())
-        {
-            NETWORK.LoseGame();
-        }
-
-        LoseGame(false);
         return true;
     }
 
@@ -1341,4 +1326,26 @@ bool LocalPlayer::IsGameOver() const
         board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][3] != nullptr;
 
     return isGameOverState;
+}
+
+bool LocalPlayer::ProcessGameOver()
+{
+    if (IsGameOver() == true)
+    {
+        if (NETWORK.IsRunning())
+        {
+            NETWORK.LoseGame();
+        }
+
+        LoseGame(false);
+
+        NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
+
+		state_info_.currentPhase = GamePhase::GameOver;
+		game_state_ = GamePhase::GameOver;
+
+		return true;
+    }
+
+    return false;
 }

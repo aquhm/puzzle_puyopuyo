@@ -320,7 +320,7 @@ void RemotePlayer::UpdateAfterBlocksCleared()
     {
         UpdateBlockLinks();
 
-        if (!CheckGameBlockState() && !is_game_quit_)
+        if (CheckGameBlockState() == false && !is_game_quit_)
         {
             game_state_ = GamePhase::Playing;
             prev_game_state_ = game_state_;
@@ -431,7 +431,7 @@ bool RemotePlayer::CheckGameBlockState()
     }
 
     // 매치된 블록이 있는 경우
-    if (!equal_block_list_.empty())
+    if (equal_block_list_.empty() == false)
     {
         HandleMatchedBlocks();
         return true;

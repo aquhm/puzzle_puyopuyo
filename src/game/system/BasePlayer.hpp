@@ -15,6 +15,7 @@
 #include "../../core/common/constants/Constants.hpp"
 #include "../../core/common/types/GameTypes.hpp"
 #include "../../states/GameState.hpp"
+#include "../event/PlayerEvent.hpp"
 
 class Block;
 class GameBackground;
@@ -27,6 +28,7 @@ class InterruptBlockView;
 class ComboView;
 class ResultView;
 class ImageTexture;
+class IPlayerEventListener;
 
 class BasePlayer : public RenderableObject {
 public:
@@ -100,6 +102,11 @@ public:
     void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
     void SetTotalInterruptBlockCount(uint16_t count) { score_info_.totalInterruptBlockCount += count; }
 
+
+    // 리스너 등록/해제 메서드
+    void AddEventListener(IPlayerEventListener* listener);
+    void RemoveEventListener(IPlayerEventListener* listener);
+
 protected:
     // 초기화 관련 메서드
     virtual bool InitializeViews();
@@ -124,6 +131,8 @@ protected:
     // 총알 및 이펙트 관련 메서드
     virtual void CreateBullet(Block* block, bool isAttacking);
     void UpdateBullets(float delta_time);
+
+    void NotifyEvent(const std::shared_ptr<BasePlayerEvent>& event);
 
 
     // 블록 파일로 부터 생성
@@ -196,6 +205,8 @@ protected:
     std::vector<RenderableObject*> draw_objects_;
     std::list<std::shared_ptr<Block>> block_list_;
     std::list<std::shared_ptr<BulletEffect>> bullet_list_;
+
+    std::vector<IPlayerEventListener*> event_listeners_;
 };
 
 template<typename Container>
