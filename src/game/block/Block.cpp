@@ -5,7 +5,6 @@
 #include "../../core/GameApp.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../states/GameState.hpp"
-//#include "../system/GamePlayer.hpp"
 #include "../system/LocalPlayer.hpp"
 #include "../system/RemotePlayer.hpp"
 

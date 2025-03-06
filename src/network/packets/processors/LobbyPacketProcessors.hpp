@@ -15,7 +15,6 @@
 #include "../../../states/RoomState.hpp"
 #include "../../../network/NetworkController.hpp"
 #include "../../../network/player/Player.hpp"
-#include "../../../game/system/GamePlayer.hpp"
 #include "../../../ui/EditBox.hpp"
 
 

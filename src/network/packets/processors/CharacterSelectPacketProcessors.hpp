@@ -16,8 +16,6 @@
 #include "../../../network/NetworkController.hpp"
 #include "../../../game/system/BasePlayer.hpp"
 #include "../../../game/system/RemotePlayer.hpp"
-//#include "../../../network/player/Player.hpp"
-//#include "../../../game/system/GamePlayer.hpp"
 
 
 class ChangeCharSelectProcessor : public IPacketProcessor

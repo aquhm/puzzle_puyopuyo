@@ -15,7 +15,6 @@
 #include "../../../states/GameState.hpp"
 #include "../../../network/NetworkController.hpp"
 #include "../../../network/player/Player.hpp"
-#include "../../../game/system/GamePlayer.hpp"
 
 
 class InitializePlayerProcessor : public IPacketProcessor 

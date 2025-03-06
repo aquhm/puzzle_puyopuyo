@@ -8,7 +8,6 @@
 #include "../ui/Button.hpp"
 #include "../network/packets/GamePackets.hpp"
 #include "../network/player/Player.hpp"
-#include "../game/system/GamePlayer.hpp"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_rect.h>

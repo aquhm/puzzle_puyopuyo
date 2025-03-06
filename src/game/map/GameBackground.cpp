@@ -7,7 +7,6 @@
 #include "../../states/GameState.hpp"
 #include "../../game/system/LocalPlayer.hpp"
 #include "../../game/system/RemotePlayer.hpp"
-//#include "../../game/system/GamePlayer.hpp"
 #include "../particles/BgParticleSystem.hpp"
 #include "../../core/GameUtils.hpp"
 #include "../../utils/Logger.hpp"

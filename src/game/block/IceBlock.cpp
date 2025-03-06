@@ -3,7 +3,6 @@
 #include "../../states/GameState.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../texture/ImageTexture.hpp"
-#include "../../game/system/GamePlayer.hpp"
 #include "../../utils/RectUtil.hpp"
 #include "../../utils/Logger.hpp"
 
