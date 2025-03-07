@@ -993,3 +993,14 @@ void RemotePlayer::Release()
 
     BasePlayer::Release();
 }
+
+void RemotePlayer::Reset()
+{
+    equal_block_list_.clear();
+
+    ReleaseContainer(del_bullet_array_);
+    ReleaseContainer(ice_block_set_);
+    ReleaseContainer(new_blocks_);
+
+    BasePlayer::Reset();
+}

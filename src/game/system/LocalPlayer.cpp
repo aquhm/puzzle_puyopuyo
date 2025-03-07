@@ -1319,6 +1319,18 @@ void LocalPlayer::Release()
     BasePlayer::Release();
 }
 
+void LocalPlayer::Reset()
+{
+    bullets_to_delete_.clear();
+
+    matched_blocks_.clear();
+
+    ReleaseContainer(ice_blocks_);
+    ReleaseContainer(next_blocks_);
+
+    BasePlayer::Reset();
+}
+
 bool LocalPlayer::IsGameOver() const
 {
     // 게임 오버 조건 체크: 상단 중앙 2x2 영역에 블록이 있는 경우

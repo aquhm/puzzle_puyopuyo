@@ -48,19 +48,33 @@ void BasePlayer::Reset()
 {
     if (game_board_)
     {
+        game_board_->Release();
         game_board_->ClearActiveGroupBlock();
     }
 
-    if (control_block_)
+    if (interrupt_view_)
     {
-        control_block_->ResetBlock();
+        interrupt_view_->Release();
+    }
+
+    if (combo_view_)
+    {
+        combo_view_->Release();
+    }
+
+    if (result_view_)
+    {
+        result_view_->Release();
+    }
+
+    if (control_block_) {
+        control_block_->Release();
     }
 
     ReleaseContainer(block_list_);
     ReleaseContainer(bullet_list_);
     ReleaseContainer(draw_objects_);
 
-    // draw_objects_ º¤ÅÍ ºñ¿ì±â
     draw_objects_.clear();
 
     std::memset(board_blocks_, 0, sizeof(Block*) * Constants::Board::BOARD_Y_COUNT * Constants::Board::BOARD_X_COUNT);

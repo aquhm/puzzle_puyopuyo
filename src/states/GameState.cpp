@@ -431,6 +431,8 @@ bool GameState::GameRestart()
 
     try
     {
+        Reset();
+
         if (NETWORK.IsServer())
         {
             auto success = local_player_->Restart();
@@ -466,11 +468,6 @@ bool GameState::GameRestart()
 
                 NETWORK.ReStartGame(block_type1, block_type2);
             }
-        }
-
-        if (background_)
-        {
-            background_->Reset();
         }
 
         if (restart_button_) restart_button_->SetVisible(false);
@@ -828,6 +825,24 @@ void GameState::HandleGameOver()
 
 void GameState::HandleSystemEvent(const SDL_Event& event)
 {
+}
+
+void GameState::Reset()
+{
+    if (background_)
+    {
+        background_->Reset();
+    }
+
+    if (local_player_)
+    {
+        local_player_->Reset();
+    }
+
+    if (remote_player_)
+    {
+        remote_player_->Reset();
+    }
 }
 
 void GameState::Release()
