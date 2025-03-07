@@ -214,7 +214,7 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    if (auto localPlayer = gameState->GetLocalPlayer())
+                    if (auto& localPlayer = gameState->GetLocalPlayer())
                     {
                         localPlayer->PlayNextBlock();
                     }
@@ -297,7 +297,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    if (auto remotePlayer = gameState->GetRemotePlayer())
+                    if (auto& remotePlayer = gameState->GetRemotePlayer())
                     {
                         remotePlayer->PlayNextBlock();
                     }

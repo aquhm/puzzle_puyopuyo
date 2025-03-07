@@ -468,7 +468,23 @@ bool GameState::GameRestart()
 
                 NETWORK.ReStartGame(block_type1, block_type2);
             }
-        }        
+        }
+        else
+        {
+            const auto& next_blocks = local_player_->GetNextBlock();
+            std::array<uint8_t, 2> block_type1{};
+            std::array<uint8_t, 2> block_type2{};
+
+            auto& first_blocks = next_blocks[0]->GetBlocks();
+            block_type1[0] = static_cast<uint8_t>(first_blocks[0]->GetBlockType());
+            block_type1[1] = static_cast<uint8_t>(first_blocks[1]->GetBlockType());
+
+            auto& second_blocks = next_blocks[1]->GetBlocks();
+            block_type2[0] = static_cast<uint8_t>(second_blocks[0]->GetBlockType());
+            block_type2[1] = static_cast<uint8_t>(second_blocks[1]->GetBlockType());
+
+            NETWORK.ReStartGame(block_type1, block_type2);
+        }
 
         if (restart_button_) restart_button_->SetVisible(false);
         if (exit_button_) exit_button_->SetVisible(false);
@@ -621,7 +637,7 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
     {
         local_player_->SetBackGround(background_);
 
-        auto next_blocks = local_player_->GetNextBlock();
+        auto& next_blocks = local_player_->GetNextBlock();
         background_->SetNextBlock(next_blocks[0]);
         background_->SetNextBlock(next_blocks[1]);
         

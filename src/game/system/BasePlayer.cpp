@@ -78,8 +78,7 @@ void BasePlayer::Reset()
     draw_objects_.clear();
 
     std::memset(board_blocks_, 0, sizeof(Block*) * Constants::Board::BOARD_Y_COUNT * Constants::Board::BOARD_X_COUNT);
-
-    // ���� �� ���� �ʱ�ȭ
+    
     score_info_.reset();
     state_info_ = GameStateInfo{};
     game_state_ = GamePhase::Playing;
@@ -127,7 +126,6 @@ void BasePlayer::Update(float deltaTime)
     play_time_ += deltaTime;
     state_info_.playTime += deltaTime;
 
-    // ���� ������Ʈ ������Ʈ
     for (auto* obj : draw_objects_)
     {
         if (obj)
@@ -136,7 +134,6 @@ void BasePlayer::Update(float deltaTime)
         }
     }
 
-    // ��� ������Ʈ
     for (auto& block : block_list_)
     {
         if (block)
@@ -145,16 +142,13 @@ void BasePlayer::Update(float deltaTime)
         }
     }
 
-    // �Ѿ� ������Ʈ
     UpdateBullets(deltaTime);
 
-    // ��ƼŬ ������Ʈ
     GAME_APP.GetParticleManager().Update(deltaTime);
 }
 
 void BasePlayer::Render()
 {
-    // ���� ������Ʈ ������
     for (auto obj : draw_objects_)
     {
         if (obj && obj->IsVisible())
@@ -163,7 +157,6 @@ void BasePlayer::Render()
         }
     }
 
-    // �Ѿ� ������
     for (const auto& bullet : bullet_list_)
     {
         if (bullet)
@@ -252,7 +245,6 @@ void BasePlayer::UpdateLinkState(Block* block)
     BlockType blockType = block->GetBlockType();
     uint8_t linkState = static_cast<uint8_t>(block->GetLinkState());
 
-    // �� ���⺰ ���� ���� �˻�
     const std::array<std::pair<Constants::Direction, std::pair<int, int>>, 4> directions = { {
         {Constants::Direction::Left,   {x - 1, y}},
         {Constants::Direction::Right,  {x + 1, y}},
@@ -270,7 +262,6 @@ void BasePlayer::UpdateLinkState(Block* block)
             Block* checkBlock = board_blocks_[checkY][checkX];
             if (checkBlock && checkBlock->GetState() == BlockState::Stationary && checkBlock->GetBlockType() == blockType)
             {
-                // ���� ���� ������Ʈ
                 auto checkBlockLinkState = static_cast<uint8_t>(checkBlock->GetLinkState());
                 switch (dir)
                 {
@@ -315,11 +306,9 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
         Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
     };
 
-    // ��ǥ ��ġ ��� (���ݽÿ� ���� �ٸ�)
     SDL_FPoint endPos;
     if (isAttacking)
     {
-        // ���� �� ����� ���� �߾�����
         endPos =
         {
             GAME_APP.GetWindowWidth() - (boardPosX + (Constants::Board::WIDTH / 2)),
@@ -328,7 +317,6 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
     }
     else
     {
-        // ��� �� �ڽ��� ���� �߾�����
         endPos =
         {
             boardPosX + (Constants::Board::WIDTH / 2),
@@ -357,7 +345,7 @@ void BasePlayer::UpdateBullets(float delta_time)
     auto it = bullet_list_.begin();
     while (it != bullet_list_.end())
     {
-        if (auto bullet = *it)
+        if (auto& bullet = *it)
         {
             bullet->Update(delta_time);
 

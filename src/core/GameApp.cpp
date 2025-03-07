@@ -118,7 +118,7 @@ bool GameApp::InitializeSDL()
     Uint32 myEventType = SDL_RegisterEvents(1);
     if (myEventType != -1)
     {
-        SDL_Event event;
+        SDL_Event event{};
         event.type = SDL_USEREVENT_SOCK;
         SDL_PushEvent(&event);
     }

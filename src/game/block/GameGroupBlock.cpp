@@ -153,7 +153,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
     if (collisionCheck) 
     {
         
-        SDL_Rect leftCollRects[2];
+        SDL_Rect leftCollRects[2]{};
         SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &leftCollRects[0], Constants::Direction::Left);
@@ -183,7 +183,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
 
         if (canMove && position_.x > limit)
         {
-            if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState()) 
+            if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState()) 
             {
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get())) 
@@ -221,7 +221,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
     if (collisionCheck) 
     {   
-        SDL_Rect rightCollRects[2];
+        SDL_Rect rightCollRects[2]{};
         SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &rightCollRects[0], Constants::Direction::Right);
@@ -249,7 +249,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
         if (canMove && position_.x + size_.x < limit) 
         {
-            if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+            if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
             {
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
@@ -380,9 +380,9 @@ void GameGroupBlock::HandleHorizontalCollision()
 {
     bool collision1 = false;
     bool collision2 = false;
-    SDL_Rect resultRect[2];
-    SDL_Rect controlRect[2];
-    SDL_Rect targetRect[2];
+    SDL_Rect resultRect[2]{};
+    SDL_Rect controlRect[2]{};
+    SDL_Rect targetRect[2]{};
 
     for (const auto& block : *gameBlockList_) 
     {
@@ -530,7 +530,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
 
         blocks_[Satellite]->SetPosition(finalX, y);
 
-        if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+        if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
@@ -568,7 +568,7 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
         float newPosX = GetPosXOfIdx(blockIndexX_);
         SetPosX(newPosX);
 
-        if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+        if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
@@ -670,7 +670,6 @@ void GameGroupBlock::ResetVelocities()
 
 void GameGroupBlock::ProcessBlockPlacement() 
 {
-
     if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
