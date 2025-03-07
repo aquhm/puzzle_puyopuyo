@@ -624,7 +624,6 @@ short LocalPlayer::RecursionCheckBlock(short x, short y, Constants::Direction di
 
 void LocalPlayer::CalculateScore()
 {
-    // �޺� ���� ������Ʈ
     if (state_info_.previousPhase == GamePhase::Shattering)
     {
         score_info_.comboCount++;
@@ -639,7 +638,6 @@ void LocalPlayer::CalculateScore()
     uint8_t typeBonus = GetTypeBonus(matched_blocks_.size());
     short comboBonus = GetComboConstant(score_info_.comboCount);
 
-    // ��ġ�� ��ϵ鿡 ���� ���ʽ� ���
     for (const auto& group : matched_blocks_)
     {
         for (auto* block : group)
@@ -651,16 +649,13 @@ void LocalPlayer::CalculateScore()
         blockCount += static_cast<uint8_t>(group.size());
     }
 
-    // ���� ���� ���
     int currentScore = ((blockCount * Constants::Game::Score::BASE_MATCH_SCORE) *
         (comboBonus + linkBonus + typeBonus + 1));
 
-    // ���� ��� ī��Ʈ ���
     score_info_.addInterruptBlockCount = (currentScore + score_info_.restScore) / GetMargin();
     score_info_.restScore = (currentScore + score_info_.restScore) % GetMargin();
     score_info_.totalScore += currentScore;
 
-    // ���� ��� ���� ������Ʈ
     UpdateInterruptBlockState();
 }
 
@@ -814,24 +809,17 @@ void LocalPlayer::InitializeIceBlock(IceBlock* block, const std::shared_ptr<Imag
         return;
     }
 
-    // ��� �⺻ �Ӽ� ����
     block->SetBlockType(BlockType::Ice);
     block->SetLinkState(LinkState::Max);
     block->SetState(BlockState::DownMoving);
     block->SetBlockTex(texture);
-
-    // �ε��� ��ġ ����
     block->SetPosIdx(x, y);
 
-    // ���� ������ ��ġ ���
     float renderX = Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * x;
-    float renderY = -Constants::Block::SIZE * (y + 1);  // ���������� ����
+    float renderY = -Constants::Block::SIZE * (y + 1);
+    
     block->SetPosition(renderX, renderY);
-
-    // ũ�� ����
     block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
-
-    // �÷��̾� ID ����
     block->SetPlayerID(playerID);
 }
 
@@ -842,7 +830,6 @@ void LocalPlayer::CollectRemoveIceBlocks()
         return;
     }
 
-    // ��ġ�� ��� �ֺ��� ���� ��� ����
     for (const auto& group : matched_blocks_)
     {
         for (auto* block : group)
@@ -855,7 +842,6 @@ void LocalPlayer::CollectRemoveIceBlocks()
             const int x = block->GetPosIdx_X();
             const int y = block->GetPosIdx_Y();
 
-            // �ֺ� 4���� �˻�
             const std::array<std::pair<int, int>, 4> directions =
             { {
                 {x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}
@@ -875,7 +861,6 @@ void LocalPlayer::CollectRemoveIceBlocks()
                             {
                                 iceBlock->SetState(BlockState::Destroying);
 
-                                // iceBlock�� �̹� block_list_�� �����Ƿ� ���� �������θ� �߰�
                                 auto found = std::find_if(block_list_.begin(), block_list_.end(),
                                     [iceBlock](const auto& block) {
                                         return block.get() == iceBlock;
@@ -933,14 +918,12 @@ void LocalPlayer::RotateBlock(uint8_t rotateType, bool horizontalMoving)
 
 void LocalPlayer::UpdateBlockPosition(float pos1, float pos2)
 {
-    // ���� �÷��̾���� ���� �ʿ� ���� - ���� �÷��̾���� ���
 }
 
 void LocalPlayer::UpdateFallingBlock(uint8_t fallingIdx, bool falling)
 {
     if (control_block_ && control_block_->GetState() == BlockState::Playing)
     {
-        // �ʿ�� ����
     }
 }
 
@@ -983,7 +966,6 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
         game_board_->ClearActiveGroupBlock();
     }
 
-    // ���� ���� üũ
     if (CheckGameBlockState() == false && state_info_.currentPhase == GamePhase::Playing)
     {
         if (state_info_.isDefending)
@@ -992,7 +974,6 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
             state_info_.defenseCount = 0;
         }
 
-        // ���� ��� �ִ� ��� ���غ�� ����
         if (score_info_.totalInterruptBlockCount > 0 &&
             !state_info_.isComboAttack && !state_info_.isDefending)
         {
@@ -1000,7 +981,7 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
         }
         else
         {
-            CreateNextBlock();  // ���� ���ӱ׷��� ����
+            CreateNextBlock();
         }
     }
     else
@@ -1019,7 +1000,6 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
         }
     }
 
-    // ��Ʈ�� ��� ����
     groupBlock->ResetBlock();
     return true;
 }
@@ -1055,7 +1035,6 @@ void LocalPlayer::ResetComboState()
 
 void LocalPlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 {
-    // ��Ʈ��ũ ��Ŷ ����
     NETWORK.AttackInterruptBlock(score_info_.addInterruptBlockCount, x, y, type);
 }
 
@@ -1063,7 +1042,6 @@ void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, ui
 {
 
     //TODO total_enemy_interrupt_block_count_
-    // ���� ��� ī��Ʈ ����
     score_info_.totalInterruptBlockCount -= count;
     total_interrupt_block_count_ -= count;
 
@@ -1073,13 +1051,11 @@ void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, ui
         total_interrupt_block_count_ = 0;
     }
 
-    // UI ������Ʈ
     if (interrupt_view_)
     {
         interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
     }
 
-    // ��Ʈ��ũ ��Ŷ ����
     //NETWORK.DefenseInterruptBlock(count, x, y, type);
 }
 
@@ -1102,29 +1078,24 @@ bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std:
     Reset();
 
     try {
-        // �� ��� �ʱ�ȭ
         InitializeNextBlocks();
 
-        // ���� ���� �ʱ�ȭ
         if (!InitializeGameBoard(Constants::Board::POSITION_X, Constants::Board::POSITION_Y))
         {
             LOGGER.Error("Failed to initialize game board during restart");
             return false;
         }
 
-        // ��Ʈ�� ��� �ʱ�ȭ
         if (!InitializeControlBlock())
         {
             LOGGER.Error("Failed to initialize control block during restart");
             return false;
         }
 
-        // �� �ʱ�ȭ
         if (interrupt_view_) interrupt_view_->Initialize();
         if (combo_view_) combo_view_->Initialize();
         if (result_view_) result_view_->Initialize();
 
-        // ���� ���� �ʱ�ȭ
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
         state_info_.currentPhase = GamePhase::Playing;
@@ -1132,7 +1103,6 @@ bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std:
         game_state_ = GamePhase::Playing;
         prev_game_state_ = GamePhase::Playing;
 
-        // �̺�Ʈ �߼� - ����� �̺�Ʈ
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
         return true;
@@ -1157,7 +1127,6 @@ void LocalPlayer::UpdateTargetPosIdx()
     std::array<BlockTargetMark, 2> markPositions{};
     int checkIdxX = -1, checkIdxY = -1;
 
-    // ��ũ�� �߾ӿ� ǥ���ϱ� ���� ���� ��ġ ���
     float renderPos = (Constants::Block::SIZE - Constants::Board::BLOCK_MARK_SIZE) / 2.0f;
 
     for (int i = 0; i < 2; ++i)
@@ -1167,7 +1136,6 @@ void LocalPlayer::UpdateTargetPosIdx()
             int xIdx = block->GetPosIdx_X();
             BlockType blockType = block->GetBlockType();
 
-            // ���� �������� �� ���� ã��
             for (int yIdx = 0; yIdx < Constants::Board::BOARD_Y_COUNT; ++yIdx)
             {
                 if (checkIdxX == xIdx && checkIdxY == yIdx)
@@ -1187,12 +1155,10 @@ void LocalPlayer::UpdateTargetPosIdx()
                 }
             }
 
-            // �ε��� ������Ʈ
             currentIndex = (rotateState == RotateState::Default) ? 0 : 1;
         }
     }
 
-    // ���� ���忡 Ÿ�� ��ũ ������Ʈ
     if (game_board_)
     {
         game_board_->UpdateTargetBlockMark(markPositions);
@@ -1207,7 +1173,6 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    // ���� ��ġ�� ��ǥ ��ġ ���
     SDL_FPoint startPos
     {
         Constants::Board::POSITION_X + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
@@ -1216,16 +1181,14 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
 
     SDL_FPoint endPos;
 
-    if (!isAttacking)  // ��� ���� (���� ����� ����)
+    if (!isAttacking)
     {
-        // �ڽ��� ���� �߾����� �߻�
         endPos =
         {
             Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
             Constants::Board::POSITION_Y
         };
 
-        // ��� ��Ŷ ����
         NETWORK.DefenseInterruptBlock(
             score_info_.addInterruptBlockCount,
             block->GetX(),
@@ -1233,7 +1196,6 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
             static_cast<uint8_t>(block->GetBlockType())
         );
 
-        // ������ ��� ���� ��� ����
         if (NETWORK.IsServer())
         {
             // UI ����
@@ -1331,7 +1293,6 @@ void LocalPlayer::Reset()
 
 bool LocalPlayer::IsGameOver() const
 {
-    // ���� ���� ���� üũ: ��� �߾� 2x2 ������ ����� �ִ� ���
     bool isGameOverState = 
         board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][2] != nullptr ||
         board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][3] != nullptr ||

@@ -306,7 +306,6 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    // �߻� ��ġ ���
     float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
         Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
 
@@ -498,7 +497,6 @@ uint8_t BasePlayer::GetMargin() const
 {
     const float playTime = play_time_;
 
-    // �ð��� ���� ���� �� ���
     for (const auto& margin : Constants::Game::SCORE_MARGINS)
     {
         if (playTime <= margin.time)

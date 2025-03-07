@@ -120,8 +120,6 @@ private:
     bool CreatePlayers();
     void Reset();
 
-    void Reset();
-
     // 이벤트 핸들링
     void HandleMouseInput(const SDL_Event& event);
     void HandleKeyboardInput(const SDL_Event& event);
