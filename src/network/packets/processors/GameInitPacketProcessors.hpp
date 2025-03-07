@@ -104,6 +104,12 @@ public:
                 std::span<const uint8_t, 2> blockType2{ restart_packet.block2 };
 
                 remotePlayer->Restart(blockType1, blockType2);
+
+                // 게임 상태 리셋
+                game_state->GameRestart();
+
+                // 로그 기록
+                LOGGER.Info("Game restarted by player {}", restart_packet.player_id);
             }
         }
     }

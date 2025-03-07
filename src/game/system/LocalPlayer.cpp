@@ -99,7 +99,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const s
     }
 }
 
-void LocalPlayer::InitializeNextBlocks(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2)
+void LocalPlayer::InitializeNextBlocks()
 {
     auto nextBlock1 = std::make_shared<GroupBlock>();
     auto nextBlock2 = std::make_shared<GroupBlock>();
@@ -1096,23 +1096,25 @@ void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)
     game_state_ = newPhase;
 }
 
-bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2)
+bool LocalPlayer::Restart()
 {
     Reset();
 
-    try
-    {
-        InitializeNextBlocks(blockType1, blockType2);
+    try {
+        // 새 블록 초기화
+        InitializeNextBlocks();
 
         // 게임 보드 초기화
         if (!InitializeGameBoard(Constants::Board::POSITION_X, Constants::Board::POSITION_Y))
         {
+            LOGGER.Error("Failed to initialize game board during restart");
             return false;
         }
 
         // 컨트롤 블록 초기화
         if (!InitializeControlBlock())
         {
+            LOGGER.Error("Failed to initialize control block during restart");
             return false;
         }
 
@@ -1129,13 +1131,13 @@ bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std:
         game_state_ = GamePhase::Playing;
         prev_game_state_ = GamePhase::Playing;
 
-        lastInputTime_ = SDL_GetTicks();
+        // 이벤트 발송 - 재시작 이벤트
+        NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
         return true;
     }
-    catch (const std::exception& e)
-    {
-        LOGGER.Error("Failed to restart local player: {}", e.what());
+    catch (const std::exception& e) {
+        LOGGER.Error("Error restarting local player: {}", e.what());
         return false;
     }
 }

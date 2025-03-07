@@ -30,9 +30,7 @@ public:
 
     void Release() override;
 
-    bool Restart(const std::span<const uint8_t>& blockType1,
-        const std::span<const uint8_t>& blockType2) override;
-
+    bool Restart() override;
     void CreateNextBlock() override;
     void PlayNextBlock() override;
     bool CheckGameBlockState() override;
@@ -61,7 +59,7 @@ public:
 
 private:
     // 초기화 관련 메서드
-    void InitializeNextBlocks(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2);
+    void InitializeNextBlocks();
 
     // 블록 매칭 관련 메서드
     bool FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGroups);

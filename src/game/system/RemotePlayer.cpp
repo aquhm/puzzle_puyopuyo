@@ -37,29 +37,27 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blocktype1, const 
 {
     Reset();
 
-    try
-    {
-        player_id_ = playerIdx;
-        character_id_ = characterIdx;
-        background_ = background;
+    try {
+        // 블록 초기화
+        InitializeNextBlocks(blockType1, blockType2);
 
-        InitializeNextBlocks(blocktype1, blocktype2);
-
-        // 게임 보드 초기화 - 원격 플레이어는 오른쪽에 표시
+        // 게임 보드 초기화
         if (!InitializeGameBoard(Constants::Board::PLAYER_POSITION_X, Constants::Board::POSITION_Y))
         {
+            LOGGER.Error("Failed to initialize remote player game board");
             return false;
         }
 
+        // 컨트롤 블록 초기화
         if (!InitializeControlBlock())
         {
+            LOGGER.Error("Failed to initialize remote player control block");
             return false;
         }
 
+        // 뷰 초기화
         InitializeViews();
-
-        if (interrupt_view_)
-        {
+        if (interrupt_view_) {
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
@@ -74,11 +72,13 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blocktype1, const 
         rest_score_ = 0;
         total_interrupt_block_count_ = 0;
 
+        // 이벤트 발송 - 재시작 이벤트
+        NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
+
         return true;
     }
-    catch (const std::exception& e)
-    {
-        LOGGER.Error("RemotePlayer initialization failed: %s", e.what());
+    catch (const std::exception& e) {
+        LOGGER.Error("Error restarting remote player: {}", e.what());
         return false;
     }
 }

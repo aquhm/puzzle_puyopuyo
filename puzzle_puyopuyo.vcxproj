@@ -51,7 +51,6 @@
     <ClInclude Include="src\game\particles\BgParticle.hpp" />
     <ClInclude Include="src\game\particles\BgParticleSystem.hpp" />
     <ClInclude Include="src\game\RenderableObject.hpp" />
-    <ClInclude Include="src\game\system\GameCore.hpp" />
     <ClInclude Include="src\game\system\IGamePlayer.hpp" />
     <ClInclude Include="src\game\system\LocalPlayer.hpp" />
     <ClInclude Include="src\game\system\BasePlayer.hpp" />
@@ -125,7 +124,6 @@
     <ClCompile Include="src\game\map\IcelandBackground.cpp" />
     <ClCompile Include="src\game\particles\BgParticleSystem.cpp" />
     <ClCompile Include="src\game\RenderableObject.cpp" />
-    <ClCompile Include="src\game\system\GameCore.cpp" />
     <ClCompile Include="src\game\system\LocalPlayer.cpp" />
     <ClCompile Include="src\game\system\BasePlayer.cpp" />
     <ClCompile Include="src\game\system\RemotePlayer.cpp" />

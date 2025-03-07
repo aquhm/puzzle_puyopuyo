@@ -423,42 +423,66 @@ void GameState::HandleKeyboardState()
 
 bool GameState::GameRestart()
 {
-    if (local_player_ && remote_player_)
+    if (!local_player_ || !remote_player_)
+    {
+        LOGGER.Error("Cannot restart game: players not initialized");
+        return false;
+    }
+
+    try 
     {
         if (NETWORK.IsServer())
         {
-            std::array<uint8_t, 2> blockType1 = {
-                static_cast<uint8_t>(rand() % 5 + 1),
-                static_cast<uint8_t>(rand() % 5 + 1)
-            };
-            std::array<uint8_t, 2> blockType2 = {
-                static_cast<uint8_t>(rand() % 5 + 1),
-                static_cast<uint8_t>(rand() % 5 + 1)
-            };
+            auto success = local_player_->Restart();
+            if (!success) 
+            {
+                LOGGER.Error("Failed to restart local player");
+                return false;
+            }
 
-            local_player_->Restart(blockType1, blockType2);
+            // 새 블록 정보 가져오기
+            auto next_blocks = local_player_->GetNextBlock();
+            if (next_blocks.size() >= 2) 
+            {
+                std::array<uint8_t, 2> block_type1{};
+                std::array<uint8_t, 2> block_type2{};
 
-           RestartGamePacket packet;
-            packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
-            memcpy(packet.block1, blockType1.data(), 2);
-            memcpy(packet.block2, blockType2.data(), 2);
+                auto& first_blocks = next_blocks[0]->GetBlocks();
+                block_type1[0] = static_cast<uint8_t>(first_blocks[0]->GetBlockType());
+                block_type1[1] = static_cast<uint8_t>(first_blocks[1]->GetBlockType());
 
-            NETWORK.ReStartGame(packet);
+                auto& second_blocks = next_blocks[1]->GetBlocks();
+                block_type2[0] = static_cast<uint8_t>(second_blocks[0]->GetBlockType());
+                block_type2[1] = static_cast<uint8_t>(second_blocks[1]->GetBlockType());
+
+                NETWORK.ReStartGame(block_type1, block_type2);
+            }
         }
-    }
 
-    if (background_)
+        // 배경 초기화
+        if (background_) 
+        {
+            background_->Reset();
+        }
+
+        // UI 버튼 상태 초기화
+        if (restart_button_) restart_button_->SetVisible(false);
+        if (exit_button_) exit_button_->SetVisible(false);
+
+        // 게임 상태 초기화
+        shouldQuit_ = false;
+        lastInputTime_ = SDL_GetTicks();
+
+        // 타이머 스케줄러 재설정
+        ScheduleGameStart();
+
+        return true;
+    }
+    catch (const std::exception& e) 
     {
-        background_->Reset();
+        LOGGER.Error("Error during game restart: {}", e.what());
+        return false;
     }
-
-    if (restart_button_) restart_button_->SetVisible(false);
-    if (exit_button_) exit_button_->SetVisible(false);
-
-    shouldQuit_ = false;
-    lastInputTime_ = SDL_GetTicks();
-
-    return true;
 }
 
 bool GameState::GameExit()
@@ -572,7 +596,14 @@ void GameState::InitializePacketHandlers()
         [this](uint8_t connectionId, const AttackInterruptPacket* packet) {
             HandleAttackInterrupt(connectionId, packet);
         }
-    );    
+    );
+
+    packet_processor_.RegisterHandler<RestartGamePacket>(
+        PacketType::RestartGame,
+        [this](uint8_t connectionId, const RestartGamePacket* packet) {
+            HandleRestart(connectionId, packet);
+        }
+    );
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -737,6 +768,25 @@ void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterrup
     if (player->GetId() != localPlayerId_ && local_player_)
     {
         local_player_->AddInterruptBlock(packet->count);
+    }
+}
+
+void GameState::HandleRestart(uint8_t connectionId, const RestartGamePacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (player->GetId() != localPlayerId_ && remote_player_)
+    {
+        std::span<const uint8_t> blockType1(packet->block1);
+        std::span<const uint8_t> blockType2(packet->block2);
+
+        remote_player_->Restart(blockType1, blockType2);
+
+        GameRestart();
     }
 }
 

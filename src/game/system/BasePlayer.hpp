@@ -51,8 +51,7 @@ public:
         uint8_t characterIdx,
         const std::shared_ptr<GameBackground>& background) = 0;
 
-    virtual bool Restart(const std::span<const uint8_t>& blockType1,
-        const std::span<const uint8_t>& blockType2) = 0;
+    virtual bool Restart() = 0;
 
     // 블록 관리
     virtual void CreateNextBlock() = 0;

@@ -4,6 +4,7 @@
 enum class PlayerEventType
 {
     GameOver,    
+    GameRestart,
 };
 
 class BasePlayerEvent
@@ -34,6 +35,14 @@ public:
 
 private:
     bool is_win_;
+};
+
+class GameRestartEvent : public BasePlayerEvent
+{
+public:
+    explicit GameRestartEvent(uint8_t player_id)
+        : BasePlayerEvent(player_id, PlayerEventType::GameRestart) {
+    }
 };
 
 // 콤보 공격 이벤트
