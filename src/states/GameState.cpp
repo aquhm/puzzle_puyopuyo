@@ -433,15 +433,15 @@ bool GameState::GameRestart()
     {
         Reset();
 
+        auto success = local_player_->Restart();
+        if (!success)
+        {
+            LOGGER.Error("Failed to restart local player");
+            return false;
+        }
+
         if (NETWORK.IsServer())
         {
-            auto success = local_player_->Restart();
-            if (!success)
-            {
-                LOGGER.Error("Failed to restart local player");
-                return false;
-            }
-
             const auto& next_blocks = local_player_->GetNextBlock();
             if (next_blocks.size() >= 2)
             {
@@ -468,7 +468,7 @@ bool GameState::GameRestart()
 
                 NETWORK.ReStartGame(block_type1, block_type2);
             }
-        }
+        }        
 
         if (restart_button_) restart_button_->SetVisible(false);
         if (exit_button_) exit_button_->SetVisible(false);
@@ -784,9 +784,9 @@ void GameState::HandleRestart(uint8_t connectionId, const RestartGamePacket* pac
         std::span<const uint8_t> blockType1(packet->block1);
         std::span<const uint8_t> blockType2(packet->block2);
 
-        remote_player_->Restart(blockType1, blockType2);
-
         GameRestart();
+
+        remote_player_->Restart(blockType1, blockType2);
     }
 }
 

@@ -46,23 +46,23 @@ BasePlayer::~BasePlayer()
 
 void BasePlayer::Reset()
 {
-    if (game_board_)
+    if (game_board_) 
     {
         game_board_->Release();
         game_board_->ClearActiveGroupBlock();
     }
 
-    if (interrupt_view_)
+    if (interrupt_view_) 
     {
         interrupt_view_->Release();
     }
 
-    if (combo_view_)
+    if (combo_view_) 
     {
         combo_view_->Release();
     }
 
-    if (result_view_)
+    if (result_view_) 
     {
         result_view_->Release();
     }
@@ -79,7 +79,7 @@ void BasePlayer::Reset()
 
     std::memset(board_blocks_, 0, sizeof(Block*) * Constants::Board::BOARD_Y_COUNT * Constants::Board::BOARD_X_COUNT);
 
-    // Á¡¼ö ¹× »óÅÂ ÃÊ±âÈ­
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     score_info_.reset();
     state_info_ = GameStateInfo{};
     game_state_ = GamePhase::Playing;
@@ -127,7 +127,7 @@ void BasePlayer::Update(float deltaTime)
     play_time_ += deltaTime;
     state_info_.playTime += deltaTime;
 
-    // °ÔÀÓ ¿ÀºêÁ§Æ® ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     for (auto* obj : draw_objects_)
     {
         if (obj)
@@ -136,7 +136,7 @@ void BasePlayer::Update(float deltaTime)
         }
     }
 
-    // ºí·Ï ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     for (auto& block : block_list_)
     {
         if (block)
@@ -145,16 +145,16 @@ void BasePlayer::Update(float deltaTime)
         }
     }
 
-    // ÃÑ¾Ë ¾÷µ¥ÀÌÆ®
+    // ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     UpdateBullets(deltaTime);
 
-    // ÆÄÆ¼Å¬ ¾÷µ¥ÀÌÆ®
+    // ï¿½ï¿½Æ¼Å¬ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     GAME_APP.GetParticleManager().Update(deltaTime);
 }
 
 void BasePlayer::Render()
 {
-    // °ÔÀÓ ¿ÀºêÁ§Æ® ·»´õ¸µ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     for (auto obj : draw_objects_)
     {
         if (obj && obj->IsVisible())
@@ -163,7 +163,7 @@ void BasePlayer::Render()
         }
     }
 
-    // ÃÑ¾Ë ·»´õ¸µ
+    // ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     for (const auto& bullet : bullet_list_)
     {
         if (bullet)
@@ -252,7 +252,7 @@ void BasePlayer::UpdateLinkState(Block* block)
     BlockType blockType = block->GetBlockType();
     uint8_t linkState = static_cast<uint8_t>(block->GetLinkState());
 
-    // °¢ ¹æÇâº° ¿¬°á »óÅÂ °Ë»ç
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½âº° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
     const std::array<std::pair<Constants::Direction, std::pair<int, int>>, 4> directions = { {
         {Constants::Direction::Left,   {x - 1, y}},
         {Constants::Direction::Right,  {x + 1, y}},
@@ -270,7 +270,7 @@ void BasePlayer::UpdateLinkState(Block* block)
             Block* checkBlock = board_blocks_[checkY][checkX];
             if (checkBlock && checkBlock->GetState() == BlockState::Stationary && checkBlock->GetBlockType() == blockType)
             {
-                // ¿¬°á »óÅÂ ¾÷µ¥ÀÌÆ®
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
                 auto checkBlockLinkState = static_cast<uint8_t>(checkBlock->GetLinkState());
                 switch (dir)
                 {
@@ -306,7 +306,7 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    // ¹ß»ç À§Ä¡ °è»ê
+    // ï¿½ß»ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½
     float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
         Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
 
@@ -316,11 +316,11 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
         Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
     };
 
-    // ¸ñÇ¥ À§Ä¡ °è»ê (°ø°Ý½Ã¿Í ¹æ¾î½Ã ´Ù¸§)
+    // ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ý½Ã¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½)
     SDL_FPoint endPos;
     if (isAttacking)
     {
-        // °ø°Ý ½Ã »ó´ëÆí º¸µå Áß¾ÓÀ¸·Î
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½
         endPos =
         {
             GAME_APP.GetWindowWidth() - (boardPosX + (Constants::Board::WIDTH / 2)),
@@ -329,7 +329,7 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
     }
     else
     {
-        // ¹æ¾î ½Ã ÀÚ½ÅÀÇ º¸µå Áß¾ÓÀ¸·Î
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½
         endPos =
         {
             boardPosX + (Constants::Board::WIDTH / 2),
@@ -498,7 +498,7 @@ uint8_t BasePlayer::GetMargin() const
 {
     const float playTime = play_time_;
 
-    // ½Ã°£¿¡ µû¸¥ ¸¶Áø °ª °è»ê
+    // ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
     for (const auto& margin : Constants::Game::SCORE_MARGINS)
     {
         if (playTime <= margin.time)
@@ -574,7 +574,7 @@ bool BasePlayer::IsPossibleMove(int xIdx)
 void BasePlayer::CreateBlocksFromFile()
 {
     std::string currentPath = std::filesystem::current_path().string();
-    std::cout << "ÇöÀç ÀÛ¾÷ µð·ºÅä¸®: " << currentPath << std::endl;
+    std::cout << "ï¿½ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ä¸®: " << currentPath << std::endl;
 
     std::ifstream file("./bin/puyo.txt");
     if (!file)

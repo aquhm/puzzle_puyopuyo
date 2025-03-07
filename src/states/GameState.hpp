@@ -118,6 +118,7 @@ private:
     bool LoadResources();
     bool CreateUI();
     bool CreatePlayers();
+    void Reset();
 
     void Reset();
 
