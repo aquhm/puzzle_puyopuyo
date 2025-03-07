@@ -31,7 +31,7 @@ class LocalPlayer;
 class RemotePlayer;
 class Player;
 class NetworkController;
-class ClientInfo;
+struct ClientInfo;
 class OnPlayerEvent;
 
 namespace GameStateDetail
@@ -107,8 +107,8 @@ public:
     bool GameRestart();
     bool GameExit();
     void GameQuit();
-    void CreateGamePlayer(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
-        uint8_t playerIdx, uint8_t characterIdx);
+    void CreateGamePlayer(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2,
+        uint8_t playerIdx, uint16_t characterIdx);
 
     void ScheduleGameStart();
 
@@ -153,6 +153,7 @@ private:
     // 이벤트 핸들러
     void OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event) override;
     void HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event);
+    void HandleGameRestart(const std::shared_ptr<GameRestartEvent>& event);
 
 private:
     // 플레이어 구성 요소

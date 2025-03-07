@@ -41,7 +41,7 @@ class GameRestartEvent : public BasePlayerEvent
 {
 public:
     explicit GameRestartEvent(uint8_t player_id)
-        : BasePlayerEvent(player_id, PlayerEventType::GameRestart) {
+        : BasePlayerEvent(PlayerEventType::GameRestart, player_id) {
     }
 };
 

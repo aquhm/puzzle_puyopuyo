@@ -30,7 +30,7 @@ bool EditBox::Init(float x, float y, float width, float height)
 
         if (input_title_texture_)
         {
-            auto title_text = StringUtils::Utf8ToWide("[ÀÔ·Â]");
+            auto title_text = StringUtils::Utf8ToWide("[System]");
             input_title_texture_->RenderText(StringUtils::WideToUtf8(title_text), COLOR_WHITE);
         }
 

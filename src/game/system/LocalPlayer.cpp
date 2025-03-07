@@ -32,8 +32,8 @@ LocalPlayer::~LocalPlayer()
     Release();
 }
 
-bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
-    uint8_t playerIdx, uint8_t characterIdx, const std::shared_ptr<GameBackground>& background)
+bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2,
+    uint8_t playerIdx, uint16_t characterIdx, const std::shared_ptr<GameBackground>& background)
 {
     Reset();
 
@@ -42,7 +42,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blocktype1, const s
         player_id_ = playerIdx;
         background_ = background;
 
-        InitializeNextBlocks(blocktype1, blocktype2);        
+        InitializeNextBlocks();        
 
         // 게임 보드 초기화 - 로컬 플레이어는 왼쪽에 표시
         if (!InitializeGameBoard(Constants::Board::POSITION_X, Constants::Board::POSITION_Y))
@@ -517,7 +517,7 @@ bool LocalPlayer::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGro
 {
     std::vector<Block*> currentGroup;
     int blockCount = 0;
-    int blockListSize = block_list_.size();
+    auto blockListSize = block_list_.size();
 
     // 모든 블록 순회하며 매치 검사
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
@@ -1096,7 +1096,7 @@ void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)
     game_state_ = newPhase;
 }
 
-bool LocalPlayer::Restart()
+bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2)
 {
     Reset();
 

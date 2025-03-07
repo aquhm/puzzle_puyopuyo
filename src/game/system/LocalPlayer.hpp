@@ -21,16 +21,14 @@ public:
     LocalPlayer();
     ~LocalPlayer() override;
 
-    // BasePlayer 인터페이스 구현
-    bool Initialize(const std::span<const uint8_t>& blocktype1,
-        const std::span<const uint8_t>& blocktype2,
+    bool Initialize(const std::span<const uint8_t>& blockType1,
+        const std::span<const uint8_t>& blockType2,
         uint8_t playerIdx,
-        uint8_t characterIdx,
+        uint16_t characterIdx,
         const std::shared_ptr<GameBackground>& background) override;
 
     void Release() override;
-
-    bool Restart() override;
+    bool Restart(const std::span<const uint8_t>& blockType1 = {}, const std::span<const uint8_t>& blockType2 = {}) override;
     void CreateNextBlock() override;
     void PlayNextBlock() override;
     bool CheckGameBlockState() override;

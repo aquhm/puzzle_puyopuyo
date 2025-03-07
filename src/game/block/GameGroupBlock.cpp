@@ -441,7 +441,7 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
     }
     else
     {
-        int satelliteY = blocks_[Satellite]->GetY();
+        float satelliteY = blocks_[Satellite]->GetY();
         if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT)
         {
             blocks_[Standard]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
@@ -703,31 +703,31 @@ void GameGroupBlock::GetCollisionRect(Block* block, SDL_Rect* rect, Constants::D
     switch (dir) 
     {
     case Constants::Direction::Left:
-        rect->x = block->GetX() - halfWidth;
-        rect->y = block->GetY();
-        rect->w = halfWidth;
-        rect->h = block->GetHeight();
+        rect->x = static_cast<int>(block->GetX() - halfWidth);
+        rect->y = static_cast<int>(block->GetY());
+        rect->w = static_cast<int>(halfWidth);
+        rect->h = static_cast<int>(block->GetHeight());
         break;
 
     case Constants::Direction::Top:
-        rect->x = block->GetX();
-        rect->y = block->GetY() - halfHeight;
-        rect->w = block->GetWidth();
-        rect->h = halfHeight;
+        rect->x = static_cast<int>(block->GetX());
+        rect->y = static_cast<int>(block->GetY() - halfHeight);
+        rect->w = static_cast<int>(block->GetWidth());
+        rect->h = static_cast<int>(halfHeight);
         break;
 
     case Constants::Direction::Right:
-        rect->x = block->GetX() + block->GetWidth();
-        rect->y = block->GetY();
-        rect->w = halfWidth;
-        rect->h = block->GetHeight();
+        rect->x = static_cast<int>(block->GetX() + block->GetWidth());
+        rect->y = static_cast<int>(block->GetY());
+        rect->w = static_cast<int>(halfWidth);
+        rect->h = static_cast<int>(block->GetHeight());
         break;
 
     case Constants::Direction::Bottom:
-        rect->x = block->GetX();
-        rect->y = block->GetY() + block->GetWidth();
-        rect->w = block->GetWidth();
-        rect->h = halfHeight;
+        rect->x = static_cast<int>(block->GetX());
+        rect->y = static_cast<int>(block->GetY() + block->GetWidth());
+        rect->w = static_cast<int>(block->GetWidth());
+        rect->h = static_cast<int>(halfHeight);
         break;
     }
 }

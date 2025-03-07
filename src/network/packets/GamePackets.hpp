@@ -59,7 +59,7 @@ struct GameInitPacket : PacketBase
 {
     uint8_t player_id;
     uint8_t map_id;
-    uint8_t character_id;
+    uint16_t character_id;
     std::array<uint8_t, 2> block1;
     std::array<uint8_t, 2> block2;
 
@@ -263,7 +263,7 @@ struct RestartGamePacket : PacketBase
 struct InitializePlayerPacket : PacketBase
 {
     uint8_t player_id;
-    uint8_t character_idx;
+    uint16_t character_idx;
     std::array<uint8_t, 2> block_type1;
     std::array<uint8_t, 2> block_type2;
 
@@ -347,7 +347,7 @@ struct PlayerInfoPacket : PacketBase
 struct AddPlayerPacket : PacketBase
 {
     uint8_t player_id;
-    uint8_t character_id;
+    uint16_t character_id;
 
     AddPlayerPacket()
     {
