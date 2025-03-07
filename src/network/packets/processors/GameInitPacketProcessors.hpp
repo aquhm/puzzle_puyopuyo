@@ -105,9 +105,6 @@ public:
 
                 remotePlayer->Restart(blockType1, blockType2);
 
-                // 게임 상태 리셋
-                game_state->GameRestart();
-
                 // 로그 기록
                 LOGGER.Info("Game restarted by player {}", restart_packet.player_id);
             }
