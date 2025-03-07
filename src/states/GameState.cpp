@@ -440,14 +440,12 @@ bool GameState::GameRestart()
                 return false;
             }
 
-            // 새 블록 정보 가져오기 - 여기가 문제의 원인
             const auto& next_blocks = local_player_->GetNextBlock();
             if (next_blocks.size() >= 2)
             {
                 std::array<uint8_t, 2> block_type1{};
                 std::array<uint8_t, 2> block_type2{};
 
-                // 올바른 방식으로 접근
                 auto first_block = next_blocks[0].get();
                 if (first_block) {
                     auto blocks = first_block->GetBlocks();
@@ -626,15 +624,14 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
     {
         local_player_->SetBackGround(background_);
 
-        //auto next_blocks = local_player_->GetNextBlock();
-        //background_->Reset();
-        //background_->SetNextBlock(next_blocks[0]);
-        //background_->SetNextBlock(next_blocks[1]);
+        auto next_blocks = local_player_->GetNextBlock();
+        background_->SetNextBlock(next_blocks[0]);
+        background_->SetNextBlock(next_blocks[1]);
         
-        //std::span<const uint8_t> blockType1(packet->block1);
-        //std::span<const uint8_t> blockType2(packet->block2);
+        std::span<const uint8_t> blockType1(packet->block1);
+        std::span<const uint8_t> blockType2(packet->block2);
 
-        CreateGamePlayer({}, {}, packet->player_id, packet->character_id);
+        CreateGamePlayer(blockType1, blockType2, packet->player_id, packet->character_id);
 
         ScheduleGameStart();
     }
@@ -645,7 +642,7 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blockType1, con
 {
     if (playerIdx == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId())
     {
-        if (!local_player_->Initialize(blockType1, blockType2, playerIdx, characterIdx, background_))
+        if (local_player_->Initialize(blockType1, blockType2, playerIdx, characterIdx, background_) == false)
         {
             LOGGER.Error("Failed to initialize local player");
         }
@@ -655,7 +652,7 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blockType1, con
     }
     else
     {
-        if (!remote_player_->Initialize(blockType1, blockType2, playerIdx, characterIdx, background_))
+        if (remote_player_->Initialize(blockType1, blockType2, playerIdx, characterIdx, background_) == false)
         {
             LOGGER.Error("Failed to initialize remote player");
         }

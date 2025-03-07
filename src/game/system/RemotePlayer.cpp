@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <random>
 
-RemotePlayer::RemotePlayer() : BasePlayer(), character_id_(0), has_ice_block_(false)
+RemotePlayer::RemotePlayer() : BasePlayer(), has_ice_block_(false)
 {
 }
 
@@ -37,7 +37,12 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
 {
     Reset();
 
-    try {
+    try 
+    {
+        player_id_ = playerIdx;
+        character_id_ = characterIdx;
+        background_ = background;
+
         // 블록 초기화
         InitializeNextBlocks(blockType1, blockType2);
 
@@ -57,7 +62,8 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
 
         // 뷰 초기화
         InitializeViews();
-        if (interrupt_view_) {
+        if (interrupt_view_) 
+        {
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
@@ -83,13 +89,13 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
     }
 }
 
-void RemotePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2)
+void RemotePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2)
 {
     auto next_block1 = std::make_unique<GroupBlock>();
     auto next_block2 = std::make_unique<GroupBlock>();
 
-    if (!next_block1->Create(static_cast<BlockType>(blocktype1[0]), static_cast<BlockType>(blocktype1[1])) ||
-        !next_block2->Create(static_cast<BlockType>(blocktype2[0]), static_cast<BlockType>(blocktype2[1])))
+    if (!next_block1->Create(static_cast<BlockType>(blockType1[0]), static_cast<BlockType>(blockType1[1])) ||
+        !next_block2->Create(static_cast<BlockType>(blockType2[0]), static_cast<BlockType>(blockType2[1])))
     {
         throw std::runtime_error("Failed to create next blocks");
     }

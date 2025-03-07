@@ -62,7 +62,7 @@ public:
 
 private:
     // 초기화 메서드
-    void InitializeNextBlocks(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2);
+    void InitializeNextBlocks(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2);
 
     // 블록 매칭 관련 메서드
     int16_t RecursionCheckBlock(int16_t x, int16_t y, int16_t direction, std::vector<Block*>& block_list);
@@ -90,8 +90,7 @@ private:
     void CalculateIceBlockCount();
 
 private:
-    // 캐릭터 및 상태 변수
-    int16_t character_id_{ 0 };
+        
     bool has_ice_block_{ false };
 
     // 게임 데이터

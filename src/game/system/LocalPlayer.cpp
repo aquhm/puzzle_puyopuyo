@@ -40,6 +40,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
     try
     {
         player_id_ = playerIdx;
+        character_id_ = characterIdx;
         background_ = background;
 
         InitializeNextBlocks();        

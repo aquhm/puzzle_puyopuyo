@@ -174,6 +174,7 @@ protected:
 protected:
     // 게임 상태 변수
     uint8_t player_id_{ 0 };
+    int16_t character_id_{ 0 };
     bool is_game_quit_{ false };
     GamePhase game_state_{ GamePhase::Standing };
     GamePhase prev_game_state_{ GamePhase::Standing };
