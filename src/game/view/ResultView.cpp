@@ -21,6 +21,8 @@ bool ResultView::Initialize()
         TEXTURE_HEIGHT  // height
     };
 
+    SetScale(TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    
     is_visible_ = false;
     return true;
 }
@@ -66,7 +68,7 @@ void ResultView::Render()
         return;
     }
 
-    resultTexture_->Render(GetX(), GetY(), &resultRect_);
+    resultTexture_->RenderScaled(&resultRect_, &destination_rect_);
 }
 
 void ResultView::Release() 

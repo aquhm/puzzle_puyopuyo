@@ -163,10 +163,6 @@ private:
     std::shared_ptr<Button> restart_button_;
     std::shared_ptr<Button> exit_button_;
 
-    /*std::shared_ptr<InterruptBlockView> interrupt_view_;
-    std::shared_ptr<ComboView> combo_view_;
-    std::shared_ptr<ResultView> result_view_;*/
-
     // 상태 변수
     uint64_t lastInputTime_{ 0 };
     bool initialized_{ false };

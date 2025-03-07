@@ -101,17 +101,14 @@ bool GameState::LoadResources()
 
 bool GameState::CreatePlayers()
 {
-    // �÷��̾� �ʱ�ȭ
     local_player_ = std::make_shared<LocalPlayer>();
     remote_player_ = std::make_shared<RemotePlayer>();
-
 
     return true;
 }
 
 bool GameState::CreateUI()
 {
-    // ����� ��ư �ʱ�ȭ
     restart_button_ = std::make_unique<Button>();
     exit_button_ = std::make_unique<Button>();
 
@@ -128,27 +125,19 @@ bool GameState::CreateUI()
         return false;
     }
 
-    // ��ư ��ġ �� ũ�� ����
     restart_button_->Init(buttonTexture, GAME_APP.GetWindowWidth() / 2.0f - 68.0f, GAME_APP.GetWindowHeight() / 2.0f - 20.0f, 136.0f, 49.0f);
     exit_button_->Init(buttonTexture, GAME_APP.GetWindowWidth() / 2.0f - 68.0f, GAME_APP.GetWindowHeight() / 2.0f + 30.0f, 136.0f, 49.0f);
 
-    // ��ư ���� ����
-    SDL_FRect normalRect{ 0, 0, 136, 49 };
-    SDL_FRect hoverRect{ 0, 50, 136, 49 };
-
-    restart_button_->SetStateRect(Button::State::Normal, normalRect);
-    restart_button_->SetStateRect(Button::State::Hover, hoverRect);
+    restart_button_->SetStateRect(Button::State::Normal, { 0, 0, 136, 49 });
+    restart_button_->SetStateRect(Button::State::Hover, { 0, 50, 136, 49 });
     restart_button_->SetEventCallback(Button::State::Down,
         [this]()
         {
             return GameRestart();
         });
 
-    normalRect = { 0, 100, 136, 49 };
-    hoverRect = { 0, 150, 136, 49 };
-
-    exit_button_->SetStateRect(Button::State::Normal, normalRect);
-    exit_button_->SetStateRect(Button::State::Hover, hoverRect);
+    exit_button_->SetStateRect(Button::State::Normal, { 0, 100, 136, 49 });
+    exit_button_->SetStateRect(Button::State::Hover, { 0, 150, 136, 49 });
     exit_button_->SetEventCallback(Button::State::Down,
         [this]()
         {
@@ -160,7 +149,6 @@ bool GameState::CreateUI()
 
 void GameState::Enter()
 {
-    // ���� �÷��̾��� ID ����
     localPlayerId_ = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     auto characterId = GAME_APP.GetPlayerManager().GetMyPlayer()->GetCharacterId();
     
@@ -178,7 +166,7 @@ void GameState::Enter()
 
     CreateGamePlayer(std::span<const uint8_t>(), std::span<const uint8_t>(), localPlayerId_, characterId);
     ScheduleGameStart();
-    // ���� �ʱ�ȭ
+
     shouldQuit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
@@ -200,11 +188,9 @@ void GameState::Leave()
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
-    // �÷��̾� ����
     if (local_player_) local_player_->Reset();
     if (remote_player_) remote_player_->Reset();
 
-    // ��� ����
     if (background_)
     {
         background_->Reset();
@@ -215,23 +201,19 @@ void GameState::Leave()
 
 void GameState::Update(float deltaTime)
 {
-
     TIMER_SCHEDULER.Update();
 
-    // ��� ������Ʈ
     if (background_)
     {
         background_->Update(deltaTime);
     }
 
-    // ���� �÷��̾� ������Ʈ
     if (local_player_)
     {
         local_player_->Update(deltaTime);
         local_player_->UpdateGameLogic(deltaTime);
     }
 
-    // ���� �÷��̾� ������Ʈ
     if (remote_player_ && isNetworkGame_)
     {
         remote_player_->Update(deltaTime);
@@ -246,13 +228,11 @@ void GameState::Render()
         return;
     }
 
-    // ��� ������
     if (background_)
     {
         background_->Render();
     }
 
-    // �÷��̾� ������
     if (local_player_)
     {
         local_player_->Render();
@@ -263,7 +243,6 @@ void GameState::Render()
         remote_player_->Render();
     }
 
-    // UI ������
     RenderUI();
 
 #ifdef _DEBUG
@@ -307,7 +286,6 @@ void GameState::RenderDebugGrid()
 
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 
-    // ������
     for (int x = 0; x <= Constants::Board::BOARD_X_COUNT; ++x)
     {
         float xPos = Constants::Board::POSITION_X + Constants::Board::WIDTH_MARGIN + x * Constants::Block::SIZE;
@@ -319,7 +297,6 @@ void GameState::RenderDebugGrid()
             Constants::Board::POSITION_Y + Constants::Board::HEIGHT);
     }
 
-    // ����
     for (int y = 0; y <= Constants::Board::BOARD_Y_COUNT; ++y)
     {
         float yPos = Constants::Board::POSITION_Y + y * Constants::Block::SIZE;
@@ -336,10 +313,7 @@ void GameState::RenderDebugGrid()
 
 void GameState::HandleEvent(const SDL_Event& event)
 {
-    if (shouldQuit_)
-    {
-        return;
-    }
+    
 
     switch (event.type)
     {
@@ -354,7 +328,6 @@ void GameState::HandleEvent(const SDL_Event& event)
         break;
     }
 
-    // Ű���� ���� ó��
     HandleKeyboardState();
 }
 
@@ -373,7 +346,11 @@ void GameState::HandleMouseInput(const SDL_Event& event)
 
 void GameState::HandleKeyboardInput(const SDL_Event& event)
 {
-    // ���� �÷��̾�� Ű���� �Է� ����
+    if (shouldQuit_)
+    {
+        return;
+    }
+
     if (local_player_ && local_player_->GetGameState() == GamePhase::Playing)
     {
         switch (event.key.key)
@@ -406,10 +383,8 @@ void GameState::HandleKeyboardState()
 
     const bool* keyStates = SDL_GetKeyboardState(nullptr);
 
-    // ���� �÷��̾�� Ű���� ���� ����
     if (local_player_)
     {
-        // ���� �÷��̾ ���� ���� �� ó��
         if (local_player_->GetGameState() == GamePhase::Playing)
         {
             if (keyStates[SDL_SCANCODE_LEFT])
@@ -448,10 +423,8 @@ void GameState::HandleKeyboardState()
 
 bool GameState::GameRestart()
 {
-    // ���� ���� �ʱ�ȭ
     if (local_player_ && remote_player_)
     {
-        // �ʱ� ��� Ÿ�� ���� (������ ����)
         if (NETWORK.IsServer())
         {
             std::array<uint8_t, 2> blockType1 = {
@@ -463,30 +436,25 @@ bool GameState::GameRestart()
                 static_cast<uint8_t>(rand() % 5 + 1)
             };
 
-            // ���� �÷��̾� �����
             local_player_->Restart(blockType1, blockType2);
 
-            // ��Ʈ��ũ�� ����� ��Ŷ ����
-           /* RestartGamePacket packet;
+           RestartGamePacket packet;
             packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
             memcpy(packet.block1, blockType1.data(), 2);
             memcpy(packet.block2, blockType2.data(), 2);
 
-            NETWORK.ReStartGame(packet);*/
+            NETWORK.ReStartGame(packet);
         }
     }
 
-    // ��� �ʱ�ȭ
     if (background_)
     {
         background_->Reset();
     }
 
-    // UI ���� �ʱ�ȭ
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
-    // ���� ���� �ʱ�ȭ
     shouldQuit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
@@ -615,20 +583,17 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
         return;
     }
 
-    // ��� �� ����
     background_ = GAME_APP.GetMapManager().CreateMap(packet->map_id);    
 
     if (background_ && background_->Initialize())
     {
         local_player_->SetBackGround(background_);
 
-        // ���� �÷��̾� ��� ���� �ʿ� ����
         auto next_blocks = local_player_->GetNextBlock();
         background_->Reset();
         background_->SetNextBlock(next_blocks[0]);
         background_->SetNextBlock(next_blocks[1]);
 
-        // �÷��̾� ����
         std::span<const uint8_t> blockType1(packet->block1);
         std::span<const uint8_t> blockType2(packet->block2);
 
@@ -641,7 +606,6 @@ void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket*
 void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, const std::span<const uint8_t>& blocktype2,
     uint8_t playerIdx, uint8_t characterIdx)
 {
-    // ���� �÷��̾��� ���
     if (playerIdx == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId())
     {
         if (!local_player_->Initialize(blocktype1, blocktype2, playerIdx, characterIdx, background_))
@@ -652,7 +616,6 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blocktype1, con
         local_player_->AddEventListener(this);
         
     }
-    // ���� �÷��̾��� ���
     else
     {
         if (!remote_player_->Initialize(blocktype1, blocktype2, playerIdx, characterIdx, background_))
@@ -674,7 +637,6 @@ void GameState::HandleAddNewBlock(uint8_t connectionId, const AddNewBlockPacket*
         return;
     }
 
-    // ���� �÷��̾��� ��� �߰�
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->AddNewBlock(packet->block_type);
@@ -689,7 +651,6 @@ void GameState::HandleUpdateBlockMove(uint8_t connectionId, const MoveBlockPacke
         return;
     }
 
-    // ���� �÷��̾��� ��� �̵�
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->MoveBlock(packet->move_type, packet->position);
@@ -704,7 +665,6 @@ void GameState::HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket*
         return;
     }
 
-    // ���� �÷��̾��� ��� ȸ��
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->RotateBlock(packet->rotate_type, packet->is_horizontal_moving);
@@ -713,10 +673,8 @@ void GameState::HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket*
 
 void GameState::HandleStartGame()
 {
-    // ���� ���� ó��
     if (local_player_)
     {
-        // ���� �÷��̾� ���� ��� ����
         local_player_->CreateNextBlock();
     }
 }
@@ -729,7 +687,6 @@ void GameState::HandleCheckBlockState(uint8_t connectionId, const CheckBlockStat
         return;
     }
 
-    // ���� �÷��̾��� ��� ���� üũ
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
         remote_player_->CheckGameBlockState();
@@ -818,14 +775,12 @@ void GameState::HandleGameOver()
 
 void GameState::HandleSystemEvent(const SDL_Event& event)
 {
-    //TODO: �ý��� �̺�Ʈ ó��
 }
 
 void GameState::Release()
 {
     Leave();
 
-    // UI ���ҽ� ����
     if (restart_button_) {
         restart_button_->Release();
         restart_button_.reset();
@@ -836,7 +791,6 @@ void GameState::Release()
         exit_button_.reset();
     }
 
-    // ��� �� �÷��̾� ���ҽ� ����
     if (background_) {
         background_->Release();
         background_.reset();
@@ -874,7 +828,6 @@ Block* (*GameState::GetGameBlocks(uint8_t playerId))[Constants::Board::BOARD_X_C
 
 void GameState::ScheduleGameStart() 
 {
-    // 2�� �Ŀ� ���� ���� ���� ����
     TIMER_SCHEDULER.ScheduleTask(Constants::Game::PLAY_START_DELAY, 
         [this]()
         {
