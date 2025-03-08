@@ -621,6 +621,22 @@ void GameState::InitializePacketHandlers()
             HandleRestart(connectionId, packet);
         }
     );
+
+    packet_processor_.RegisterHandler<DefenseInterruptPacket>(
+        PacketType::DefenseInterruptBlock,
+        [this](uint8_t connectionId, const DefenseInterruptPacket* packet) {
+            HandleDefenseInterrupt(connectionId, packet);
+        }
+    );
+
+    packet_processor_.RegisterHandler<DefenseResultInterruptBlockCountPacket>(
+        PacketType::DefenseResultInterruptBlockCount,
+        [this](uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet) {
+            HandleDefenseResultInterruptBlockCount(connectionId, packet);
+        }
+    );
+
+    
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -806,7 +822,7 @@ void GameState::HandleRestart(uint8_t connectionId, const RestartGamePacket* pac
     }
 }
 
-void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet)
+void GameState::HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet)
 {
     auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
     if (!player)
@@ -816,7 +832,35 @@ void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* pac
 
     if (player->GetId() != localPlayerId_ && remote_player_)
     {
-        remote_player_->SetComboAttackState(false);
+        remote_player_->DefenseInterruptBlockCount(packet->count, packet->position_x, packet->position_y, packet->block_type);
+    }
+}
+
+void GameState::HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet)
+{
+	auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+	if (!player)
+	{
+		return;
+	}
+	if (local_player_)
+	{
+		//local_player_->SetTotalInterruptBlockCount(packet->count);
+		local_player_->GetInterruptView()->UpdateInterruptBlock(packet->count);
+	}
+}
+
+void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (!player)
+    {
+        return;
+    }
+
+    if (local_player_)
+    {
+        local_player_->SetComboAttackState(false);
     }
 }
 
@@ -942,6 +986,11 @@ void GameState::OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event)
         HandleGameRestart(std::dynamic_pointer_cast<GameRestartEvent>(event));
         break;
     }
+    case PlayerEventType::AddInterruptBlock:
+    {
+        HandleAddInterruptBlock(std::dynamic_pointer_cast<AddInterruptBlockEvent>(event));
+        break;
+    }
     }
 }
 
@@ -961,6 +1010,13 @@ void GameState::HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event
 }
 
 void GameState::HandleGameRestart(const std::shared_ptr<GameRestartEvent>& event)
+{    
+}
+
+void GameState::HandleAddInterruptBlock(const std::shared_ptr<AddInterruptBlockEvent>& event)
 {
-    
+    if (remote_player_)
+    {
+        remote_player_->AddInterruptBlock(event->GetCount());
+    }
 }

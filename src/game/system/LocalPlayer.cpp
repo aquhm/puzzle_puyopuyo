@@ -158,7 +158,6 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
 {
     if (block_list_.size() > 0)
     {
-        // ��� ����� ���� �������� üũ
         bool allStationary = true;
         for (const auto& block : block_list_)
         {
@@ -169,7 +168,6 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
             }
         }
 
-        // ��� ����� ���� ���¸� ���� ��� ����
         if (allStationary)
         {
             if (ProcessGameOver() == false)
@@ -189,11 +187,9 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
         std::vector<SDL_FPoint> positions;
         std::list<SDL_Point> indexList;
 
-        // ��ġ�� ��� �׷� ó��
         auto groupIter = matched_blocks_.begin();
         while (groupIter != matched_blocks_.end())
         {
-            // �׷� �� ��� ����� PlayOut �������� Ȯ��
             bool allPlayedOut = std::all_of(groupIter->begin(), groupIter->end(),
                 [](const Block* block)
                 {
@@ -202,7 +198,6 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
             if (allPlayedOut)
             {
-                // ù ��° ������� �Ѿ� ����
                 if (!groupIter->empty())
                 {
                     auto* firstBlock = groupIter->front();
@@ -211,16 +206,13 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     CreateBullet(firstBlock, isAttacking);                    
                 }
 
-                // �׷� �� ��� ��� ó��
                 for (auto* block : *groupIter)
                 {
                     SDL_FPoint pos{ block->GetX(), block->GetY() };
                     SDL_Point idx{ block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
-                    // ��ƼŬ ����
                     CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {}));
 
-                    // ���� ���忡�� ��� ����
                     board_blocks_[idx.y][idx.x] = nullptr;
 
                     auto it = std::find_if(block_list_.begin(), block_list_.end(),
@@ -238,14 +230,12 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     indexList.push_back(idx);
                 }
 
-                // �޺� ǥ�� ������Ʈ
                 if (combo_view_ && score_info_.comboCount > 0 && !groupIter->empty())
                 {
                     auto* firstBlock = groupIter->front();
                     combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.comboCount);
                 }
 
-                // ���� ��� ó��
                 if (!ice_blocks_.empty())
                 {
                     for (const auto& iceBlock : ice_blocks_)
@@ -268,7 +258,6 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
             }
         }
 
-        // ������ ��� ���� ��ϵ� ���� ���·� ����
         if (matched_blocks_.empty())
         {
             UpdateFallingBlocks(indexList);
@@ -276,12 +265,10 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
     }
     else
     {
-        // ���� �� ���� üũ
         block_list_.sort([](const auto& a, const auto& b) { return *a < *b; });
 
         if (!block_list_.empty())
         {
-            // ��� ����� ���� �������� Ȯ��
             bool allStationary = std::all_of(block_list_.begin(), block_list_.end(),
                 [](const auto& block)
                 {
@@ -290,10 +277,8 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
             if (allStationary)
             {
-                // ��� ��ũ ���� ������Ʈ
                 UpdateBlockLinks();
 
-                // ���� ���� üũ �� ���� �ܰ� ó��
                 if (CheckGameBlockState() == false)
                 {
                     if (!state_info_.shouldQuit)
@@ -604,8 +589,7 @@ short LocalPlayer::RecursionCheckBlock(short x, short y, Constants::Direction di
         }
 
         Block* checkBlock = board_blocks_[checkY][checkX];
-        if (!checkBlock || checkBlock->IsRecursionCheck() ||
-            checkBlock->GetState() != BlockState::Stationary)
+        if (!checkBlock || checkBlock->IsRecursionCheck() ||  checkBlock->GetState() != BlockState::Stationary)
         {
             continue;
         }
@@ -1196,30 +1180,21 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
             static_cast<uint8_t>(block->GetBlockType())
         );
 
-        if (NETWORK.IsServer())
-        {
-            // UI ����
-            if (interrupt_view_)
-            {
-                interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
-            }
-        }
-
+        // 플레이어 방해블록개수 갱신
         if (interrupt_view_)
         {
             interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
         }
     }
-    else  // ���� ����
-    {
-        // ���� ���� �߾����� �߻�
+    else
+    {  
         endPos =
         {
             GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
             Constants::Board::POSITION_Y
         };
 
-        // ���� ��Ŷ ����
+        // 플레이어 방해블록개수 갱신
         NETWORK.AttackInterruptBlock(
             score_info_.addInterruptBlockCount,
             block->GetX(),
@@ -1227,19 +1202,11 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
             static_cast<uint8_t>(block->GetBlockType())
         );
 
-        //TODO Ȯ�� �ʿ�.
-        //// ������ ��� ���濡�� ���� ��� �߰�
-        //if (NETWORK.IsServer())
-        //{
-        //    // ���� ���� Ȯ��
-        //    if (auto* gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
-        //    {
-        //        if (auto remotePlayer = gameState->GetRemotePlayer())
-        //        {
-        //            remotePlayer->AddInterruptBlock(score_info_.addInterruptBlockCount);
-        //        }
-        //    }
-        //}
+
+        if (NETWORK.IsServer())
+        {
+            NotifyEvent(std::make_shared<AddInterruptBlockEvent>(player_id_, score_info_.addInterruptBlockCount));
+        }        
 
         if (interrupt_view_)
         {
@@ -1247,10 +1214,8 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
         }
     }
 
-    // ���� ��� ī��Ʈ ����
     score_info_.addInterruptBlockCount = 0;
 
-    // �Ѿ� ����
     auto bullet = std::make_shared<BulletEffect>();
     if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
     {
@@ -1258,11 +1223,9 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    // ���� ���� ����
     bullet->SetAttacking(isAttacking);
     bullet_list_.push_back(bullet);
 
-    // ���Ӻ��� ���� ������Ʈ
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
     {
         game_board_->SetState(BoardState::Attacking);

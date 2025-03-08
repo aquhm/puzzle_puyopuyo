@@ -100,7 +100,7 @@ public:
 
             // 응답 패킷 생성
             DefenseResultInterruptBlockCountPacket result_packet;
-            result_packet.id = defense_packet.player_id;
+            result_packet.player_id = defense_packet.player_id;
             result_packet.count = localPlayer->GetTotalEnemyInterruptBlockCount();
 
             // 모든 클라이언트에게 전송
@@ -187,8 +187,7 @@ public:
         // 콤보 상태 해제
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            //TODO
-            //gameState->GetLocalPlayer()->GetCoSetAttackComboState(false);
+			gameState->GetLocalPlayer()->SetComboAttackState(false);
         }
     }
 

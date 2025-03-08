@@ -51,6 +51,7 @@ public:
     void CollectRemoveIceBlocks() override;
 
     // 방해 블록 관련 추가 메서드
+    using BasePlayer::AddInterruptBlock;
     void AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx);
     void AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type);
 

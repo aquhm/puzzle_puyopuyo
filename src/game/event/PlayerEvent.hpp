@@ -5,6 +5,7 @@ enum class PlayerEventType
 {
     GameOver,    
     GameRestart,
+    AddInterruptBlock,
 };
 
 class BasePlayerEvent
@@ -43,6 +44,19 @@ public:
     explicit GameRestartEvent(uint8_t player_id)
         : BasePlayerEvent(PlayerEventType::GameRestart, player_id) {
     }
+};
+
+class AddInterruptBlockEvent : public BasePlayerEvent
+{
+public:
+    explicit AddInterruptBlockEvent(uint8_t player_id)
+        : BasePlayerEvent(PlayerEventType::AddInterruptBlock, player_id) {
+    }
+
+    uint16_t GetCount() const { return count_; }
+
+private:
+	int16_t count_;
 };
 
 // 콤보 공격 이벤트

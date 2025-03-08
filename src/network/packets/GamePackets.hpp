@@ -380,7 +380,7 @@ struct ConnectLobbyPacket : PacketBase
 
 struct DefenseResultInterruptBlockCountPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t player_id;
     uint16_t count;
 
     DefenseResultInterruptBlockCountPacket()

@@ -149,12 +149,16 @@ private:
     void HandleLose(uint8_t connectionId, const LoseGamePacket* packet);
     void HandleAttackInterrupt(uint8_t connectionId, const AttackInterruptPacket* packet);
     void HandleRestart(uint8_t connectionId, const RestartGamePacket* packet);
+    void HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet);
+    void HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet);
+    
     void HandleGameOver();
 
     // 이벤트 핸들러
     void OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event) override;
     void HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event);
     void HandleGameRestart(const std::shared_ptr<GameRestartEvent>& event);
+    void HandleAddInterruptBlock(const std::shared_ptr<AddInterruptBlockEvent>& event);
 
 private:
     // 플레이어 구성 요소
