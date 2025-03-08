@@ -45,7 +45,6 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
 
         InitializeNextBlocks();        
 
-        // ���� ���� �ʱ�ȭ - ���� �÷��̾�� ���ʿ� ǥ��
         if (!InitializeGameBoard(Constants::Board::POSITION_X, Constants::Board::POSITION_Y))
         {
             return false;
@@ -58,17 +57,15 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
 
         InitializeViews();
 
-        // ���� �� �ʱ�ȭ
         if (interrupt_view_)
         {
             interrupt_view_->SetPosition(Constants::Board::POSITION_X, 0);
         }
 
 #ifdef _APP_DEBUG_
-        //CreateBlocksFromFile();
+        CreateBlocksFromFile();
 #endif
 
-        // ���� ���� �ʱ�ȭ
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
         game_state_ = GamePhase::Playing;

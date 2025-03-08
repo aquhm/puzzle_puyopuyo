@@ -49,8 +49,8 @@ public:
 class AddInterruptBlockEvent : public BasePlayerEvent
 {
 public:
-    explicit AddInterruptBlockEvent(uint8_t player_id)
-        : BasePlayerEvent(PlayerEventType::AddInterruptBlock, player_id) {
+    explicit AddInterruptBlockEvent(uint8_t player_id, uint16_t count)
+        : BasePlayerEvent(PlayerEventType::AddInterruptBlock, player_id), count_(count) {
     }
 
     uint16_t GetCount() const { return count_; }
