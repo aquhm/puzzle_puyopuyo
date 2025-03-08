@@ -151,6 +151,7 @@ private:
     void HandleRestart(uint8_t connectionId, const RestartGamePacket* packet);
     void HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet);
     void HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet);
+    void HandleAttackResultPlayerInterruptBlocCount(uint8_t connectionId, const AttackResultPlayerInterruptBlocCountPacket* packet);
     
     void HandleGameOver();
 

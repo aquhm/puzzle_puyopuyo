@@ -392,7 +392,7 @@ struct DefenseResultInterruptBlockCountPacket : PacketBase
 
 struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t player_id;
     uint16_t count;
     uint16_t attackerCount;
 

@@ -251,7 +251,7 @@ void RemotePlayer::UpdateMatchedBlocks()
             if (!it->empty())
             {
                 auto firstBlock = it->front();
-                CreateBullet(firstBlock, !state_info_.hasIceBlock);                
+                CreateBullet(firstBlock);                
             }
 
             HandleClearedBlockGroup(it, pos, pos_idx, x_index_list);

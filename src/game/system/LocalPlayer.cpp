@@ -198,9 +198,8 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                 if (!groupIter->empty())
                 {
                     auto* firstBlock = groupIter->front();
-                    bool isAttacking = !state_info_.hasIceBlock;
 
-                    CreateBullet(firstBlock, isAttacking);                    
+                    CreateBullet(firstBlock);                    
                 }
 
                 for (auto* block : *groupIter)
@@ -352,7 +351,6 @@ void LocalPlayer::CreateNextBlock()
         game_board_->SetRenderTargetMark(false);
     }
 
-    // ��Ʈ��ũ ����ȭ
     if (NETWORK.IsRunning())
     {
         if (auto lastBlock = next_blocks_.back().get())
@@ -400,7 +398,6 @@ bool LocalPlayer::CheckGameBlockState()
         game_board_->SetRenderTargetMark(false);
     }
 
-    // ���� ���� üũ
     if (state_info_.shouldQuit)
     {
         if (NETWORK.IsRunning())
@@ -412,7 +409,6 @@ bool LocalPlayer::CheckGameBlockState()
         return true;
     }
 
-    // �ּ� ��� �� üũ
     if (block_list_.size() < Constants::Game::MIN_MATCH_COUNT)
     {
         state_info_.currentPhase = GamePhase::Playing;
@@ -423,7 +419,6 @@ bool LocalPlayer::CheckGameBlockState()
         return false;
     }
 
-    // ��ġ ��� ã��
     matched_blocks_.clear();      
 
     if (FindMatchedBlocks(matched_blocks_))
@@ -432,10 +427,8 @@ bool LocalPlayer::CheckGameBlockState()
         prev_game_state_ = game_state_;
         HandlePhaseTransition(GamePhase::Shattering);
 
-        // ���� ���
         CalculateScore();
 
-        // ���� ��� ó��
         CollectRemoveIceBlocks();
 
         return true;
@@ -463,13 +456,11 @@ bool LocalPlayer::CheckGameBlockState()
         }
     }
 
-    // ���� ���� üũ
     if (ProcessGameOver() == true)
     {
         return true;
     }
 
-    // ���� �ܰ� ó��
     if (state_info_.shouldQuit)
     {
         state_info_.currentPhase = GamePhase::Standing;
@@ -502,7 +493,6 @@ bool LocalPlayer::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGro
     int blockCount = 0;
     auto blockListSize = block_list_.size();
 
-    // ��� ��� ��ȸ�ϸ� ��ġ �˻�
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++)
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
@@ -530,7 +520,6 @@ bool LocalPlayer::FindMatchedBlocks(std::vector<std::vector<Block*>>& matchedGro
             block->SetRecursionCheck(true);
             currentGroup.clear();
 
-            // ��������� ��ġ�Ǵ� ��� ã��
             if (RecursionCheckBlock(x, y, Constants::Direction::None, currentGroup) >= Constants::Game::MIN_MATCH_COUNT - 1)
             {
                 currentGroup.push_back(block);
@@ -695,7 +684,6 @@ void LocalPlayer::GenerateIceBlocks()
 
     const auto playerID = player_id_;
 
-    // ��� ���� ���� ���� ��� ����
     if (score_info_.totalInterruptBlockCount > 30)
     {
         GenerateLargeIceBlockGroup(texture, playerID);
@@ -705,7 +693,6 @@ void LocalPlayer::GenerateIceBlocks()
         GenerateSmallIceBlockGroup(texture, playerID);
     }
 
-    // UI ������Ʈ
     if (interrupt_view_)
     {
         interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
@@ -723,7 +710,6 @@ void LocalPlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>
         NETWORK.AddInterruptBlock(5, 0, std::span<const uint8_t>());
     }
 
-    // 5x6 ũ���� ���� ��� �׷� ����
     for (int y = 0; y < 5; y++)
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
@@ -740,7 +726,6 @@ void LocalPlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>
     const auto yCnt = score_info_.totalInterruptBlockCount / Constants::Board::BOARD_X_COUNT;
     const auto xCnt = score_info_.totalInterruptBlockCount % Constants::Board::BOARD_X_COUNT;
 
-    // ��ü �� ����
     for (int y = 0; y < yCnt; y++)
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
@@ -751,7 +736,6 @@ void LocalPlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>
         }
     }
 
-    // ���� ��� ���� ��ġ
     if (xCnt > 0)
     {
         std::random_device rd;
@@ -1146,7 +1130,7 @@ void LocalPlayer::UpdateTargetPosIdx()
     }
 }
 
-void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
+void LocalPlayer::CreateBullet(Block* block)
 {
     if (!block)
     {
@@ -1162,7 +1146,7 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
 
     SDL_FPoint endPos;
 
-    if (!isAttacking)
+    if (state_info_.hasIceBlock)
     {
         endPos =
         {
@@ -1220,7 +1204,8 @@ void LocalPlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    bullet->SetAttacking(isAttacking);
+    bullet->SetAttacking(!state_info_.hasIceBlock);
+
     bullet_list_.push_back(bullet);
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -1282,4 +1267,20 @@ bool LocalPlayer::ProcessGameOver()
     }
 
     return false;
+}
+
+void LocalPlayer::AddInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
+{
+    if (NETWORK.IsServer())
+    {
+		state_info_.isComboAttack = true;
+		score_info_.totalEnemyInterruptBlockCount += count;
+
+		if (interrupt_view_)
+		{
+			interrupt_view_->UpdateInterruptBlock(score_info_.totalEnemyInterruptBlockCount);
+		}
+		
+        NotifyEvent(std::make_shared<AttackInterruptBlockEvent>(player_id_, x, y, type));        
+    }
 }

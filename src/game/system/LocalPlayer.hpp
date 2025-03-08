@@ -41,9 +41,10 @@ public:
     void ChangeBlockState(uint8_t state) override;
     bool PushBlockInGame(GameGroupBlock* groupBlock);
 
-    void CreateBullet(Block* block, bool isAttacking) override;
+    void CreateBullet(Block* block) override;
     void AttackInterruptBlock(float x, float y, uint8_t type) override;
     void DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type) override;
+    void AddInterruptBlockCount(int16_t count, float x, float y, uint8_t type);
     void CollectRemoveIceBlocks() override;
     
 

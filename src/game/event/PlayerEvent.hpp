@@ -59,6 +59,23 @@ private:
 	int16_t count_;
 };
 
+class AttackInterruptBlockEvent : public BasePlayerEvent
+{
+public:
+    explicit AttackInterruptBlockEvent(uint8_t player_id, float x, float y, uint8_t type)
+        : BasePlayerEvent(PlayerEventType::AddInterruptBlock, player_id), x_(x), y_(y), type_(type) {
+    }
+
+    uint16_t GetX() const { return x_; }
+    uint16_t GetY() const { return y_; }
+    uint8_t GetType() const { return type_; }
+
+private:
+    float x_;
+    float y_;
+    uint8_t type_;
+};
+
 // 콤보 공격 이벤트
 //class ComboAttackEvent : public BasePlayerEvent
 //{

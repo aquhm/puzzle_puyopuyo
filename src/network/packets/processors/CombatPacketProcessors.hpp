@@ -38,16 +38,16 @@ public:
         {
             if (const auto& localPlayer = gameState->GetLocalPlayer())
             {
-                localPlayer->AddInterruptBlock(
-                    attack_packet.count
-                    /*,attack_packet.position_x,
+                localPlayer->AddInterruptBlockCount(
+                    attack_packet.count,
+                    attack_packet.position_x,
                     attack_packet.position_y,
-                    attack_packet.block_type*/
+                    attack_packet.block_type
                 );
 
                 // 패킷 응답 생성 및 전송
                 AttackResultPlayerInterruptBlocCountPacket resultPacket;
-                resultPacket.id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
+                resultPacket.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
                 resultPacket.count = localPlayer->GetTotalInterruptBlockCount();
                 resultPacket.attackerCount = localPlayer->GetTotalEnemyInterruptBlockCount();
 

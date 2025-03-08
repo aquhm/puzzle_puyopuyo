@@ -289,7 +289,7 @@ void BasePlayer::UpdateLinkState(Block* block)
     block->SetLinkState(static_cast<LinkState>(linkState));
 }
 
-void BasePlayer::CreateBullet(Block* block, bool isAttacking)
+void BasePlayer::CreateBullet(Block* block)
 {
     if (!block)
     {
@@ -307,7 +307,7 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
     };
 
     SDL_FPoint endPos;
-    if (isAttacking)
+    if (state_info_.hasIceBlock)
     {
         endPos =
         {
@@ -331,7 +331,7 @@ void BasePlayer::CreateBullet(Block* block, bool isAttacking)
         return;
     }
 
-    bullet->SetAttacking(isAttacking);
+    bullet->SetAttacking(!state_info_.hasIceBlock);
     bullet_list_.push_back(bullet);
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
