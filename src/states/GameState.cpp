@@ -911,15 +911,10 @@ void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* pac
 
 void GameState::HandleLose(uint8_t connectionId, const LoseGamePacket* packet)
 {
-    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
-    if (!player)
-    {
-        return;
-    }
-
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
         remote_player_->LoseGame(false);
+        local_player_->LoseGame(true);
     }
 }
 
