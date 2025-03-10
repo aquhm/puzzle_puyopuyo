@@ -524,7 +524,6 @@ void BasePlayer::LoseGame(bool isWin)
 
 void BasePlayer::AddInterruptBlock(int16_t count)
 {
-    total_interrupt_block_count_ += count;
     score_info_.totalInterruptBlockCount += count;
 
     if (interrupt_view_)
@@ -540,7 +539,6 @@ void BasePlayer::AddInterruptBlock(int16_t count)
 
 void BasePlayer::UpdateInterruptBlock(int16_t count)
 {
-    total_interrupt_block_count_ = count;
     score_info_.totalInterruptBlockCount = count;
 
     if (interrupt_view_)

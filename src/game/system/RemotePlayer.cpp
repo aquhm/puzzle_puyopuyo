@@ -73,10 +73,6 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
         game_state_ = GamePhase::Playing;
         prev_game_state_ = game_state_;
         play_time_ = 0.0f;
-        total_score_ = 0;
-        combo_count_ = 0;
-        rest_score_ = 0;
-        total_interrupt_block_count_ = 0;
 
         // 이벤트 발송 - 재시작 이벤트
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
@@ -143,10 +139,6 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
         game_state_ = GamePhase::Playing;        
         prev_game_state_ = game_state_;
         play_time_ = 0.0f;
-        total_score_ = 0;
-        combo_count_ = 0;
-        rest_score_ = 0;
-        total_interrupt_block_count_ = 0;
 
         return true;
     }
@@ -291,10 +283,10 @@ void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& gro
 }
 
 void RemotePlayer::UpdateComboDisplay(const SDL_FPoint& pos)
-{
-    if (combo_view_ && combo_count_ > 0)
+{	
+    if (combo_view_ && score_info_.comboCount > 0)
     {
-        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, combo_count_);
+        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, score_info_.comboCount);
     }
 }
 
@@ -458,11 +450,11 @@ void RemotePlayer::HandleMatchedBlocks()
 
     if (prev_game_state_ == GamePhase::Shattering)
     {
-        ++combo_count_;
+        ++score_info_.comboCount;
     }
     else if (prev_game_state_ == GamePhase::Playing)
     {
-        combo_count_ = 1;
+        score_info_.comboCount = 1;
     }
 
     // 매치된 블록들을 파괴 상태로 설정
@@ -479,14 +471,14 @@ void RemotePlayer::HandleMatchedBlocks()
 
 void RemotePlayer::ResetMatchState()
 {
-    if (combo_count_ > 0)
+    if (score_info_.comboCount > 0)
     {
-        combo_count_ = 0;
+        score_info_.comboCount = 0;
     }
 
-    if (rest_score_ > 0)
+    if (score_info_.restScore> 0)
     {
-        rest_score_ = 0;
+        score_info_.restScore = 0;
     }
 
     game_state_ = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
@@ -679,7 +671,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
 
 void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx)
 {
-    if (total_interrupt_block_count_ <= 0)
+	
+    if (score_info_.totalInterruptBlockCount <= 0)
     {
         return;
     }
@@ -703,7 +696,7 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
         if (interrupt_view_)
         {
-            interrupt_view_->UpdateInterruptBlock(total_interrupt_block_count_);
+            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
         }
 
         game_state_ = GamePhase::IceBlocking;
@@ -719,7 +712,6 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
 {
     // 방해 블록 카운트 증가
-    total_interrupt_block_count_ += cnt;
     score_info_.totalInterruptBlockCount += cnt;
 
     // 콤보 공격 상태 설정
@@ -728,7 +720,7 @@ void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned ch
     // UI 업데이트
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(total_interrupt_block_count_);
+        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -746,7 +738,7 @@ void RemotePlayer::CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& t
             CreateSingleIceBlock(x, y, texture);
         }
     }
-    total_interrupt_block_count_ -= 30;
+    score_info_.totalInterruptBlockCount -= 30;
 }
 
 void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx, std::shared_ptr<ImageTexture>& texture)
@@ -766,7 +758,7 @@ void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std:
         CreateSingleIceBlock(x_idx[i], y_row_cnt, texture);
     }
 
-    total_interrupt_block_count_ -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
+    score_info_.totalInterruptBlockCount -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
 }
 
 void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTexture>& texture)
@@ -819,11 +811,11 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 
 void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
-    total_interrupt_block_count_ = std::max<uint16_t>(0, total_interrupt_block_count_ - count);
+    score_info_.totalInterruptBlockCount = std::max<uint16_t>(0, score_info_.totalInterruptBlockCount - count);
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(total_interrupt_block_count_);
+        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
     }
 
     const SDL_FPoint start_pos
@@ -948,12 +940,12 @@ void RemotePlayer::RemoveIceBlocks(std::list<SDL_Point>& x_index_list)
 void RemotePlayer::CalculateIceBlockCount()
 {
     if (prev_game_state_ == GamePhase::Shattering)
-    {
-        ++combo_count_;
+    {        
+        ++score_info_.comboCount;
     }
     else if (prev_game_state_ == GamePhase::Playing)
     {
-        combo_count_ = 1;
+        score_info_.comboCount = 1;
     }
 
     for (auto& block_group : equal_block_list_)

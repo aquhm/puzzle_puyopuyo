@@ -79,8 +79,8 @@ public:
     // 상태 조회
     GamePhase GetGameState() const { return game_state_; }
     uint8_t GetPlayerID() const { return player_id_; }
-    int16_t GetTotalInterruptBlockCount() const { return total_interrupt_block_count_; }
-    int16_t GetTotalEnemyInterruptBlockCount() const { return total_enemy_interrupt_block_count_; }
+    int16_t GetTotalInterruptBlockCount() const { return score_info_.totalInterruptBlockCount; }
+    int16_t GetTotalEnemyInterruptBlockCount() const { return score_info_.totalEnemyInterruptBlockCount; }
     std::shared_ptr<GameBoard> GetGameBoard() const { return game_board_; }
     Block* (*GetGameBlocks())[Constants::Board::BOARD_X_COUNT] { return board_blocks_; }
 
@@ -179,14 +179,6 @@ protected:
     GamePhase game_state_{ GamePhase::Standing };
     GamePhase prev_game_state_{ GamePhase::Standing };
     float play_time_{ 0.0f };
-
-    // 점수 관련 변수
-    uint32_t total_score_{ 0 };
-    uint32_t rest_score_{ 0 };
-    uint8_t combo_count_{ 0 };
-    int16_t total_interrupt_block_count_{ 0 };
-    int16_t total_enemy_interrupt_block_count_{ 0 };
-    int16_t add_interrupt_block_count_{ 0 };
 
     // 상태 정보
     GameStateInfo state_info_;

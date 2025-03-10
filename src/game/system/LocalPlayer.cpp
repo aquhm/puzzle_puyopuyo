@@ -63,7 +63,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
         }
 
 #ifdef _APP_DEBUG_
-        CreateBlocksFromFile();
+        //CreateBlocksFromFile();
 #endif
 
         state_info_ = GameStateInfo{};
@@ -1008,12 +1008,10 @@ void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, ui
 
     //TODO total_enemy_interrupt_block_count_
     score_info_.totalInterruptBlockCount -= count;
-    total_interrupt_block_count_ -= count;
 
     if (score_info_.totalInterruptBlockCount < 0)
     {
         score_info_.totalInterruptBlockCount = 0;
-        total_interrupt_block_count_ = 0;
     }
 
     if (interrupt_view_)
