@@ -762,18 +762,18 @@ void LocalPlayer::InitializeIceBlock(IceBlock* block, const std::shared_ptr<Imag
         return;
     }
 
+
+    float renderX = Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * x;
+    float renderY = -Constants::Block::SIZE * (y + 1);
+    
+    block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
     block->SetBlockType(BlockType::Ice);
     block->SetLinkState(LinkState::Max);
     block->SetState(BlockState::DownMoving);
     block->SetBlockTex(texture);
     block->SetPosIdx(x, y);
-
-    float renderX = Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * x;
-    float renderY = -Constants::Block::SIZE * (y + 1);
-    
-    block->SetPosition(renderX, renderY);
-    block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
-    block->SetPlayerID(playerID);
+    block->SetPosition(renderX, renderY);  
+    block->SetPlayerID(playerID);    
 }
 
 void LocalPlayer::CollectRemoveIceBlocks()

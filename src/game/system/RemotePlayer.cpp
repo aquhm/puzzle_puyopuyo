@@ -840,13 +840,7 @@ void RemotePlayer::CollectRemoveIceBlocks()
 
             CollectAdjacentIceBlocks(block);
         }
-    }
-
-    // Set all collected ice blocks to destroying state
-    for (const auto& ice_block : ice_block_set_)
-    {
-        ice_block->SetState(BlockState::Destroying);
-    }
+    }    
 }
 
 void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
@@ -883,6 +877,8 @@ void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
 
         if (auto ice_block = dynamic_cast<IceBlock*>(check_block))
         {
+            ice_block->SetState(BlockState::Destroying);
+
             auto found = std::find_if(block_list_.begin(), block_list_.end(),
                 [ice_block](const auto& block) {
                     return block.get() == ice_block;
