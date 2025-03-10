@@ -68,8 +68,8 @@ public:
         : BasePlayerEvent(PlayerEventType::AttackInterruptBlock, player_id), x_(x), y_(y), type_(type) {
     }
 
-    uint16_t GetX() const { return x_; }
-    uint16_t GetY() const { return y_; }
+    float GetX() const { return x_; }
+    float GetY() const { return y_; }
     uint8_t GetType() const { return type_; }
 
 private:

@@ -197,6 +197,11 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     auto* firstBlock = groupIter->front();
 
                     CreateBullet(firstBlock);                    
+
+                    if (combo_view_ && score_info_.comboCount > 0 && !groupIter->empty())
+                    {
+                        combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.comboCount);
+                    }
                 }
 
                 for (auto* block : *groupIter)
@@ -223,18 +228,12 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     indexList.push_back(idx);
                 }
 
-                if (combo_view_ && score_info_.comboCount > 0 && !groupIter->empty())
-                {
-                    auto* firstBlock = groupIter->front();
-                    combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.comboCount);
-                }
-
                 if (!ice_blocks_.empty())
                 {
                     for (const auto& iceBlock : ice_blocks_)
                     {
                         SDL_Point iceIdx{ iceBlock->GetPosIdx_X(), iceBlock->GetPosIdx_Y() };
-                        LOGGER.Info("===========> iceblock position {} {}", iceIdx.x, iceIdx.y);
+                        //LOGGER.Info("===========> iceblock position {} {}", iceIdx.x, iceIdx.y);
                         board_blocks_[iceIdx.y][iceIdx.x] = nullptr;
 
                         block_list_.remove(iceBlock);

@@ -264,13 +264,13 @@ void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& gro
         pos = block->GetPosition();
         pos_idx = { block->GetPosIdx_X(), block->GetPosIdx_Y() };
 
+        UpdateComboDisplay(pos);
         CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {}));
         RemoveBlock(block, pos_idx);
 
         x_index_list.push_back(pos_idx);
     }
-
-    UpdateComboDisplay(pos);
+    
     RemoveIceBlocks(x_index_list);
 
     // 그룹 제거

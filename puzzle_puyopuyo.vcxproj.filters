@@ -45,15 +45,6 @@
     <ClInclude Include="src\states\GameState.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\states\GameStateTransition.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ui\GameUI.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="src\resource\ObjectPool.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="src\states\LoginState.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -247,9 +238,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\game\system\RemotePlayer.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\system\IGamePlayer.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\TimerScheduler.hpp">

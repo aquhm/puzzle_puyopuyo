@@ -51,7 +51,6 @@
     <ClInclude Include="src\game\particles\BgParticle.hpp" />
     <ClInclude Include="src\game\particles\BgParticleSystem.hpp" />
     <ClInclude Include="src\game\RenderableObject.hpp" />
-    <ClInclude Include="src\game\system\IGamePlayer.hpp" />
     <ClInclude Include="src\game\system\LocalPlayer.hpp" />
     <ClInclude Include="src\game\system\BasePlayer.hpp" />
     <ClInclude Include="src\game\system\RemotePlayer.hpp" />
@@ -83,17 +82,14 @@
     <ClInclude Include="src\resource\ResourcePathTrait.hpp" />
     <ClInclude Include="src\texture\StringTexture.hpp" />
     <ClInclude Include="src\texture\ImageTexture.hpp" />
-    <ClInclude Include="src\resource\ObjectPool.hpp" />
     <ClInclude Include="src\states\BaseState.hpp" />
     <ClInclude Include="src\states\CharacterSelectState.hpp" />
     <ClInclude Include="src\states\GameState.hpp" />
-    <ClInclude Include="src\states\GameStateTransition.hpp" />
     <ClInclude Include="src\states\LoginState.hpp" />
     <ClInclude Include="src\states\RoomState.hpp" />
     <ClInclude Include="src\core\manager\StateManager.hpp" />
     <ClInclude Include="src\ui\Button.hpp" />
     <ClInclude Include="src\ui\EditBox.hpp" />
-    <ClInclude Include="src\ui\GameUI.h" />
     <ClInclude Include="src\ui\TextBox.hpp" />
     <ClInclude Include="src\utils\Logger.hpp" />
     <ClInclude Include="src\utils\PathUtil.hpp" />
