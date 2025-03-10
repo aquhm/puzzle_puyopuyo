@@ -529,7 +529,7 @@ void BasePlayer::AddInterruptBlock(int16_t count)
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(total_interrupt_block_count_);
+        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)

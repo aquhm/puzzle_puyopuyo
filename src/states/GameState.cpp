@@ -804,9 +804,16 @@ void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterrup
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && local_player_)
+    if (local_player_)
     {
         local_player_->AddInterruptBlock(packet->count);
+        local_player_->SetComboAttackState(true);
+    }
+
+    if (remote_player_)
+    {
+        remote_player_->AttackInterruptBlock(packet->position_x, packet->position_y, packet->block_type);
+        remote_player_->UpdateInterruptBlock(0);
     }
 }
 
@@ -831,15 +838,12 @@ void GameState::HandleRestart(uint8_t connectionId, const RestartGamePacket* pac
 
 void GameState::HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet)
 {
-    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
-    if (!player)
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
-        return;
-    }
-
-    if (player->GetId() != localPlayerId_ && remote_player_)
-    {
-        remote_player_->DefenseInterruptBlockCount(packet->count, packet->position_x, packet->position_y, packet->block_type);
+        if (player->GetId() != localPlayerId_ && remote_player_)
+        {
+            remote_player_->DefenseInterruptBlockCount(packet->count, packet->position_x, packet->position_y, packet->block_type);
+        }
     }
 }
 
