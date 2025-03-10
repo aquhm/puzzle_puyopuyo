@@ -6,6 +6,7 @@ enum class PlayerEventType
     GameOver,    
     GameRestart,
     AddInterruptBlock,
+    AttackInterruptBlock
 };
 
 class BasePlayerEvent
@@ -63,7 +64,7 @@ class AttackInterruptBlockEvent : public BasePlayerEvent
 {
 public:
     explicit AttackInterruptBlockEvent(uint8_t player_id, float x, float y, uint8_t type)
-        : BasePlayerEvent(PlayerEventType::AddInterruptBlock, player_id), x_(x), y_(y), type_(type) {
+        : BasePlayerEvent(PlayerEventType::AttackInterruptBlock, player_id), x_(x), y_(y), type_(type) {
     }
 
     uint16_t GetX() const { return x_; }

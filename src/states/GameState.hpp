@@ -160,6 +160,7 @@ private:
     void HandlePlayerGameOver(const std::shared_ptr<GameOverEvent>& event);
     void HandleGameRestart(const std::shared_ptr<GameRestartEvent>& event);
     void HandleAddInterruptBlock(const std::shared_ptr<AddInterruptBlockEvent>& event);
+    void HandleAttackInterruptBlock(const std::shared_ptr<AttackInterruptBlockEvent>& event);
 
 private:
     // 플레이어 구성 요소
