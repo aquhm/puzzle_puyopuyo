@@ -1272,12 +1272,9 @@ void LocalPlayer::AddInterruptBlockCount(int16_t count, float x, float y, uint8_
     if (NETWORK.IsServer())
     {
 		state_info_.isComboAttack = true;
-		score_info_.totalEnemyInterruptBlockCount += count;
+        AddInterruptBlock(count);		
 
-		if (interrupt_view_)
-		{
-			interrupt_view_->UpdateInterruptBlock(score_info_.totalEnemyInterruptBlockCount);
-		}
+        score_info_.totalEnemyInterruptBlockCount = 0;
 		
         NotifyEvent(std::make_shared<AttackInterruptBlockEvent>(player_id_, x, y, type));        
     }
