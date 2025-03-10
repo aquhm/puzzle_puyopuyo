@@ -133,7 +133,6 @@ void GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
 
             if (SendMsg(player->GetNetInfo(), packet_data) == false)
             {
-                LOGGER.Error("Failed to send packet {} to player: {}", packet.type, player->GetId());
             }
         }
     }
