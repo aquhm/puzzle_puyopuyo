@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <span>
 #include <random>
+#include "../game/system/GameBoard.hpp"
 
 GameState::GameState()
 {
@@ -615,6 +616,13 @@ void GameState::InitializePacketHandlers()
         }
     );
 
+    packet_processor_.RegisterHandler<AddInterruptBlockPacket>(
+        PacketType::AddInterruptBlock,
+        [this](uint8_t connectionId, const AddInterruptBlockPacket* packet) {
+            HandleAddInterruptBlock(connectionId, packet);
+        }
+    );
+
     packet_processor_.RegisterHandler<RestartGamePacket>(
         PacketType::RestartGame,
         [this](uint8_t connectionId, const RestartGamePacket* packet) {
@@ -796,24 +804,33 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
     }
 }
 
+void GameState::HandleAddInterruptBlock(uint8_t connectionId, const AddInterruptBlockPacket* packet)
+{
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
+    {
+        if (remote_player_)
+        {
+            const std::span<const uint8_t> xIndicies{ packet->x_indices.data(), packet->x_count};
+            remote_player_->AddInterruptBlock(packet->y_row_count, xIndicies);
+        }
+    }
+}
+
 void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterruptPacket* packet)
 {
-    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
-    if (!player)
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
-        return;
-    }
+        if (local_player_)
+        {
+            local_player_->AddInterruptBlock(packet->count);
+            local_player_->SetComboAttackState(true);
+        }
 
-    if (local_player_)
-    {
-        local_player_->AddInterruptBlock(packet->count);
-        local_player_->SetComboAttackState(true);
-    }
-
-    if (remote_player_)
-    {
-        remote_player_->AttackInterruptBlock(packet->position_x, packet->position_y, packet->block_type);
-        remote_player_->UpdateInterruptBlock(0);
+        if (remote_player_)
+        {
+            remote_player_->AttackInterruptBlock(packet->position_x, packet->position_y, packet->block_type);
+            remote_player_->UpdateInterruptBlock(0);
+        }
     }
 }
 
@@ -857,7 +874,7 @@ void GameState::HandleDefenseResultInterruptBlockCount(uint8_t connectionId, con
 	if (local_player_)
 	{
 		//local_player_->SetTotalInterruptBlockCount(packet->count);
-		local_player_->GetInterruptView()->UpdateInterruptBlock(packet->count);
+		local_player_->UpdateInterruptBlock(packet->count);
 	}
 }
 
@@ -868,6 +885,7 @@ void GameState::HandleAttackResultPlayerInterruptBlocCount(uint8_t connectionId,
         if (remote_player_)
         {
             remote_player_->UpdateInterruptBlock(packet->count);
+            remote_player_->SetGameBoardState(BoardState::Damaging);
         }
 
         if (local_player_)

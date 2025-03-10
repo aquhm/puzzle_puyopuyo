@@ -537,6 +537,14 @@ void BasePlayer::AddInterruptBlock(int16_t count)
     }
 }
 
+void BasePlayer::SetGameBoardState(BoardState bordState)
+{
+    if (game_board_ && game_board_->GetState() != BoardState::Lose)
+    {
+        game_board_->SetState(bordState);
+    }
+}
+
 void BasePlayer::UpdateInterruptBlock(int16_t count)
 {
     score_info_.totalInterruptBlockCount = count;

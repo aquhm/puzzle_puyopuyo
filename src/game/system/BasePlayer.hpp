@@ -29,6 +29,7 @@ class ComboView;
 class ResultView;
 class ImageTexture;
 class IPlayerEventListener;
+enum class BoardState;
 
 class BasePlayer : public RenderableObject {
 public:
@@ -97,6 +98,7 @@ public:
     void SetResultView(const std::shared_ptr<ResultView>& view) { result_view_ = view; }
     void SetGameBoard(const std::shared_ptr<GameBoard>& board) { game_board_ = board; }
     void SetBackGround(const std::shared_ptr<GameBackground>& backGround) { background_ = backGround; }
+    void SetGameBoardState(BoardState bordState);
 
     void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
     void SetTotalInterruptBlockCount(uint16_t count) { score_info_.totalInterruptBlockCount += count; }

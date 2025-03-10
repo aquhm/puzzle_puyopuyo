@@ -63,7 +63,7 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
         }
 
 #ifdef _APP_DEBUG_
-        //CreateBlocksFromFile();
+        CreateBlocksFromFile();
 #endif
 
         state_info_ = GameStateInfo{};

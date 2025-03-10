@@ -148,6 +148,7 @@ private:
     void HandleStopCombo(uint8_t connectionId, const StopComboPacket* packet);
     void HandleLose(uint8_t connectionId, const LoseGamePacket* packet);
     void HandleAttackInterrupt(uint8_t connectionId, const AttackInterruptPacket* packet);
+    void HandleAddInterruptBlock(uint8_t connectionId, const AddInterruptBlockPacket* packet);
     void HandleRestart(uint8_t connectionId, const RestartGamePacket* packet);
     void HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet);
     void HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet);
