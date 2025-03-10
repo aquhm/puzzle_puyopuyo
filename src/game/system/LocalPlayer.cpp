@@ -1014,7 +1014,7 @@ void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, ui
         score_info_.totalEnemyInterruptBlockCount = 0;
     }
        
-    NotifyEvent(std::make_shared<DefenseBlockEvent>(count, x, y, type));
+    NotifyEvent(std::make_shared<DefenseBlockEvent>(player_id_, count, x, y, type));
 }
 
 void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)

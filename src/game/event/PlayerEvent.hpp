@@ -82,9 +82,9 @@ private:
 class DefenseBlockEvent : public BasePlayerEvent
 {
 public:
-    DefenseBlockEvent(uint8_t playerId, int16_t blockCount)
+    DefenseBlockEvent(uint8_t playerId, int16_t blockCount, float x, float y, uint8_t type)
         : BasePlayerEvent(PlayerEventType::DefenseBlock, playerId),
-        block_count_(blockCount) {
+        block_count_(blockCount), x_(x), y_(y), type_(type) {
     }
 
     int16_t GetBlockCount() const { return block_count_; }
