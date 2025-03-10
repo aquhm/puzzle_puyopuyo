@@ -41,13 +41,11 @@ bool FontManager::Initialize()
 
 void FontManager::Update(float deltaTime) 
 {
-    // 폰트 매니저는 프레임별 업데이트가 필요 없음
-    (void)deltaTime;
 }
 
 void FontManager::Release() 
 {
-    fonts_.clear();  // unique_ptr가 자동으로 폰트 리소스 정리
+    fonts_.clear();
     TTF_Quit();
 }
 

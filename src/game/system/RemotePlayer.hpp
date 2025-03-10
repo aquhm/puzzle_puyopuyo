@@ -24,7 +24,6 @@ public:
     RemotePlayer();
     ~RemotePlayer() override;
 
-    // BasePlayer 인터페이스 구현
     bool Initialize(const std::span<const uint8_t>& blocktype1,
         const std::span<const uint8_t>& blocktype2,
         uint8_t playerIdx,
@@ -93,8 +92,6 @@ private:
 
 private:
         
-    bool has_ice_block_{ false };
-
     // 게임 데이터
     std::deque<std::shared_ptr<GroupBlock>> new_blocks_;
     std::set<std::shared_ptr<IceBlock>> ice_block_set_;

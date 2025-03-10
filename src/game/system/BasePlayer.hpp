@@ -36,7 +36,6 @@ public:
     BasePlayer();
     virtual ~BasePlayer();
 
-    // 기본 인터페이스
     void Update(float deltaTime) override;
     void Render() override;
     virtual void Reset();
@@ -78,7 +77,7 @@ public:
     virtual void SetGameQuit() { is_game_quit_ = true; }
 
     // 상태 조회
-    GamePhase GetGameState() const { return game_state_; }
+    GamePhase GetGameState() const { return state_info_.currentPhase; }
     uint8_t GetPlayerID() const { return player_id_; }
     int16_t GetTotalInterruptBlockCount() const { return score_info_.totalInterruptBlockCount; }
     int16_t GetTotalEnemyInterruptBlockCount() const { return score_info_.totalEnemyInterruptBlockCount; }
@@ -177,10 +176,7 @@ protected:
     // 게임 상태 변수
     uint8_t player_id_{ 0 };
     int16_t character_id_{ 0 };
-    bool is_game_quit_{ false };
-    GamePhase game_state_{ GamePhase::Standing };
-    GamePhase prev_game_state_{ GamePhase::Standing };
-    float play_time_{ 0.0f };
+    bool is_game_quit_{ false };   
 
     // 상태 정보
     GameStateInfo state_info_;

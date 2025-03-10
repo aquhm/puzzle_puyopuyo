@@ -26,7 +26,6 @@ class GameBackground;
 class InterruptBlockView;
 class ComboView;
 class ResultView;
-class IGamePlayer;
 class LocalPlayer;
 class RemotePlayer;
 class Player;

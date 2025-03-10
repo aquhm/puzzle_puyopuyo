@@ -68,8 +68,6 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
 
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
-        game_state_ = GamePhase::Playing;
-        prev_game_state_ = GamePhase::Playing;
 
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = GamePhase::Playing;
@@ -170,7 +168,6 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
             if (ProcessGameOver() == false)
             {
                 state_info_.currentPhase = GamePhase::Playing;
-                game_state_ = GamePhase::Playing;
                 CreateNextBlock();
             }            
         }
@@ -296,7 +293,6 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
             if (state_info_.shouldQuit)
             {
                 state_info_.currentPhase = GamePhase::GameOver;
-                game_state_ = GamePhase::GameOver;
             }
             else
             {
@@ -307,8 +303,6 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
                 state_info_.currentPhase = GamePhase::Playing;
                 state_info_.previousPhase = GamePhase::Playing;
-                game_state_ = GamePhase::Playing;
-                prev_game_state_ = GamePhase::Playing;
 
                 if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
                 {
@@ -405,7 +399,6 @@ bool LocalPlayer::CheckGameBlockState()
             NETWORK.StopComboAttack();
         }
         state_info_.currentPhase = GamePhase::GameOver;
-        game_state_ = GamePhase::GameOver;
         return true;
     }
 
@@ -413,8 +406,6 @@ bool LocalPlayer::CheckGameBlockState()
     {
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = GamePhase::Playing;
-        game_state_ = GamePhase::Playing;
-        prev_game_state_ = GamePhase::Playing;
         ResetComboState();
         return false;
     }
@@ -424,7 +415,6 @@ bool LocalPlayer::CheckGameBlockState()
     if (FindMatchedBlocks(matched_blocks_))
     {
         state_info_.previousPhase = state_info_.currentPhase;
-        prev_game_state_ = game_state_;
         HandlePhaseTransition(GamePhase::Shattering);
 
         CalculateScore();
@@ -464,14 +454,11 @@ bool LocalPlayer::CheckGameBlockState()
     if (state_info_.shouldQuit)
     {
         state_info_.currentPhase = GamePhase::Standing;
-        game_state_ = GamePhase::Standing;
     }
     else
     {
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = GamePhase::Playing;
-        game_state_ = GamePhase::Playing;
-        prev_game_state_ = GamePhase::Playing;
 
         if (score_info_.totalInterruptBlockCount > 0 &&
             !state_info_.isComboAttack && !state_info_.isDefending)
@@ -635,7 +622,7 @@ void LocalPlayer::UpdateInterruptBlockState()
     {
         score_info_.totalInterruptBlockCount -= score_info_.addInterruptBlockCount;
 
-        if (score_info_.totalInterruptBlockCount < 0)
+        if (score_info_.totalInterruptBlockCount <= 0)
         {
             score_info_.addInterruptBlockCount = std::abs(score_info_.totalInterruptBlockCount);
             state_info_.hasIceBlock = false;
@@ -1026,9 +1013,6 @@ void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)
 
     state_info_.previousPhase = state_info_.currentPhase;
     state_info_.currentPhase = newPhase;
-
-    prev_game_state_ = game_state_;
-    game_state_ = newPhase;
 }
 
 bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2)
@@ -1058,8 +1042,6 @@ bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std:
         score_info_ = ScoreInfo{};
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = GamePhase::Playing;
-        game_state_ = GamePhase::Playing;
-        prev_game_state_ = GamePhase::Playing;
 
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
@@ -1139,6 +1121,7 @@ void LocalPlayer::CreateBullet(Block* block)
 
     SDL_FPoint endPos;
 
+    LOGGER.Info("LocalPlayer::CreateBullet - state_info_.hasIceBlock = {}", state_info_.hasIceBlock);
     if (state_info_.hasIceBlock)
     {
         endPos =
@@ -1254,7 +1237,6 @@ bool LocalPlayer::ProcessGameOver()
         NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
 
 		state_info_.currentPhase = GamePhase::GameOver;
-		game_state_ = GamePhase::GameOver;
 
 		return true;
     }
@@ -1267,9 +1249,9 @@ void LocalPlayer::AddInterruptBlockCount(int16_t count, float x, float y, uint8_
     if (NETWORK.IsServer())
     {
 		state_info_.isComboAttack = true;
-        AddInterruptBlock(count);		
-
         score_info_.totalEnemyInterruptBlockCount = 0;
+
+        AddInterruptBlock(count);
 		
         NotifyEvent(std::make_shared<AttackInterruptBlockEvent>(player_id_, x, y, type));        
     }

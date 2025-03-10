@@ -35,7 +35,6 @@ protected:
     virtual void RespawnParticle(BgParticle& particle) {}
 };
 
-// Specialized particle systems
 class GrasslandBgParticleSystem : public BgParticleSystem
 {
 protected:

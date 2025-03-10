@@ -81,9 +81,9 @@ void BasePlayer::Reset()
     
     score_info_.reset();
     state_info_ = GameStateInfo{};
-    game_state_ = GamePhase::Playing;
-    prev_game_state_ = GamePhase::Playing;
-    play_time_ = 0.0f;
+	state_info_.currentPhase = GamePhase::Playing;
+	state_info_.previousPhase = GamePhase::Playing;
+	state_info_.playTime = 0.0f;
     is_game_quit_ = false;
 }
 
@@ -123,7 +123,6 @@ void BasePlayer::Release()
 
 void BasePlayer::Update(float deltaTime)
 {
-    play_time_ += deltaTime;
     state_info_.playTime += deltaTime;
 
     for (auto* obj : draw_objects_)
@@ -483,7 +482,7 @@ uint8_t BasePlayer::GetTypeBonus(size_t count) const
 
 uint8_t BasePlayer::GetMargin() const
 {
-    const float playTime = play_time_;
+    const float playTime = state_info_.playTime;
 
     for (const auto& margin : Constants::Game::SCORE_MARGINS)
     {
@@ -514,9 +513,7 @@ void BasePlayer::LoseGame(bool isWin)
         float result_y = 100;
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
-    
 
-    game_state_ = GamePhase::GameOver;
     state_info_.currentPhase = GamePhase::GameOver;
 
     SetGameQuit();
