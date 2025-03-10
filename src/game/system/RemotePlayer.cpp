@@ -43,36 +43,36 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
         character_id_ = characterIdx;
         background_ = background;
 
-        // ºí·Ï ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         InitializeNextBlocks(blockType1, blockType2);
 
-        // °ÔÀÓ º¸µå ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         if (!InitializeGameBoard(Constants::Board::PLAYER_POSITION_X, Constants::Board::POSITION_Y))
         {
             LOGGER.Error("Failed to initialize remote player game board");
             return false;
         }
 
-        // ÄÁÆ®·Ñ ºí·Ï ÃÊ±âÈ­
+        // ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         if (!InitializeControlBlock())
         {
             LOGGER.Error("Failed to initialize remote player control block");
             return false;
         }
 
-        // ºä ÃÊ±âÈ­
+        // ï¿½ï¿½ ï¿½Ê±ï¿½È­
         InitializeViews();
         if (interrupt_view_) 
         {
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
-        // °ÔÀÓ »óÅÂ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = state_info_.currentPhase;
 		state_info_.playTime = 0.0f;
 
-        // ÀÌº¥Æ® ¹ß¼Û - Àç½ÃÀÛ ÀÌº¥Æ®
+        // ï¿½Ìºï¿½Æ® ï¿½ß¼ï¿½ - ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ®
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
         return true;
@@ -115,10 +115,10 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
     try
     {
-        // ÃÊ±âÈ­
+        // ï¿½Ê±ï¿½È­
         InitializeNextBlocks(blockType1, blockType2);
 
-        // °ÔÀÓ º¸µå ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         if (!InitializeGameBoard(Constants::Board::PLAYER_POSITION_X, Constants::Board::POSITION_Y))
         {
             return false;
@@ -131,7 +131,7 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
         InitializeViews();
 
-        // °ÔÀÓ »óÅÂ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         state_info_.currentPhase = GamePhase::Playing;
         state_info_.previousPhase = state_info_.currentPhase;
 		state_info_.playTime = 0.0f;
@@ -273,7 +273,7 @@ void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& gro
     
     RemoveIceBlocks(x_index_list);
 
-    // ±×·ì Á¦°Å
+    // ï¿½×·ï¿½ ï¿½ï¿½ï¿½ï¿½
     group_it = equal_block_list_.erase(group_it);    
 }
 
@@ -320,7 +320,7 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
 void RemotePlayer::CreateNextBlock()
 {
-    // ¿ø°Ý ÇÃ·¹ÀÌ¾î´Â ³×Æ®¿öÅ©·ÎºÎÅÍ ¸í·ÉÀ» ¹Þ¾Æ ºí·ÏÀ» »ý¼ºÇÏ¹Ç·Î ±¸Çö ¾øÀ½
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½Å©ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void RemotePlayer::PlayNextBlock()
@@ -370,7 +370,7 @@ bool RemotePlayer::CheckGameBlockState()
     int current_count = 0;
     std::vector<Block*> current_blocks;
 
-    // °ÔÀÓ º¸µå ¼øÈ¸ÇÏ¸ç ¿¬°áµÈ ºí·Ï Ã¼Å©
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ã¼Å©
     for (int16_t y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y)
     {
         for (int16_t x = 0; x < Constants::Board::BOARD_X_COUNT; ++x)
@@ -413,14 +413,14 @@ bool RemotePlayer::CheckGameBlockState()
         }
     }
 
-    // ¸ÅÄ¡µÈ ºí·ÏÀÌ ÀÖ´Â °æ¿ì
+    // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½
     if (equal_block_list_.empty() == false)
     {
         HandleMatchedBlocks();
         return true;
     }
 
-    // ¸ÅÄ¡µÈ ºí·ÏÀÌ ¾ø´Â °æ¿ì
+    // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     ResetMatchState();
     return false;
 }
@@ -439,7 +439,7 @@ void RemotePlayer::HandleMatchedBlocks()
         score_info_.comboCount = 1;
     }
 
-    // ¸ÅÄ¡µÈ ºí·ÏµéÀ» ÆÄ±« »óÅÂ·Î ¼³Á¤
+    // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½Ä±ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½
     for (auto& block_group : equal_block_list_)
     {
         for (auto& block : block_group)
@@ -478,7 +478,7 @@ int16_t RemotePlayer::RecursionCheckBlock(int16_t x, int16_t y, int16_t directio
     const auto block_type = current_block->GetBlockType();
     int16_t equal_count = 0;
 
-    // ¹æÇâ°ú Ã¼Å© ¹æÇâ ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å© ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     const std::array<std::pair<std::pair<int16_t, int16_t>, Constants::Direction>, 4> check_dirs = { {
         {{-1, 0}, Constants::Direction::Left},
         {{1, 0}, Constants::Direction::Right},
@@ -496,7 +496,7 @@ int16_t RemotePlayer::RecursionCheckBlock(int16_t x, int16_t y, int16_t directio
         const int16_t check_x = x + dir.first;
         const int16_t check_y = y + dir.second;
 
-        // °æ°è Ã¼Å©
+        // ï¿½ï¿½ï¿½ Ã¼Å©
         if (check_x < 0 || check_x >= Constants::Board::BOARD_X_COUNT || check_y < 0 || check_y >= Constants::Board::BOARD_Y_COUNT)
         {
             continue;
@@ -688,13 +688,13 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
 void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
 {
-    // ¹æÇØ ºí·Ï Ä«¿îÆ® Áõ°¡
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
     score_info_.totalInterruptBlockCount += cnt;
 
-    // ÄÞº¸ °ø°Ý »óÅÂ ¼³Á¤
+    // ï¿½Þºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     state_info_.isComboAttack = true;
 
-    // UI ¾÷µ¥ÀÌÆ®
+    // UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     if (interrupt_view_)
     {
         interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
@@ -829,18 +829,23 @@ void RemotePlayer::CollectRemoveIceBlocks()
         return;
     }
 
-    for (const auto& clear_group : equal_block_list_)
+    for (const auto& group : equal_block_list_)
     {
-        for (const auto& block : clear_group)
+        for (const auto& block : group)
         {
-            if (!block)
+            if (block == nullptr)
             {
                 continue;
             }
 
             CollectAdjacentIceBlocks(block);
         }
-    }    
+    }
+
+    for (const auto& ice_block : ice_block_set_)
+    {
+        ice_block->SetState(BlockState::Destroying);
+    }
 }
 
 void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
@@ -848,26 +853,20 @@ void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
     const int x = block->GetPosIdx_X();
     const int y = block->GetPosIdx_Y();
 
-    // ¹æÇâ°ú Ã¼Å© ¹æÇâ ¼³Á¤
-    const std::array<std::pair<int, int>, 4> directions = { {
-        {-1, 0},  // Left
-        {1, 0},   // Right
-        {0, 1},   // Top
-        {0, -1}   // Bottom
+    const std::array<std::pair<int, int>, 4> directions =
+    { {
+        {x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}
     } };
 
-    for (const auto& [dx, dy] : directions)
+    for (const auto& [checkX, checkY] : directions)
     {
-        const int check_x = x + dx;
-        const int check_y = y + dy;
-
-        if (check_x < 0 || check_x >= Constants::Board::BOARD_X_COUNT ||
-            check_y < 0 || check_y >= Constants::Board::BOARD_Y_COUNT)
+        if (checkX < 0 || checkX >= Constants::Board::BOARD_X_COUNT ||
+            checkY < 0 || checkY >= Constants::Board::BOARD_Y_COUNT)
         {
             continue;
         }
 
-        Block* check_block = board_blocks_[check_y][check_x];
+        Block* check_block = board_blocks_[checkX][checkY];
         if (!check_block ||
             check_block->GetState() != BlockState::Stationary ||
             check_block->GetBlockType() != BlockType::Ice)
@@ -880,14 +879,16 @@ void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
             ice_block->SetState(BlockState::Destroying);
 
             auto found = std::find_if(block_list_.begin(), block_list_.end(),
-                [ice_block](const auto& block) {
+                [ice_block](const auto& block) 
+                {
                     return block.get() == ice_block;
                 });
 
-            if (found != block_list_.end()) {
+            if (found != block_list_.end()) 
+            {
                 ice_block_set_.insert(std::static_pointer_cast<IceBlock>(*found));
             }
-        }
+        }        
     }
 }
 
