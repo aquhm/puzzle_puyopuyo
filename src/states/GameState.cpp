@@ -1036,6 +1036,11 @@ void GameState::OnPlayerEvent(const std::shared_ptr<BasePlayerEvent>& event)
         HandleAttackInterruptBlock(std::dynamic_pointer_cast<AttackInterruptBlockEvent>(event));
         break;
     }
+    case PlayerEventType::DefenseBlock:
+    {
+        HandleDefenseBlock(std::dynamic_pointer_cast<DefenseBlockEvent>(event));
+        break;
+    }
     }
 }
 
@@ -1072,5 +1077,13 @@ void GameState::HandleAttackInterruptBlock(const std::shared_ptr<AttackInterrupt
     {
         remote_player_->AttackInterruptBlock(event->GetX(), event->GetY(), event->GetType());
 		remote_player_->UpdateInterruptBlock(0);
+    }
+}
+
+void GameState::HandleDefenseBlock(const std::shared_ptr<DefenseBlockEvent>& event)
+{
+    if (remote_player_)
+    {
+        remote_player_->DefenseInterruptBlockCount(event->GetBlockCount(), event->GetX(), event->GetY(), event->GetType());
     }
 }

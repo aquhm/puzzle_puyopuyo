@@ -162,6 +162,7 @@ private:
     void HandleGameRestart(const std::shared_ptr<GameRestartEvent>& event);
     void HandleAddInterruptBlock(const std::shared_ptr<AddInterruptBlockEvent>& event);
     void HandleAttackInterruptBlock(const std::shared_ptr<AttackInterruptBlockEvent>& event);
+    void HandleDefenseBlock(const std::shared_ptr<DefenseBlockEvent>& event);
 
 private:
     // 플레이어 구성 요소

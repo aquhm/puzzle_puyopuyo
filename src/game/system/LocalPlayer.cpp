@@ -699,6 +699,8 @@ void LocalPlayer::GenerateIceBlocks()
     }
 
     HandlePhaseTransition(GamePhase::IceBlocking);
+
+    state_info_.defenseCount = 0;
 }
 
 void LocalPlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID)
@@ -1005,21 +1007,14 @@ void LocalPlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 
 void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
+    score_info_.totalEnemyInterruptBlockCount -= count;
 
-    //TODO total_enemy_interrupt_block_count_
-    score_info_.totalInterruptBlockCount -= count;
-
-    if (score_info_.totalInterruptBlockCount < 0)
+    if (score_info_.totalEnemyInterruptBlockCount < 0)
     {
-        score_info_.totalInterruptBlockCount = 0;
+        score_info_.totalEnemyInterruptBlockCount = 0;
     }
-
-    if (interrupt_view_)
-    {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
-    }
-
-    //NETWORK.DefenseInterruptBlock(count, x, y, type);
+       
+    NotifyEvent(std::make_shared<DefenseBlockEvent>(count, x, y, type));
 }
 
 void LocalPlayer::HandlePhaseTransition(GamePhase newPhase)

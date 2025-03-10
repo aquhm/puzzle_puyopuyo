@@ -6,7 +6,8 @@ enum class PlayerEventType
     GameOver,    
     GameRestart,
     AddInterruptBlock,
-    AttackInterruptBlock
+    AttackInterruptBlock,
+    DefenseBlock
 };
 
 class BasePlayerEvent
@@ -72,6 +73,27 @@ public:
     uint8_t GetType() const { return type_; }
 
 private:
+    float x_;
+    float y_;
+    uint8_t type_;
+};
+
+// 방어 블록 이벤트
+class DefenseBlockEvent : public BasePlayerEvent
+{
+public:
+    DefenseBlockEvent(uint8_t playerId, int16_t blockCount)
+        : BasePlayerEvent(PlayerEventType::DefenseBlock, playerId),
+        block_count_(blockCount) {
+    }
+
+    int16_t GetBlockCount() const { return block_count_; }
+    float GetX() const { return x_; }
+    float GetY() const { return y_; }
+    uint8_t GetType() const { return type_; }
+
+private:
+    int16_t block_count_;
     float x_;
     float y_;
     uint8_t type_;
