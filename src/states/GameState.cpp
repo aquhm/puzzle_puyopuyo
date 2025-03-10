@@ -1073,5 +1073,9 @@ void GameState::HandleAddInterruptBlock(const std::shared_ptr<AddInterruptBlockE
 
 void GameState::HandleAttackInterruptBlock(const std::shared_ptr<AttackInterruptBlockEvent>& event)
 {
-
+    if (remote_player_)
+    {
+        remote_player_->AttackInterruptBlock(event->GetX(), event->GetY(), event->GetType());
+		remote_player_->UpdateInterruptBlock(0);
+    }
 }
