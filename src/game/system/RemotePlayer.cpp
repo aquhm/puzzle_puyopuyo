@@ -754,7 +754,6 @@ void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTextu
     ice_block->SetPlayerID(player_id_);
 
     block_list_.push_back(ice_block);
-    ice_block_set_.insert(ice_block);
 }
 
 void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
