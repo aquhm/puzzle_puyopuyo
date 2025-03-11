@@ -288,57 +288,6 @@ void BasePlayer::UpdateLinkState(Block* block)
     block->SetLinkState(static_cast<LinkState>(linkState));
 }
 
-void BasePlayer::CreateBullet(Block* block)
-{
-    if (!block)
-    {
-        LOGGER.Error("CreateBullet: block is null");
-        return;
-    }
-
-    float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
-        Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
-
-    SDL_FPoint startPos
-    {
-        boardPosX + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
-        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
-    };
-
-    SDL_FPoint endPos;
-    if (state_info_.hasIceBlock)
-    {
-        endPos =
-        {
-            GAME_APP.GetWindowWidth() - (boardPosX + (Constants::Board::WIDTH / 2)),
-            Constants::Board::POSITION_Y
-        };
-    }
-    else
-    {
-        endPos =
-        {
-            boardPosX + (Constants::Board::WIDTH / 2),
-            Constants::Board::POSITION_Y
-        };
-    }
-
-    auto bullet = std::make_shared<BulletEffect>();
-    if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
-    {
-        LOGGER.Error("Failed to create bullet effect");
-        return;
-    }
-
-    bullet->SetAttacking(!state_info_.hasIceBlock);
-    bullet_list_.push_back(bullet);
-
-    if (game_board_ && game_board_->GetState() != BoardState::Lose)
-    {
-        game_board_->SetState(BoardState::Attacking);
-    }
-}
-
 void BasePlayer::UpdateBullets(float delta_time)
 {
     auto it = bullet_list_.begin();

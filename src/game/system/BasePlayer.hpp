@@ -130,7 +130,7 @@ protected:
     uint8_t GetMargin() const;
 
     // 총알 및 이펙트 관련 메서드
-    virtual void CreateBullet(Block* block);
+    virtual void CreateBullet(Block* block) = 0;
     void UpdateBullets(float delta_time);
     void NotifyEvent(const std::shared_ptr<BasePlayerEvent>& event);
 

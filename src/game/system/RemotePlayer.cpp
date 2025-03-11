@@ -716,3 +716,51 @@ void RemotePlayer::Reset()
 
     BasePlayer::Reset();
 }
+
+void RemotePlayer::CreateBullet(Block* block)
+{
+    if (!block)
+    {
+        LOGGER.Error("CreateBullet: block is null");
+        return;
+    }
+
+    SDL_FPoint startPos
+    {
+        Constants::Board::PLAYER_POSITION_X + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
+        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
+    };
+
+    SDL_FPoint endPos;
+    if (state_info_.hasIceBlock)
+    {
+        endPos =
+        {
+            GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
+            Constants::Board::POSITION_Y
+        };
+    }
+    else
+    {
+        endPos =
+        {
+            Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
+            Constants::Board::POSITION_Y
+        };
+    }
+
+    auto bullet = std::make_shared<BulletEffect>();
+    if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
+    {
+        LOGGER.Error("Failed to create bullet effect");
+        return;
+    }
+
+    bullet->SetAttacking(!state_info_.hasIceBlock);
+    bullet_list_.push_back(bullet);
+
+    if (game_board_ && game_board_->GetState() != BoardState::Lose)
+    {
+        game_board_->SetState(BoardState::Attacking);
+    }
+}

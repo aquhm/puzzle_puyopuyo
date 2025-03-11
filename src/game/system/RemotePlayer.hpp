@@ -35,6 +35,7 @@ public:
     void CreateNextBlock() override;
     void PlayNextBlock() override;
     bool CheckGameBlockState() override;
+    void CreateBullet(Block* block) override;
 
     void MoveBlock(uint8_t moveType, float position) override;
     void RotateBlock(uint8_t rotateType, bool horizontalMoving) override;
