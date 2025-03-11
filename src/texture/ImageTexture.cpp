@@ -75,7 +75,7 @@ bool ImageTexture::Load(const std::string& path)
 
         SDL_DestroySurface(loadedSurface);
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
         SDL_DestroySurface(loadedSurface);
     }

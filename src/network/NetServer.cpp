@@ -2,6 +2,7 @@
 
 #include <format>
 #include <process.h>
+#include "../utils/Logger.hpp"
 
 NetServer::NetServer() :
     clients_(std::make_unique<ClientInfo[]>(Constants::Network::MAX_CLIENT))
@@ -114,7 +115,7 @@ bool NetServer::CreateWorkerThread()
     for (size_t i = 0; i < Constants::Network::MAX_WORKERTHREAD; ++i) 
     {
         unsigned int thread_id = 0;
-        worker_threads_[i] = (HANDLE)_beginthreadex(  // static_cast 대신 C 스타일 캐스팅 사용
+        worker_threads_[i] = (HANDLE)_beginthreadex(
             nullptr,
             0,
             &CallWorkerThread,  // & 연산자 추가
@@ -135,7 +136,7 @@ bool NetServer::CreateWorkerThread()
 bool NetServer::CreateAccepterThread() 
 {
     unsigned int thread_id = 0;
-    accepter_thread_ = (HANDLE)_beginthreadex(  // static_cast 대신 C 스타일 캐스팅 사용
+    accepter_thread_ = (HANDLE)_beginthreadex(
         nullptr,
         0,
         &CallAccepterThread,  // & 연산자 추가
@@ -269,7 +270,10 @@ void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD 
     // 패킷 크기 정보보다 작은 경우 재수신
     if (overlapped->receive_size < Constants::Network::PACKET_SIZE_LEN) 
     {
-        BindRecv(client, processed_pos, overlapped->receive_size);
+        if (BindRecv(client, processed_pos, overlapped->receive_size) == false)
+        {
+            LOGGER.Error("BindRecv Failed");
+        }
         return;
     }
 
@@ -320,18 +324,21 @@ void NetServer::ProcessRecv(ClientInfo* client, OverlappedEx* overlapped, DWORD 
                 }
                 else 
                 {
-                    break;  // 패킷이 완전히 수신되지 않음
+                    break;
                 }
             }
             else 
             {
-                break;  // 패킷 크기 정보가 없음
+                break;
             }
         }
     }
 
     // 다음 수신 작업 등록
-    BindRecv(client, processed_pos, remain_size);
+    if (BindRecv(client, processed_pos, remain_size) == false)
+    {
+		LOGGER.Error("BindRecv Failed");
+    }
 }
 
 void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD bytes) 
@@ -341,7 +348,6 @@ void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD 
         return;
     }
 
-    // 패킷 타입 확인 (디버깅용)
     uint16_t packet_type = 0;
     if (overlapped->wsa_buf.buf && overlapped->wsa_buf.len >= Constants::Network::PACKET_SIZE_LEN + sizeof(uint16_t)) 
     {
@@ -350,7 +356,6 @@ void NetServer::ProcessSend(ClientInfo* client, OverlappedEx* overlapped, DWORD 
 
     // 전송 완료된 바이트 수를 누적
     overlapped->remain_size += bytes;
-
 
     // 전송 완료된 데이터를 큐에서 제거
     std::shared_ptr<SendQueueData> temp_buffer;
@@ -396,25 +401,21 @@ bool NetServer::BindRecv(ClientInfo* client, char* processed_pos, int remain_siz
 
     char* buffer = nullptr;
 
-    // 최초 호출인 경우(processed_pos가 nullptr)
     if (processed_pos == 0 && remain_size == 0) 
     {
-        // 직접 버퍼 요청
         buffer = client->recv_buffer.GetBuffer(Constants::Network::MAX_PACKET_SIZE);
     }
     else 
     {
-        // 기존 로직
         int move_pos = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos()) + remain_size;
         int process_move = static_cast<int>(processed_pos - client->recv_buffer.GetCurrentBeginPos());
 
-        // 확인 - 계산된 값이 올바른지
-        if (move_pos < 0 || process_move < 0) {
-            // 문제가 있으면 직접 버퍼 요청
+        if (move_pos < 0 || process_move < 0) 
+        {
             buffer = client->recv_buffer.GetBuffer(Constants::Network::MAX_PACKET_SIZE);
         }
-        else {
-            // 기존대로 처리
+        else 
+        {
             buffer = client->recv_buffer.GetBuffer(move_pos, process_move, Constants::Network::MAX_PACKET_SIZE);
         }
     }
@@ -474,7 +475,6 @@ bool NetServer::SendMsg(ClientInfo* client, std::span<const char> msg)
     client->send_overlapped.wsa_buf.len = static_cast<ULONG>(send_data->buffer.size());
     client->send_overlapped.begin_buf = send_data->buffer.data();
 
-    // 큐에 저장 (공유 포인터로 참조 카운트 유지)
     client->send_queue.push(send_data);
 
     ZeroMemory(&client->send_overlapped.overlapped, sizeof(OVERLAPPED));

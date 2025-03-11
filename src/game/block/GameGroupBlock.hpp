@@ -30,7 +30,7 @@ class GameGroupBlock : public GroupBlock
 {
 public:
     GameGroupBlock();
-    ~GameGroupBlock() override = default;
+    ~GameGroupBlock() override;
 
     
     GameGroupBlock(const GameGroupBlock&) = delete;
@@ -40,6 +40,7 @@ public:
 
 
     void Update(float deltaTime) override;
+    void Release() override;
     void SetPosXY(float x, float y) override;
     void SetPosX(float x) override;
     void SetPosY(float y) override;

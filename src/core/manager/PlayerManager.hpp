@@ -43,6 +43,8 @@ public:
     [[nodiscard]] const std::shared_ptr<Player>& GetMyPlayer() const { return my_player_; }
     [[nodiscard]] CriticalSection& GetCriticalSection() { return critical_section_; }
     [[nodiscard]] PlayerMap& GetPlayers() { return players_; }
+    [[nodiscard]] bool IsLocalPlayer(uint8_t playerId);
+    [[nodiscard]] bool IsRemotePlayer(uint8_t playerId);
 
 
 private:

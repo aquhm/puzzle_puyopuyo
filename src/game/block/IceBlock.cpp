@@ -3,8 +3,8 @@
 #include "../../states/GameState.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../texture/ImageTexture.hpp"
-#include "../../game/system/GamePlayer.hpp"
 #include "../../utils/RectUtil.hpp"
+#include "../../utils/Logger.hpp"
 
 
 void IceBlock::SetState(BlockState state) 
@@ -73,11 +73,9 @@ void IceBlock::UpdateDestroying(float deltaTime)
 
 void IceBlock::UpdateDownMoving(float deltaTime) 
 {
-    float fallSpeed = deltaTime * (static_cast<float>(Constants::Board::BOARD_Y_COUNT) +
-        Constants::Block::SHATTERING_DOWN_SPEED -
-        static_cast<float>(indexY_));
+    float fallSpeed = deltaTime * static_cast<float>(Constants::Board::BOARD_Y_COUNT - indexY_);
 
-    downVelocity_ += fallSpeed;
+    downVelocity_ += fallSpeed * 0.1f;
     position_.y += downVelocity_;
     SetY(position_.y);
 
@@ -85,7 +83,7 @@ void IceBlock::UpdateDownMoving(float deltaTime)
 
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
     {
-        blocks = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
+        blocks = gameState->GetGameBlocks(playerID_);
     }
 
     if (!blocks)
@@ -96,7 +94,7 @@ void IceBlock::UpdateDownMoving(float deltaTime)
     bool hasCollision = false;
     bool canMove = true;
 
-    SDL_Rect targetRect, controlRect;
+    SDL_Rect targetRect, controlRect, resultRect;
 
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y) 
     {
@@ -106,15 +104,14 @@ void IceBlock::UpdateDownMoving(float deltaTime)
             continue;
         }
 
-
         if (block->GetState() == BlockState::Stationary) 
         {
             RectUtils::ConvertFRectToRect(destination_rect_, &controlRect);
             RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
-            if (SDL_HasRectIntersection(&controlRect, &targetRect))
+            if (SDL_GetRectIntersection(&controlRect, &targetRect, &resultRect))
             {
-                SetY(block->GetY() - Constants::Block::SIZE);
+                SetY(resultRect.y - Constants::Block::SIZE);
                 canMove = false;
                 hasCollision = true;
                 break;
@@ -132,14 +129,24 @@ void IceBlock::UpdateDownMoving(float deltaTime)
     {
         if (isInitialized_) 
         {
-            blocks[indexY_][indexX_] = nullptr;
+            if (indexY_ >= 0 && indexY_ < Constants::Board::BOARD_Y_COUNT &&
+                indexX_ >= 0 && indexX_ < Constants::Board::BOARD_X_COUNT)
+            {
+                blocks[indexY_][indexX_] = nullptr;
+            }
         }
 
-        indexY_ = (Constants::Board::BOARD_Y_COUNT - 2) - static_cast<int>(position_.y / Constants::Block::SIZE);
-        blocks[indexY_][indexX_] = this;
-        isInitialized_ = true;
+        int newIndexY = (Constants::Board::BOARD_Y_COUNT - 2) - static_cast<int>(position_.y / Constants::Block::SIZE);
+        newIndexY = std::max<int>(0, std::min<int>(newIndexY, Constants::Board::BOARD_Y_COUNT - 1));
 
-        SetState(BlockState::Stationary);
+        if (newIndexY >= 0 && newIndexY < Constants::Board::BOARD_Y_COUNT &&
+            indexX_ >= 0 && indexX_ < Constants::Board::BOARD_X_COUNT)
+        {
+            blocks[newIndexY][indexX_] = this;
+            indexY_ = newIndexY;
+            isInitialized_ = true;
+            SetState(BlockState::Stationary);
+        }       
     }
 }
 

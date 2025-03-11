@@ -59,7 +59,7 @@ struct GameInitPacket : PacketBase
 {
     uint8_t player_id;
     uint8_t map_id;
-    uint8_t character_id;
+    uint16_t character_id;
     std::array<uint8_t, 2> block1;
     std::array<uint8_t, 2> block2;
 
@@ -237,6 +237,15 @@ struct StartGamePacket : PacketBase
     }
 };
 
+struct GameOverPacket : PacketBase
+{
+    GameOverPacket()
+    {
+        type = static_cast<uint16_t>(PacketType::GameOver);
+        size = sizeof(GameOverPacket);
+    }
+};
+
 struct RestartGamePacket : PacketBase
 {
     uint8_t player_id;
@@ -254,7 +263,7 @@ struct RestartGamePacket : PacketBase
 struct InitializePlayerPacket : PacketBase
 {
     uint8_t player_id;
-    uint8_t character_idx;
+    uint16_t character_idx;
     std::array<uint8_t, 2> block_type1;
     std::array<uint8_t, 2> block_type2;
 
@@ -338,7 +347,7 @@ struct PlayerInfoPacket : PacketBase
 struct AddPlayerPacket : PacketBase
 {
     uint8_t player_id;
-    uint8_t character_id;
+    uint16_t character_id;
 
     AddPlayerPacket()
     {
@@ -371,7 +380,7 @@ struct ConnectLobbyPacket : PacketBase
 
 struct DefenseResultInterruptBlockCountPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t player_id;
     uint16_t count;
 
     DefenseResultInterruptBlockCountPacket()
@@ -383,7 +392,7 @@ struct DefenseResultInterruptBlockCountPacket : PacketBase
 
 struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t player_id;
     uint16_t count;
     uint16_t attackerCount;
 

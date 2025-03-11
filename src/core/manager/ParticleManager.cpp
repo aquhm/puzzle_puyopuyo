@@ -60,15 +60,7 @@ void ParticleManager::Update(float deltaTime)
 
 void ParticleManager::Render() 
 {
-    if (!isInitialized_ || !isDrawEnabled_)
-    {
-        return;
-    }
 
-    for (const auto& container : containers_) 
-    {
-        container->Render();
-    }
 }
 
 void ParticleManager::RenderForPlayer(uint8_t playerId) 

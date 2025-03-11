@@ -44,6 +44,8 @@ public:
         return "Room";
     }
 
+    [[nodiscard]] EditBox* GetChatBox() const { return ui_elements_.chat_box.get(); }
+
 private:
 
     bool LoadBackgrounds();
@@ -66,9 +68,6 @@ private:
     void RenderBackground() const;
     void RenderUI() const;
     void UpdateBackgroundAnimation(float deltaTime);
-
-    [[nodiscard]] EditBox* GetChatBox() const { return ui_elements_.chat_box.get(); }
-
     void InitializePacketHandlers();
 
 private:

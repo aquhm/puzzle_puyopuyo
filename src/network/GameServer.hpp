@@ -13,6 +13,7 @@
 #include "../core/GameApp.hpp"
 #include "../core/manager/PlayerManager.hpp"
 #include "../network/player/Player.hpp"
+#include "../utils/Logger.hpp"
 
 #include <queue>
 #include <memory>
@@ -130,7 +131,9 @@ void GameServer::BroadcastPacket(const PacketType& packet, uint8_t exclude_id)
             auto packetBytes = packet.ToBytes();
             auto packet_data = std::span<const char>{ packetBytes.data(), packetBytes.size()};
 
-            SendMsg(player->GetNetInfo(), packet_data);
+            if (SendMsg(player->GetNetInfo(), packet_data) == false)
+            {
+            }
         }
     }
 }

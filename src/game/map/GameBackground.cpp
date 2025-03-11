@@ -5,7 +5,8 @@
 #include "../../core/GameApp.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../states/GameState.hpp"
-#include "../../game/system/GamePlayer.hpp"
+#include "../../game/system/LocalPlayer.hpp"
+#include "../../game/system/RemotePlayer.hpp"
 #include "../particles/BgParticleSystem.hpp"
 #include "../../core/GameUtils.hpp"
 #include "../../utils/Logger.hpp"
@@ -22,13 +23,13 @@ GameBackground::GameBackground()
 {
     const float deltaY = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y - Constants::GroupBlock::NEXT_BLOCK_POS_Y;
     const float deltaX = Constants::GroupBlock::NEXT_BLOCK_POS_X - Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X;
-    const float next_angle = GameUtils::CalculateAngle(deltaY, deltaX);
-    GameUtils::SetDirectionVector(next_angle, direction_vector_.x, direction_vector_.y);
+    const float next_angle = GameUtils::CalculateAngleInDegrees(deltaY, deltaX);
+    GameUtils::SetDirectionVectorFromDegrees(next_angle, direction_vector_.x, direction_vector_.y);
 
     const float playerDeltaY = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y - Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y;
     const float playerDeltaX = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X - Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X;
-    const float player_next_angle = GameUtils::CalculateAngle(playerDeltaY, playerDeltaX);
-    GameUtils::SetDirectionVector(player_next_angle, player_direction_vector_.x, player_direction_vector_.y);    
+    const float player_next_angle = GameUtils::CalculateAngleInDegrees(playerDeltaY, playerDeltaX);
+    GameUtils::SetDirectionVectorFromDegrees(player_next_angle, player_direction_vector_.x, player_direction_vector_.y);
 }
 
 bool GameBackground::Initialize() 
@@ -213,7 +214,10 @@ void GameBackground::UpdateBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    gameState->DestroyNextBlock();                  
+                    if (auto& localPlayer = gameState->GetLocalPlayer())
+                    {
+                        localPlayer->PlayNextBlock();
+                    }
                 }
             }
         }
@@ -248,7 +252,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
     }
 
     if (small_block)
-    {
+    {        
         float x = small_block->GetX();
         float y = small_block->GetY();
 
@@ -261,7 +265,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         width += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
         height += delta_time * Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
 
-        x = std::max<float>(x, static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X));
+        x = std::min<float>(x, static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X));
         y = std::max<float>(y, static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y));
         width = std::min<float>(width, static_cast<float>(Constants::Block::SIZE));
         height = std::min<float>(height, static_cast<float>(Constants::Block::SIZE));
@@ -269,7 +273,7 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
         small_block->SetPosXY(x, y);
         small_block->SetScale(width, height);
 
-        if (static_cast<int>(x) == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X && 
+        if (static_cast<int>(x) == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X &&
             static_cast<int>(y) == Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y &&
             width == Constants::Block::SIZE && height == Constants::Block::SIZE)
         {
@@ -293,9 +297,9 @@ void GameBackground::UpdatePlayerBlockAnimations(float delta_time)
 
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
                 {
-                    if (auto player = gameState->GetPlayer())
+                    if (auto& remotePlayer = gameState->GetRemotePlayer())
                     {
-                        player->DestroyNextBlock();
+                        remotePlayer->PlayNextBlock();
                     }
                 }
             }

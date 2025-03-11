@@ -5,7 +5,9 @@
 #include "../../core/GameApp.hpp"
 #include "../../core/manager/StateManager.hpp"
 #include "../../states/GameState.hpp"
-#include "../system/GamePlayer.hpp"
+#include "../system/LocalPlayer.hpp"
+#include "../system/RemotePlayer.hpp"
+
 
 #include <stdexcept>
 #include "../../utils/RectUtil.hpp"
@@ -232,7 +234,7 @@ void Block::UpdateDownMoving(float deltaTime)
 
     if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
     {        
-        blocks = (playerID_ != 0) ? gameState->GetGameBlocks(): gameState->GetPlayer()->GetGameBlocks();
+        blocks = gameState->GetGameBlocks(playerID_);
     }
 
     if (!blocks)
@@ -297,6 +299,8 @@ void Block::Render()
     {
         return;
     }
+
+    texture_->SetAlpha(255);
 
     if (isScaled_) 
     {
@@ -428,49 +432,44 @@ void Block::SetState(BlockState state)
 void Block::UpdateLinkStateForDownMoving()
 {
     // 현재 블록이 좌우 연결 상태를 가지고 있는지 확인
-    const bool hasHorizontalLinks = (static_cast<int>(linkState_) &
-        (static_cast<int>(LinkState::Left) |
-            static_cast<int>(LinkState::Right))) != 0;
+    const bool hasHorizontalLinks = (static_cast<int>(linkState_) & (static_cast<int>(LinkState::Left) | static_cast<int>(LinkState::Right))) != 0;
 
     // 수평 링크가 있는 경우에만 이웃 블록 상태 업데이트 수행
     if (hasHorizontalLinks)
     {
         Block* (*gameBoard)[Constants::Board::BOARD_X_COUNT] = nullptr;
-
-        // 게임 보드에서 연결된 블록들의 링크 상태 업데이트
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            gameBoard = (playerID_ != 0) ? gameState->GetGameBlocks() : gameState->GetPlayer()->GetGameBlocks();
+            gameBoard = gameState->GetGameBlocks(playerID_);
         }
 
         if (gameBoard)
         {
             // 좌측 블록 체크
-            if (indexX_ > 0 && (static_cast<int>(linkState_) & static_cast<int>(LinkState::Left)))
+            if (indexX_ > 0)
             {
                 if (auto leftBlock = gameBoard[indexY_][indexX_ - 1])
                 {
                     if (leftBlock->GetBlockType() == blockType_)
                     {
-                        // 좌측 블록의 우측 링크 제거
+                        // 이전 코드와 같이 XOR 연산 사용
                         auto leftLinkState = leftBlock->GetLinkState();
-                        leftLinkState = static_cast<LinkState>(static_cast<int>(leftLinkState) &  ~static_cast<int>(LinkState::Right));
+                        leftLinkState = static_cast<LinkState>(static_cast<int>(leftLinkState) ^ static_cast<int>(LinkState::Right));
                         leftBlock->SetLinkState(leftLinkState);
                     }
                 }
             }
 
             // 우측 블록 체크
-            if (indexX_ < Constants::Board::BOARD_X_COUNT - 1 &&
-                (static_cast<int>(linkState_) & static_cast<int>(LinkState::Right)))
+            if (indexX_ < Constants::Board::BOARD_X_COUNT - 1)
             {
                 if (auto rightBlock = gameBoard[indexY_][indexX_ + 1])
                 {
                     if (rightBlock->GetBlockType() == blockType_)
                     {
-                        // 우측 블록의 좌측 링크 제거
+                        // 이전 코드와 같이 XOR 연산 사용
                         auto rightLinkState = rightBlock->GetLinkState();
-                        rightLinkState = static_cast<LinkState>(static_cast<int>(rightLinkState) & ~static_cast<int>(LinkState::Left));
+                        rightLinkState = static_cast<LinkState>(static_cast<int>(rightLinkState) ^ static_cast<int>(LinkState::Left));
                         rightBlock->SetLinkState(rightLinkState);
                     }
                 }
@@ -478,7 +477,7 @@ void Block::UpdateLinkStateForDownMoving()
         }
     }
 
-    // 항상 실행 - 기존 코드와 동일한 동작 보장
+    // 현재 블록의 링크 상태 초기화
     SetLinkState(LinkState::Normal);
 }
 

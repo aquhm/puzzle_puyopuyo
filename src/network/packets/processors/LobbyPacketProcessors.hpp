@@ -12,10 +12,9 @@
 #include "../../../core/manager/StateManager.hpp"
 #include "../../../states/CharacterSelectState.hpp"
 #include "../../../core/manager/PlayerManager.hpp"
-#include "../../../states/GameState.hpp"
+#include "../../../states/RoomState.hpp"
 #include "../../../network/NetworkController.hpp"
 #include "../../../network/player/Player.hpp"
-#include "../../../game/system/GamePlayer.hpp"
 #include "../../../ui/EditBox.hpp"
 
 
@@ -101,9 +100,9 @@ private:
             return;
         }
 
-        if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
+        if (auto roomState = static_cast<RoomState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (auto& edit_box = gameState->GetEditBox())
+            if (const auto& edit_box = roomState->GetChatBox())
             {
                 edit_box->InputContent("새로운 사용자가 입장하였습니다.");
             }
@@ -121,9 +120,9 @@ public:
         const auto& chat_packet = static_cast<const ChatMessagePacket&>(packet);
 
            
-        if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
+        if (auto roomState = dynamic_cast<RoomState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (const auto& edit_box = gameState->GetEditBox())
+            if (const auto edit_box = roomState->GetChatBox())
             {
                 edit_box->InputContent(chat_packet.message.data());
             }

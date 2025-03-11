@@ -16,17 +16,14 @@ public:
     T x{ 0 };
     T y{ 0 };
 
-    // Constructors
     constexpr Vector2() noexcept = default;
     constexpr Vector2(T x, T y) noexcept : x(x), y(y) {}
 
-    // Copy/Move constructors
     constexpr Vector2(const Vector2&) noexcept = default;
     constexpr Vector2& operator=(const Vector2&) noexcept = default;
     constexpr Vector2(Vector2&&) noexcept = default;
     constexpr Vector2& operator=(Vector2&&) noexcept = default;
 
-    // Utility methods
     [[nodiscard]] constexpr T LengthSquared() const noexcept 
     {
         return x * x + y * y;
@@ -91,7 +88,6 @@ public:
         return result;
     }
 
-    // Static utility methods
     [[nodiscard]] static Vector2 Zero() noexcept { return Vector2(); }
     [[nodiscard]] static Vector2 One() noexcept { return Vector2(1, 1); }
     [[nodiscard]] static Vector2 Up() noexcept { return Vector2(0, -1); }
@@ -99,13 +95,11 @@ public:
     [[nodiscard]] static Vector2 Left() noexcept { return Vector2(-1, 0); }
     [[nodiscard]] static Vector2 Right() noexcept { return Vector2(1, 0); }
 
-    // Lerp (Linear interpolation)
     [[nodiscard]] static Vector2 Lerp(const Vector2& a, const Vector2& b, T t) noexcept 
     {
         return a + (b - a) * std::clamp(t, T(0), T(1));
     }
 
-    // Operators
     constexpr Vector2 operator+(const Vector2& other) const noexcept 
     {
         return Vector2(x + other.x, y + other.y);
@@ -166,12 +160,10 @@ public:
     }
 };
 
-// Type aliases for common uses
 using Vector2f = Vector2<float>;
 using Vector2d = Vector2<double>;
 using Vector2i = Vector2<int>;
 
-// Non-member operators for scalar multiplication
 template<Numeric T>
 constexpr Vector2<T> operator*(T scalar, const Vector2<T>& vector) noexcept 
 {

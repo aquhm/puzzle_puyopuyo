@@ -45,15 +45,6 @@
     <ClInclude Include="src\states\GameState.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\states\GameStateTransition.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ui\GameUI.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="src\resource\ObjectPool.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="src\states\LoginState.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -219,9 +210,6 @@
     <ClInclude Include="src\network\NetworkController.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\system\GamePlayer.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\WindowsMessageHandler.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -241,6 +229,24 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\RectUtil.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\system\BasePlayer.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\system\LocalPlayer.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\system\RemotePlayer.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\TimerScheduler.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\event\PlayerEvent.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\event\IPlayerEventListener.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -377,9 +383,6 @@
     <ClCompile Include="src\network\NetworkController.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\system\GamePlayer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\WindowsMessageHandler.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -387,6 +390,15 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="src\network\PacketProcessor.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\system\LocalPlayer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\system\RemotePlayer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\system\BasePlayer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

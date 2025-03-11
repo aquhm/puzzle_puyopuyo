@@ -5,6 +5,7 @@
 #include <format>
 #include <span>
 #include "NetworkController.hpp"
+#include "../utils/Logger.hpp"
 
 NetClient::~NetClient()
 {
@@ -302,14 +303,20 @@ void NetClient::EventPollingThreadFunc()
                     if (network_events.iErrorCode[FD_READ_BIT] == 0) 
                     {
                         // 읽기 이벤트 처리
-                        ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_READ));
+                        if (ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_READ)) == false)
+                        {
+                            LOGGER.Error("ProcessRecv Failed");
+                        }
                     }
                 }
 
                 if (network_events.lNetworkEvents & FD_CLOSE) 
                 {
                     // 연결 종료 이벤트 처리
-                    ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_CLOSE));
+                    if (ProcessRecv(static_cast<WPARAM>(socket_.get()), static_cast<LPARAM>(FD_CLOSE)) == false)
+                    {
+						LOGGER.Error("ProcessRecv Failed");
+                    }
                 }
                 //// SDL 이벤트 생성
                 //SDL_Event sdl_event;

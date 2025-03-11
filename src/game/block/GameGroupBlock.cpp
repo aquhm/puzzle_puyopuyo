@@ -2,13 +2,15 @@
 
 #include "../../states/GameState.hpp"
 #include "../../network/NetworkController.hpp"
+#include "../../network/player/Player.hpp"
 
 #include "../../core/GameApp.hpp"
 #include "../../core/GameUtils.hpp"
 #include "../../core/common/constants/Constants.hpp"
 #include "../../core/common/types/GameTypes.hpp"
 #include "../../core/manager/StateManager.hpp"
-#include "../system/GamePlayer.hpp"
+#include "../../core/manager/PlayerManager.hpp"
+#include "../system/LocalPlayer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -34,6 +36,11 @@ GameGroupBlock::GameGroupBlock()
     , horizontalVelocity_(0.0f)
     
 {
+}
+
+GameGroupBlock::~GameGroupBlock() 
+{
+    //Release();
 }
 
 void GameGroupBlock::SetPosX(float x) 
@@ -146,7 +153,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
     if (collisionCheck) 
     {
         
-        SDL_Rect leftCollRects[2];
+        SDL_Rect leftCollRects[2]{};
         SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &leftCollRects[0], Constants::Direction::Left);
@@ -176,18 +183,18 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
 
         if (canMove && position_.x > limit)
         {
-            if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState()) 
+            if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState()) 
             {
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get())) 
                 {
-                    if (blockIndexX_ > 0 && gameState->IsPossibleMove(blockIndexX_ - 1)) 
+                    if (blockIndexX_ > 0 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ - 1)) 
                     {
                         position_.x -= Constants::Block::SIZE;
 
                         SetPosX(position_.x);
 
-                        gameState->UpdateTargetPosIdx();
+                        gameState->GetLocalPlayer()->UpdateTargetPosIdx();
 
                         if (NETWORK.IsRunning())
                         {
@@ -214,7 +221,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
     if (collisionCheck) 
     {   
-        SDL_Rect rightCollRects[2];
+        SDL_Rect rightCollRects[2]{};
         SDL_Rect targetRect;
 
         GetCollisionRect(blocks_[Standard].get(), &rightCollRects[0], Constants::Direction::Right);
@@ -242,22 +249,22 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
         if (canMove && position_.x + size_.x < limit) 
         {
-            if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+            if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
             {
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
                 {
-                    if (blockIndexX_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->IsPossibleMove(blockIndexX_ + 1)) 
+                    if (blockIndexX_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ + 1)) 
                     {
                         position_.x += Constants::Block::SIZE;
                         SetPosX(position_.x);
 
-                        gameState->UpdateTargetPosIdx();
+                        gameState->GetLocalPlayer()->UpdateTargetPosIdx();
 
-                        /*if (NetworkManager::GetInstance().IsRunning()) 
+                        if (NETWORK.IsRunning())
                         {
-                            NetworkManager::GetInstance().MoveBlock(Constants::Direction::Right, position_.x);
-                        }*/
+                            NETWORK.MoveBlock(static_cast<uint8_t>(Constants::Direction::Right), position_.x);
+                        }
                     }
                 }
             }
@@ -373,9 +380,9 @@ void GameGroupBlock::HandleHorizontalCollision()
 {
     bool collision1 = false;
     bool collision2 = false;
-    SDL_Rect resultRect[2];
-    SDL_Rect controlRect[2];
-    SDL_Rect targetRect[2];
+    SDL_Rect resultRect[2]{};
+    SDL_Rect controlRect[2]{};
+    SDL_Rect targetRect[2]{};
 
     for (const auto& block : *gameBlockList_) 
     {
@@ -387,6 +394,7 @@ void GameGroupBlock::HandleHorizontalCollision()
         RectUtils::ConvertFRectToRect(blocks_[Standard]->GetRect(), &controlRect[0]);
         RectUtils::ConvertFRectToRect(blocks_[Satellite]->GetRect(), &controlRect[1]);
         RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect[0]);
+        RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect[1]);
 
         if (SDL_GetRectIntersection(&controlRect[0], &targetRect[0], &resultRect[0]) == true)
         {
@@ -433,7 +441,7 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
     }
     else
     {
-        int satelliteY = blocks_[Satellite]->GetY();
+        float satelliteY = blocks_[Satellite]->GetY();
         if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT)
         {
             blocks_[Standard]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
@@ -522,11 +530,11 @@ void GameGroupBlock::HandleRotation(float deltaTime)
 
         blocks_[Satellite]->SetPosition(finalX, y);
 
-        if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+        if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
-                gameState->UpdateTargetPosIdx();
+                gameState->GetLocalPlayer()->UpdateTargetPosIdx();
             }
         }
 
@@ -560,11 +568,11 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
         float newPosX = GetPosXOfIdx(blockIndexX_);
         SetPosX(newPosX);
 
-        if (auto stateManager = GAME_APP.GetStateManager().GetCurrentState())
+        if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
         {
             if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
             {
-                gameState->UpdateTargetPosIdx();
+                gameState->GetLocalPlayer()->UpdateTargetPosIdx();
             }
         }
         
@@ -662,21 +670,21 @@ void GameGroupBlock::ResetVelocities()
 
 void GameGroupBlock::ProcessBlockPlacement() 
 {
-    if ((NETWORK.IsRunning() && playerID_))
+    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
 
-        std::array<SDL_FPoint, 2> blockPositions;
+        std::array<float, 2> pos1 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
+        std::array<float, 2> pos2 = { blocks_[1]->GetX(),  blocks_[1]->GetY() };
 
-        std::array<float, 2> pos1 = { blockPositions[0].x, blockPositions[0].y };
-        std::array<float, 2> pos2 = { blockPositions[1].x, blockPositions[1].y };
+        //LOGGER.Info("ProcessBlockPlacement playerID_{} pos1 {} pos2 {}", playerID_, pos1, pos2);
 
         NETWORK.PushBlockInGame(pos1, pos2);
 
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            gameState->PushBlockInGame(this);
+            gameState->GetLocalPlayer()->PushBlockInGame(this);
         }
     }
 }
@@ -694,31 +702,31 @@ void GameGroupBlock::GetCollisionRect(Block* block, SDL_Rect* rect, Constants::D
     switch (dir) 
     {
     case Constants::Direction::Left:
-        rect->x = block->GetX() - halfWidth;
-        rect->y = block->GetY();
-        rect->w = halfWidth;
-        rect->h = block->GetHeight();
+        rect->x = static_cast<int>(block->GetX() - halfWidth);
+        rect->y = static_cast<int>(block->GetY());
+        rect->w = static_cast<int>(halfWidth);
+        rect->h = static_cast<int>(block->GetHeight());
         break;
 
     case Constants::Direction::Top:
-        rect->x = block->GetX();
-        rect->y = block->GetY() - halfHeight;
-        rect->w = block->GetWidth();
-        rect->h = halfHeight;
+        rect->x = static_cast<int>(block->GetX());
+        rect->y = static_cast<int>(block->GetY() - halfHeight);
+        rect->w = static_cast<int>(block->GetWidth());
+        rect->h = static_cast<int>(halfHeight);
         break;
 
     case Constants::Direction::Right:
-        rect->x = block->GetX() + block->GetWidth();
-        rect->y = block->GetY();
-        rect->w = halfWidth;
-        rect->h = block->GetHeight();
+        rect->x = static_cast<int>(block->GetX() + block->GetWidth());
+        rect->y = static_cast<int>(block->GetY());
+        rect->w = static_cast<int>(halfWidth);
+        rect->h = static_cast<int>(block->GetHeight());
         break;
 
     case Constants::Direction::Bottom:
-        rect->x = block->GetX();
-        rect->y = block->GetY() + block->GetWidth();
-        rect->w = block->GetWidth();
-        rect->h = halfHeight;
+        rect->x = static_cast<int>(block->GetX());
+        rect->y = static_cast<int>(block->GetY() + block->GetWidth());
+        rect->w = static_cast<int>(block->GetWidth());
+        rect->h = static_cast<int>(halfHeight);
         break;
     }
 }
@@ -727,7 +735,17 @@ void GameGroupBlock::ResetBlock()
 {
     for (auto& block : blocks_) 
     {
-        block = nullptr;
+        if (block != nullptr)
+        {
+            auto playerId = block->GetPlayerId();
+            if (GAME_APP.GetPlayerManager().IsRemotePlayer(playerId) == true)
+            {
+                //LOGGER.Info("ResetBlock {}", playerId);
+            }
+
+            //block->Release();
+            block = nullptr;
+        }
     }
 
     isFalling_ = false;
@@ -1038,4 +1056,10 @@ void GameGroupBlock::UpdateFallingBlock(uint8_t fallingIdx, bool falling)
 {
     fallingIdx_ = fallingIdx;
     isFalling_ = falling;
+}
+
+void GameGroupBlock::Release()
+{
+    ResetBlock();
+    GroupBlock::Release();
 }

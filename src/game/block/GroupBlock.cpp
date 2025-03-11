@@ -2,7 +2,6 @@
 #include "../../core/manager/ResourceManager.hpp"
 #include "../../core/manager/PlayerManager.hpp"
 #include "../../states/GameState.hpp"
-#include "../../game/system/GamePlayer.hpp"
 #include "../../core/common/constants/Constants.hpp"
 #include "../../core/GameApp.hpp"
 #include "../../network/player/Player.hpp"
@@ -125,6 +124,13 @@ void GroupBlock::Render()
 
 void GroupBlock::Release() 
 {
+    for (auto& block : blocks_) 
+    {
+        if (block) 
+        {
+            block->Release();
+        }
+    }
     blocks_.fill(nullptr);
 }
 

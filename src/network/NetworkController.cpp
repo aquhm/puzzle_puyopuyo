@@ -77,18 +77,6 @@ void NetworkController::SendData(std::span<const char> data)
         }
     }
 }
-    
-
-/*template<typename T>
-std::enable_if_t<std::is_base_of_v<PacketBase, T>, void> 
-NetworkController::SendToClient(ClientInfo* client, const T& packet)
-{
-    if (IsServer() && server_)
-    {
-        auto packetBytes = std::span<const char>(packet.ToBytes());
-        server_->SendMsg(client, packetBytes);
-    }
-}*/
 
 bool NetworkController::SendToClient(ClientInfo* client, const PacketBase& packet)
 {

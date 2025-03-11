@@ -12,8 +12,8 @@
 #include "../../../core/manager/PlayerManager.hpp"
 #include "../../../states/GameState.hpp"
 #include "../../../network/NetworkController.hpp"
-#include "../../../network/player/Player.hpp"
-#include "../../../game/system/GamePlayer.hpp"
+#include "../../../game/system/BasePlayer.hpp"
+#include "../../../game/system/RemotePlayer.hpp"
 
 #include <span>
 
@@ -26,8 +26,6 @@ public:
     void Process(const PacketBase& packet, struct ClientInfo* client) override 
     {
         const auto& block_packet = static_cast<const AddNewBlockPacket&>(packet);
-
-        static_assert(std::is_base_of_v<PacketBase, AddNewBlockPacket>, "AddNewBlockPacket must derive from PacketBase");
 
         if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game) 
         {
@@ -49,10 +47,10 @@ public:
 
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {   
                 std::span<const uint8_t, 2> blockType{ block_packet.block_type };
-                player->AddNewBlock(blockType);
+                remotePlayer->AddNewBlock(blockType);
             }
         }
     }
@@ -93,9 +91,9 @@ public:
 
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->UpdateFallingBlock(fall_packet.falling_index, fall_packet.is_falling);
+                remotePlayer->UpdateFallingBlock(fall_packet.falling_index, fall_packet.is_falling);
             }
         }
     }
@@ -138,9 +136,9 @@ public:
         // 게임 상태 업데이트
         if (auto gameState = static_cast<GameState*>( GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->ChangeBlockState(state_packet.state);
+                remotePlayer->ChangeBlockState(state_packet.state);
             }
         }
     }
@@ -183,11 +181,11 @@ public:
         // 게임 상태 업데이트
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
                 float pos1[2] = { pushPacket.position1[0], pushPacket.position1[1] };
                 float pos2[2] = { pushPacket.position2[0], pushPacket.position2[1] };
-                player->PushBlockInGame(pos1, pos2);
+                remotePlayer->PushBlockInGame(pos1, pos2);
             }
         }
     }
@@ -230,9 +228,9 @@ public:
         // 블록 상태 체크 수행
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->CheckGameBlockState();
+                remotePlayer->CheckGameBlockState();
             }
         }
     }
@@ -245,7 +243,6 @@ public:
     }
 };
 
-// network/packets/processors/BlockPacketProcessors.hpp에 추가
 class BlockRotateProcessor : public IPacketProcessor {
 public:
     void Initialize() override {}
@@ -275,9 +272,9 @@ public:
         // 게임 상태 업데이트
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->RotateBlock(rotate_packet.rotate_type, rotate_packet.is_horizontal_moving);
+                remotePlayer->RotateBlock(rotate_packet.rotate_type, rotate_packet.is_horizontal_moving);
             }
         }
     }
@@ -362,9 +359,9 @@ public:
         // 게임 상태 업데이트
         if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
         {
-            if (const auto& player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->UpdateFallingBlock(fall_packet.falling_index, fall_packet.is_falling);
+                remotePlayer->UpdateFallingBlock(fall_packet.falling_index, fall_packet.is_falling);
             }
         }
     }
@@ -400,9 +397,9 @@ public:
         // 게임 상태 업데이트
         if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
         {
-            if (auto player = gameState->GetPlayer())
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
             {
-                player->MoveBlock(move_packet.move_type, move_packet.position);
+                remotePlayer->MoveBlock(move_packet.move_type, move_packet.position);
             }
         }
     }

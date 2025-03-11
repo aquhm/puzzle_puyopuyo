@@ -38,7 +38,6 @@ void Button::Render()
         return;
     }
 
-    // Determine which texture state to render
     auto idx = static_cast<size_t>(current_state_);
     switch (current_state_) {
     case State::Normal:
@@ -103,7 +102,6 @@ bool Button::SetStateRect(State state, const SDL_FRect& rect) noexcept
 
     state_rects_[static_cast<size_t>(state)] = rect;
 
-    // Update texture state flags
     switch (state) {
     case State::Normal:
         texture_state_ = texture_state_ | TextureState::Normal;
