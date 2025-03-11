@@ -492,8 +492,7 @@ uint8_t BasePlayer::GetMargin() const
         }
     }
 
-    return Constants::Game::SCORE_MARGINS[
-        std::size(Constants::Game::SCORE_MARGINS) - 1].margin;
+    return Constants::Game::SCORE_MARGINS[std::size(Constants::Game::SCORE_MARGINS) - 1].margin;
 }
 
 void BasePlayer::LoseGame(bool isWin)

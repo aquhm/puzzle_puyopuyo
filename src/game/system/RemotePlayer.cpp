@@ -373,6 +373,8 @@ bool RemotePlayer::CheckGameBlockState()
                 block->SetState(BlockState::Destroying);
             }
         }
+
+        return true;
     }
     else
     {
