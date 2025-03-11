@@ -516,8 +516,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
 
 void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx)
 {
-	
-    if (score_info_.totalInterruptBlockCount <= 0)
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+    if (state_info_.hasIceBlock == false)
     {
         return;
     }
@@ -537,13 +537,14 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
         else
         {
             CreatePartialRowInterruptBlocks(y_row_cnt, x_idx, texture);
-        }
+        }        
 
         if (interrupt_view_)
         {
             interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
         }
 
+        state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
         state_info_.currentPhase = GamePhase::IceBlocking;
     }
     catch (const std::exception& e)
@@ -556,6 +557,7 @@ void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned ch
 {
     score_info_.totalInterruptBlockCount += cnt;
     state_info_.isComboAttack = true;
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
 
     if (interrupt_view_)
     {
@@ -648,6 +650,7 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
     score_info_.totalInterruptBlockCount = std::max<uint16_t>(0, score_info_.totalInterruptBlockCount - count);
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;    
 
     if (interrupt_view_)
     {

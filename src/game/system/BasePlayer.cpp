@@ -493,6 +493,7 @@ void BasePlayer::SetGameBoardState(BoardState bordState)
 void BasePlayer::UpdateInterruptBlock(int16_t count)
 {
     score_info_.totalInterruptBlockCount = count;
+    state_info_.hasIceBlock = count > 0;
 
     if (interrupt_view_)
     {
@@ -711,7 +712,7 @@ void BasePlayer::GenerateIceBlocks()
     else 
     {
         GenerateSmallIceBlockGroup(texture, playerID);
-    }
+    }    
 
     if (interrupt_view_) 
     {
@@ -720,12 +721,13 @@ void BasePlayer::GenerateIceBlocks()
 
     HandlePhaseTransition(GamePhase::IceBlocking);
 
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
     state_info_.defenseCount = 0;
 }
 
 void BasePlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID) 
 {
-    score_info_.totalInterruptBlockCount -= 30;
+    score_info_.totalInterruptBlockCount -= 30;    
 
     for (int y = 0; y < 5; y++) 
     {
