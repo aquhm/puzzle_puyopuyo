@@ -363,6 +363,7 @@ bool RemotePlayer::CheckGameBlockState()
     if (FindMatchedBlocks(matched_blocks_))
     {
         HandlePhaseTransition(GamePhase::Shattering);
+        UpdateComboState();
         CollectRemoveIceBlocks();
 
         // 매치된 블록들 파괴 상태로 설정

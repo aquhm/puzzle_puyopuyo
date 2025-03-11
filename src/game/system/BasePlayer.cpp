@@ -705,24 +705,6 @@ bool BasePlayer::FindMatchedBlocks(std::list<BlockVector>& matchedGroups)
     return !matchedGroups.empty();
 }
 
-
-
-//void BasePlayer::HandleMatchedBlocks() 
-//{
-//    UpdateComboState();
-//    CalculateScore();
-//    CollectRemoveIceBlocks();
-//
-//    // 매치된 블록들 파괴 상태로 설정
-//    for (const auto& group : matched_blocks_) 
-//    {
-//        for (auto* block : group) 
-//        {
-//            block->SetState(BlockState::Destroying);
-//        }
-//    }
-//}
-
 void BasePlayer::UpdateComboState() 
 {
     if (state_info_.previousPhase == GamePhase::Shattering) 
