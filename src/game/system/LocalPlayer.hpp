@@ -27,6 +27,7 @@ public:
         uint16_t characterIdx,
         const std::shared_ptr<GameBackground>& background) override;
 
+    void Update(float deltaTime) override;
     void Release() override;
     void Reset() override;
     bool Restart(const std::span<const uint8_t>& blockType1 = {}, const std::span<const uint8_t>& blockType2 = {}) override;
