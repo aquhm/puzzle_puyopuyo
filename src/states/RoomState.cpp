@@ -347,7 +347,7 @@ void RoomState::HandleChatMessage(uint8_t connectionId, const ChatMessagePacket*
     {
         if (ui_elements_.chat_box)
         {
-            std::string formatted_message = std::format("[{}]: {}",
+            std::string formatted_message = std::format("[Player({})]: {}",
                 packet->player_id,
                 packet->message.data());
 
