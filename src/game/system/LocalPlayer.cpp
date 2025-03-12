@@ -479,8 +479,7 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
             state_info_.defenseCount = 0;
         }
 
-        if (score_info_.totalInterruptBlockCount > 0 &&
-            !state_info_.isComboAttack && !state_info_.isDefending)
+        if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
         {
             GenerateIceBlocks();
         }

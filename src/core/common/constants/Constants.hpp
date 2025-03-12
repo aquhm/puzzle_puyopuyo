@@ -9,8 +9,14 @@
 
 #define SDL_USEREVENT_SOCK		WM_USER + 1
 
+
 namespace Constants
 {
+    enum class PlayerType : uint8_t
+    {
+        Local,
+        Remote
+    };
 
     enum class Direction
     {
