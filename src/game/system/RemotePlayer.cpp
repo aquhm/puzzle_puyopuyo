@@ -171,19 +171,11 @@ void RemotePlayer::UpdateGameOverState(float deltaTime)
 
 void RemotePlayer::UpdatePlayingState(float deltaTime)
 {
-    /*
-    if (control_block_)
-    {
-        control_block_->Update(deltaTime);
-    }
-    */
 
     if (control_block_)
     {
-        // 기존 업데이트 로직
         control_block_->Update(deltaTime);
 
-        // Y 위치 동기화 로직 추가
         if (is_syncing_position_ && control_block_->GetState() == BlockState::Playing)
         {
             float current_y = control_block_->GetPosition().y;
@@ -192,14 +184,11 @@ void RemotePlayer::UpdatePlayingState(float deltaTime)
             // 위치 차이가 임계값보다 크면 부드럽게 보간
             if (std::abs(diff) > 0.5f)
             {
-                // 시간에 따른 보간 계수 계산
-                float lerp_speed = sync_lerp_factor_ * deltaTime * 60.0f; // 프레임 독립적 속도
+                float lerp_speed = sync_lerp_factor_ * deltaTime * 60.0f;
                 lerp_speed = std::min<float>(lerp_speed, 1.0f);
 
-                // 현재 위치에서 목표 위치로 부드럽게 보간
                 float new_y = current_y + diff * lerp_speed;
 
-                // 새 위치로 업데이트
                 control_block_->SetPosY(new_y);
 
                 // 속도도 보간하여 적용
@@ -209,7 +198,6 @@ void RemotePlayer::UpdatePlayingState(float deltaTime)
             }
             else
             {
-                // 차이가 임계값보다 작으면 동기화 완료
                 is_syncing_position_ = false;
             }
         }
@@ -369,7 +357,7 @@ void RemotePlayer::PlayNextBlock()
         control_block_->SetState(BlockState::Playing);
         control_block_->SetEnableRotState(RotateState::Default, false, false);
 
-        //LOGGER.Info("RemotePlayer.PlayNextBlock");
+        LOGGER.Info("====> RemotePlayer.PlayNextBlock");
 
         if (game_board_)
         {
@@ -496,6 +484,8 @@ void RemotePlayer::ChangeBlockState(uint8_t state)
     if (control_block_)
     {
         control_block_->SetState(static_cast<BlockState>(state));
+
+        LOGGER.Info("RemotePlayer.ChangeBlockState state : {}", state);
     }
 }
 

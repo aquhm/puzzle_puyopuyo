@@ -680,7 +680,7 @@ void GameGroupBlock::ProcessBlockPlacement()
         return;
     }
 
-        if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
+    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
@@ -840,6 +840,7 @@ void GameGroupBlock::SetGroupBlock(GroupBlock* block)
     }
 
     ResetBlock();
+    SetState(BlockState::Playing);
 
     const auto sourceBlocks = block->GetBlocks();
     for (size_t i = 0; i < Constants::GroupBlock::COUNT; ++i)

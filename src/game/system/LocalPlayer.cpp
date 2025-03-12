@@ -172,6 +172,10 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
             }            
         }
     }
+    else
+    {
+        state_info_.currentPhase = GamePhase::Playing;
+    }
 }
 
 void LocalPlayer::UpdateShatteringPhase(float deltaTime)
@@ -633,7 +637,7 @@ void LocalPlayer::CreateBullet(Block* block)
 
     SDL_FPoint endPos;
 
-    LOGGER.Info("LocalPlayer::CreateBullet - state_info_.hasIceBlock = {}", state_info_.hasIceBlock);
+    //LOGGER.Info("LocalPlayer::CreateBullet - state_info_.hasIceBlock = {}", state_info_.hasIceBlock);
     if (state_info_.hasIceBlock)
     {
         endPos =
@@ -904,5 +908,5 @@ void LocalPlayer::UpdateInterruptBlockState()
 
     state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
 
-    LOGGER.Info("LocalPlayer::UpdateInterruptBlockState() state_info_.hasIceBlock {}", state_info_.hasIceBlock);
+    //LOGGER.Info("LocalPlayer::UpdateInterruptBlockState() state_info_.hasIceBlock {}", state_info_.hasIceBlock);
 }
