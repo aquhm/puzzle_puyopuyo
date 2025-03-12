@@ -196,15 +196,21 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
 
         if (static_cast<int>(y) <= config.nextBlockPosSmallY) 
         {
+            
+
             y = static_cast<float>(config.nextBlockPosSmallY);
 
+            if (playerType == Constants::PlayerType::Remote)
+            {
+                LOGGER.Info("GameBackground::UpdateBlockAnimations move_finish {} size {}", move_finished, data.groupBlocks.size());
+            }
             if (move_finished) 
             {
                 data.groupBlocks.pop_front();
 
                 if (data.groupBlocks.size() != 2) 
                 {
-                    LOGGER.Error("GameBackground::UpdateBlockAnimations Invalid block count after pop: {} for player {}", data.groupBlocks.size(), static_cast<int>(playerType));
+                    LOGGER.Info("GameBackground::UpdateBlockAnimations Invalid block count after pop: {} for player {}", data.groupBlocks.size(), static_cast<int>(playerType));
 
                     // 상태 교정 - 항상 2개의 블록만 남기도록 함
                     while (data.groupBlocks.size() > 2) 
@@ -336,6 +342,12 @@ void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block, Cons
         LOGGER.Info("GameBackground::SetNextBlock Maximum block count reached for player {}, removing oldest block", static_cast<int>(playerType));
         data.groupBlocks.pop_front();
     }
+
+    if (playerType == Constants::PlayerType::Remote)
+    {
+        LOGGER.Info("GameBackground::SetNextBlock size {}", data.groupBlocks.size());
+    }
+
 
     data.groupBlocks.emplace_back(block);
     data.isChangingBlock = true;

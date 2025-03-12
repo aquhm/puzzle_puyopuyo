@@ -806,6 +806,8 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
 
 void GameState::HandleAddInterruptBlock(uint8_t connectionId, const AddInterruptBlockPacket* packet)
 {
+    LOGGER.Info("GameState::HandleAddInterruptBlock y_row_count {} x_count {} ", packet->y_row_count, packet->x_count);
+
     if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
         if (remote_player_)

@@ -621,17 +621,29 @@ void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTextu
 
 void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 {
-    const SDL_FPoint start_pos
+    /*const SDL_FPoint start_pos
     {
         Constants::Board::PLAYER_POSITION_X + Constants::Board::WIDTH_MARGIN + x + Constants::Block::SIZE / 2,
         Constants::Board::PLAYER_POSITION_Y + y + Constants::Block::SIZE / 2
     };
 
-    const SDL_FPoint end_pos
+    SDL_FPoint end_pos;
+    if (state_info_.hasIceBlock)
     {
-        Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
-        Constants::Board::POSITION_Y
-    };
+        end_pos =
+        {
+            GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
+            Constants::Board::POSITION_Y
+        };
+    }
+    else
+    {
+        end_pos =
+        {
+            Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
+            Constants::Board::POSITION_Y
+        };
+    }
 
     auto bullet = std::make_shared<BulletEffect>();
     if (!bullet->Initialize(start_pos, end_pos, static_cast<BlockType>(type)))
@@ -639,8 +651,10 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
         return;
     }
 
+    LOGGER.Error("1111111 RemotePlayer::AttackInterruptBlock");
+
     bullet->SetAttacking(true);
-    bullet_list_.push_back(bullet);
+    bullet_list_.push_back(bullet);*/
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
     {
@@ -664,6 +678,7 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
         Constants::Board::PLAYER_POSITION_Y + y + Constants::Block::SIZE / 2
     };
 
+
     const SDL_FPoint end_pos
     {
         Constants::Board::PLAYER_POSITION_X + (Constants::Board::WIDTH / 2),
@@ -675,6 +690,7 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
     {
         return;
     }
+    LOGGER.Error("1111111 RemotePlayer::DefenseInterruptBlockCount");
 
     bullet->SetAttacking(false);
     bullet_list_.push_back(bullet);
@@ -760,6 +776,8 @@ void RemotePlayer::CreateBullet(Block* block)
         return;
     }
 
+
+    LOGGER.Error("1111111 RemotePlayer::CreateBullet");
     bullet->SetAttacking(!state_info_.hasIceBlock);
     bullet_list_.push_back(bullet);
 

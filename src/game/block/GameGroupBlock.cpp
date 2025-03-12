@@ -587,10 +587,15 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
 }
 
 void GameGroupBlock::Update(float deltaTime) 
-{
+{   
     if (state_ == BlockState::Playing || state_ == BlockState::Effecting) 
     {
         GroupBlock::Update(deltaTime);
+    }
+
+    if (playerID_ == 1)
+    {
+        LOGGER.Info("GameGroupBlock::Update state_ = {} velocity_ = {} y = {}", (int)state_, velocity_, position_.y);
     }
 
     if (state_ == BlockState::Playing && blocks_[Standard] && blocks_[Satellite]) 
@@ -670,7 +675,7 @@ void GameGroupBlock::ResetVelocities()
 
 void GameGroupBlock::ProcessBlockPlacement() 
 {
-    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
+    if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
