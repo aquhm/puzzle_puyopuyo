@@ -339,7 +339,7 @@ void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block, Cons
 
     if (data.groupBlocks.size() >= MAX_BLOCKS_IN_QUEUE) 
     {
-        LOGGER.Info("GameBackground::SetNextBlock Maximum block count reached for player {}, removing oldest block", static_cast<int>(playerType));
+        //LOGGER.Info("GameBackground::SetNextBlock Maximum block count reached for player {}, removing oldest block", static_cast<int>(playerType));
         data.groupBlocks.pop_front();
     }
 

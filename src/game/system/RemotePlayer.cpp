@@ -342,7 +342,7 @@ void RemotePlayer::CreateNextBlock()
 
 void RemotePlayer::PlayNextBlock()
 {
-    if (next_blocks_.size() != 3 || !control_block_)
+    if (next_blocks_.size() < 3 || !control_block_)
     {
         return;
     }
@@ -357,7 +357,7 @@ void RemotePlayer::PlayNextBlock()
         control_block_->SetState(BlockState::Playing);
         control_block_->SetEnableRotState(RotateState::Default, false, false);
 
-        LOGGER.Info("====> RemotePlayer.PlayNextBlock");
+        //LOGGER.Info("====> RemotePlayer.PlayNextBlock");
 
         if (game_board_)
         {
@@ -485,7 +485,7 @@ void RemotePlayer::ChangeBlockState(uint8_t state)
     {
         control_block_->SetState(static_cast<BlockState>(state));
 
-        LOGGER.Info("RemotePlayer.ChangeBlockState state : {}", state);
+        //LOGGER.Info("RemotePlayer.ChangeBlockState state : {}", state);
     }
 }
 
@@ -534,8 +534,6 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
         {
             //DestroyNextBlock();
         }
-
-        
 
         return true;
     }
@@ -732,6 +730,16 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
 
 void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 {
+    // 최대 큐 크기 제한 상수 추가
+    static constexpr size_t MAX_NEXT_BLOCKS = 3;
+
+    // 큐 크기 검사 및 초과 블록 제거
+    if (next_blocks_.size() >= MAX_NEXT_BLOCKS) 
+    {
+        LOGGER.Info("RemotePlayer::AddNewBlock - Maximum block count reached ({}/{}), removing oldest block", next_blocks_.size(), MAX_NEXT_BLOCKS);
+        next_blocks_.pop_front();
+    }
+
     auto next_block = std::make_shared<GroupBlock>();
     if (!next_block->Create(static_cast<BlockType>(block_type[0]), static_cast<BlockType>(block_type[1])))
     {
@@ -743,7 +751,10 @@ void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 
     if (background_)
     {
-        next_blocks_.push_back(next_block);
+        next_blocks_.emplace_back(next_block);
+
+        //LOGGER.Info("RemotePlayer::AddNewBlock - Added block, current queue size: {}", next_blocks_.size());
+
         background_->SetPlayerNextBlock(next_block);
     }
 }
