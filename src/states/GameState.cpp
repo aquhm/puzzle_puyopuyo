@@ -829,7 +829,7 @@ void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterrup
     {
         if (local_player_)
         {
-            LOGGER.Info("GameState::HandleAttackInterrupt count {} ", packet->count);
+            //LOGGER.Info("GameState::HandleAttackInterrupt count {} ", packet->count);
             local_player_->AddInterruptBlock(packet->count);
             local_player_->SetComboAttackState(true);
         }

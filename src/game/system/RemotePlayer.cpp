@@ -817,7 +817,7 @@ void RemotePlayer::CreateBullet(Block* block)
     }
 
 
-    LOGGER.Error("1111111 RemotePlayer::CreateBullet");
+    //LOGGER.Error("1111111 RemotePlayer::CreateBullet");
     bullet->SetAttacking(!state_info_.hasIceBlock);
     bullet_list_.push_back(bullet);
 
