@@ -49,7 +49,7 @@ void GameServer::InitializePacketProcessors()
     packet_processors_.emplace(PacketType::CheckBlockState, std::make_unique<CheckBlockStateProcessor>());
     packet_processors_.emplace(PacketType::UpdateBlockRotate, std::make_unique<BlockRotateProcessor>());
     packet_processors_.emplace(PacketType::UpdateBlockMove, std::make_unique<BlockMoveProcessor>());
-    
+    packet_processors_.emplace(PacketType::SyncBlockPositionY, std::make_unique<SyncPositionYProcessor>());
 
     // 전투 관련 프로세서
     packet_processors_.emplace(PacketType::AttackInterruptBlock, std::make_unique<AttackInterruptProcessor>());
@@ -495,6 +495,24 @@ void GameServer::PushBlockInGame(std::span<const float> pos1, std::span<const fl
 
     std::copy_n(pos1.begin(), packet.position1.size(), packet.position1.begin());
     std::copy_n(pos2.begin(), packet.position2.size(), packet.position2.begin());
+
+    BroadcastPacket(packet);
+}
+
+void GameServer::SyncPositionY(float positionY, float velocity)
+{
+    CriticalSection::Lock lock(critical_section_);
+
+    auto& playerManager = GAME_APP.GetPlayerManager();
+    auto myPlayer = playerManager.GetMyPlayer();
+    if (!myPlayer) {
+        return;
+    }
+
+    SyncBlockPositionYPacket packet;
+    packet.player_id = myPlayer->GetId();
+    packet.position_y = positionY;
+    packet.velocity = velocity;
 
     BroadcastPacket(packet);
 }

@@ -41,6 +41,7 @@ public:
     void ChangeBlockState(uint8_t state);
     void PushBlockInGame(std::span<const float> pos1, std::span<const float> pos2);
     void ChangBlockState(uint8_t state);
+    void SyncPositionY(float positionY, float velocity);
 
     // 공격/방어 관련
     void AttackInterruptBlock(int16_t count, float x, float y, uint8_t type);

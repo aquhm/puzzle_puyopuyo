@@ -702,6 +702,29 @@ void LocalPlayer::CreateBullet(Block* block)
     }
 }
 
+void LocalPlayer::Update(float deltaTime)
+{
+    BasePlayer::Update(deltaTime);
+
+    // 위치 동기화 로직 추가 (일정 간격으로 실행)
+    static float syncTimer = 0.0f;
+    syncTimer += deltaTime;
+
+    // 150ms마다 위치 동기화 패킷 전송 (너무 자주 보내면 네트워크 부하가 커짐)
+    if (syncTimer >= 0.15f && control_block_ && control_block_->GetState() == BlockState::Playing)
+    {
+        syncTimer = 0.0f;
+        float position_y = control_block_->GetPosition().y;
+        float velocity = control_block_->GetAddForceVelocityY();
+
+        if (NETWORK.IsRunning())
+        {
+            NETWORK.SyncPositionY(position_y, velocity);
+        }
+    }
+
+}
+
 void LocalPlayer::Release()
 {
     bullet_list_.clear();

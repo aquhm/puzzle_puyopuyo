@@ -72,6 +72,7 @@ public:
     void RequireFallingBlock(uint8_t falling_idx, bool falling);
     void ChangeBlockState(uint8_t state);
     void PushBlockInGame(std::span<const float> pos1, std::span<const float> pos2);
+    void SyncPositionY(float positionY, float velocity);
 
     // 전투 관련 함수들
     void AttackInterruptBlock(int16_t count, float x, float y, uint8_t type);

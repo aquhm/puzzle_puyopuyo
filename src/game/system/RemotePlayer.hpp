@@ -58,6 +58,9 @@ public:
 
     // 상태 업데이트 메서드
     void UpdateGameState(float deltaTime);
+    
+    // 블록 위치
+    void SyncPositionY(float targetY, float velocity);
 
 protected:
 
@@ -79,4 +82,11 @@ private:
     void HandleClearedBlockGroup(std::list<BlockVector>::iterator& group_it, SDL_FPoint& pos, SDL_Point& pos_idx, std::list<SDL_Point>& x_index_list);
     void UpdateAfterBlocksCleared();
     void UpdateComboDisplay(const SDL_FPoint& pos);
+
+private:
+    // 동기화용 변수들
+    float target_y_position_{ 0.0f };
+    float current_sync_velocity_{ 0.0f };
+    bool is_syncing_position_{ false };
+    float sync_lerp_factor_{ 0.15f };
 };

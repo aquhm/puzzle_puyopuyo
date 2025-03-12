@@ -171,9 +171,48 @@ void RemotePlayer::UpdateGameOverState(float deltaTime)
 
 void RemotePlayer::UpdatePlayingState(float deltaTime)
 {
+    /*
     if (control_block_)
     {
         control_block_->Update(deltaTime);
+    }
+    */
+
+    if (control_block_)
+    {
+        // 기존 업데이트 로직
+        control_block_->Update(deltaTime);
+
+        // Y 위치 동기화 로직 추가
+        if (is_syncing_position_ && control_block_->GetState() == BlockState::Playing)
+        {
+            float current_y = control_block_->GetPosition().y;
+            float diff = target_y_position_ - current_y;
+
+            // 위치 차이가 임계값보다 크면 부드럽게 보간
+            if (std::abs(diff) > 0.5f)
+            {
+                // 시간에 따른 보간 계수 계산
+                float lerp_speed = sync_lerp_factor_ * deltaTime * 60.0f; // 프레임 독립적 속도
+                lerp_speed = std::min<float>(lerp_speed, 1.0f);
+
+                // 현재 위치에서 목표 위치로 부드럽게 보간
+                float new_y = current_y + diff * lerp_speed;
+
+                // 새 위치로 업데이트
+                control_block_->SetPosY(new_y);
+
+                // 속도도 보간하여 적용
+                float current_vel = control_block_->GetAddForceVelocityY();
+                float vel_diff = current_sync_velocity_ - current_vel;
+                control_block_->SetAddVelocityY(current_vel + vel_diff * lerp_speed);
+            }
+            else
+            {
+                // 차이가 임계값보다 작으면 동기화 완료
+                is_syncing_position_ = false;
+            }
+        }
     }
 }
 
@@ -784,5 +823,21 @@ void RemotePlayer::CreateBullet(Block* block)
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
     {
         game_board_->SetState(BoardState::Attacking);
+    }
+}
+
+void RemotePlayer::SyncPositionY(float targetY, float velocity)
+{
+    if (!control_block_)
+        return;
+
+    // 현재 위치와 목표 위치의 차이가 크면 동기화 시작
+    float current_y = control_block_->GetPosition().y;
+    if (std::abs(targetY - current_y) > 3.0f ||
+        std::abs(velocity - control_block_->GetAddForceVelocityY()) > 0.5f)
+    {
+        target_y_position_ = targetY;
+        current_sync_velocity_ = velocity;
+        is_syncing_position_ = true;
     }
 }

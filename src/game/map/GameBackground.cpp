@@ -200,10 +200,10 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
 
             y = static_cast<float>(config.nextBlockPosSmallY);
 
-            if (playerType == Constants::PlayerType::Remote)
+            /*if (playerType == Constants::PlayerType::Remote)
             {
                 LOGGER.Info("GameBackground::UpdateBlockAnimations move_finish {} size {}", move_finished, data.groupBlocks.size());
-            }
+            }*/
             if (move_finished) 
             {
                 data.groupBlocks.pop_front();
@@ -343,10 +343,10 @@ void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block, Cons
         data.groupBlocks.pop_front();
     }
 
-    if (playerType == Constants::PlayerType::Remote)
+    /*if (playerType == Constants::PlayerType::Remote)
     {
         LOGGER.Info("GameBackground::SetNextBlock size {}", data.groupBlocks.size());
-    }
+    }*/
 
 
     data.groupBlocks.emplace_back(block);

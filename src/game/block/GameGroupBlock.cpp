@@ -593,10 +593,10 @@ void GameGroupBlock::Update(float deltaTime)
         GroupBlock::Update(deltaTime);
     }
 
-    if (playerID_ == 1)
+    /*if (playerID_ == 1)
     {
         LOGGER.Info("GameGroupBlock::Update state_ = {} velocity_ = {} y = {}", (int)state_, velocity_, position_.y);
-    }
+    }*/
 
     if (state_ == BlockState::Playing && blocks_[Standard] && blocks_[Satellite]) 
     {
@@ -621,7 +621,6 @@ void GameGroupBlock::Update(float deltaTime)
             ForceVelocityY(velocity_);
 
             // 面倒 眉农 棺 匙飘况农 贸府
-            //if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
             if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
             {
                 if (MoveDown() == false)
@@ -681,8 +680,7 @@ void GameGroupBlock::ProcessBlockPlacement()
         return;
     }
 
-    //if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
-    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
+        if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));

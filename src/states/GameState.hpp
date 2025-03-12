@@ -152,7 +152,7 @@ private:
     void HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet);
     void HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet);
     void HandleAttackResultPlayerInterruptBlocCount(uint8_t connectionId, const AttackResultPlayerInterruptBlocCountPacket* packet);
-    
+    void HandleSyncBlockPositionY(uint8_t connectionId, const SyncBlockPositionYPacket* packet);    
     void HandleGameOver();
 
     // 이벤트 핸들러

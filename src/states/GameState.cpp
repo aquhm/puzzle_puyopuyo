@@ -651,7 +651,12 @@ void GameState::InitializePacketHandlers()
         }
     );
 
-    
+    packet_processor_.RegisterHandler<SyncBlockPositionYPacket>(
+        PacketType::SyncBlockPositionY,
+        [this](uint8_t connectionId, const SyncBlockPositionYPacket* packet) {
+            HandleSyncBlockPositionY(connectionId, packet);
+        }
+    );    
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -908,6 +913,18 @@ void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* pac
     if (local_player_)
     {
         local_player_->SetComboAttackState(false);
+    }
+}
+
+void GameState::HandleSyncBlockPositionY(uint8_t connectionId, const SyncBlockPositionYPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
+    {
+        if (player->GetId() != localPlayerId_ && remote_player_)
+        {
+            remote_player_->SyncPositionY(packet->position_y, packet->velocity);
+        }
     }
 }
 

@@ -403,4 +403,17 @@ struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
     }
 };
 
+struct SyncBlockPositionYPacket : public PacketBase
+{
+    SyncBlockPositionYPacket()
+    {
+        type = static_cast<uint16_t>(PacketType::SyncBlockPositionY);
+        size = sizeof(SyncBlockPositionYPacket);
+    }
+
+    uint8_t player_id;
+    float position_y;
+    float velocity;
+};
+
 #pragma pack(pop)
