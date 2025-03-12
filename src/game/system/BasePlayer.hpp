@@ -105,7 +105,11 @@ public:
     void SetGameBoardState(BoardState bordState);
 
     void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
-    void SetTotalInterruptBlockCount(uint16_t count) { score_info_.totalInterruptBlockCount += count; }
+    void SetTotalInterruptBlockCount(uint16_t count) 
+    { 
+        score_info_.totalInterruptBlockCount = count; 
+        state_info_.hasIceBlock = count > 0;
+    }
 
 
 protected:

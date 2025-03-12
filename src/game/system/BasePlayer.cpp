@@ -470,6 +470,9 @@ void BasePlayer::LoseGame(bool isWin)
 void BasePlayer::AddInterruptBlock(int16_t count)
 {
     score_info_.totalInterruptBlockCount += count;
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+
+    state_info_.isComboAttack = true;
 
     if (interrupt_view_)
     {

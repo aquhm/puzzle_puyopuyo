@@ -555,9 +555,10 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
 void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
 {
-    score_info_.totalInterruptBlockCount += cnt;
-    state_info_.isComboAttack = true;
+    score_info_.totalInterruptBlockCount += cnt;    
     state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+
+    state_info_.isComboAttack = true;
 
     if (interrupt_view_)
     {

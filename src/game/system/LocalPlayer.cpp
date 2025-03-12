@@ -844,31 +844,10 @@ void LocalPlayer::CalculateScore()
     score_info_.restScore = (currentScore + score_info_.restScore) % GetMargin();
     score_info_.totalScore += currentScore;
 
-    // 방해 블록 상태 업데이트
-    if (score_info_.totalInterruptBlockCount > 0)
-    {
-        score_info_.totalInterruptBlockCount -= score_info_.addInterruptBlockCount;
-
-        if (score_info_.totalInterruptBlockCount <= 0)
-        {
-            score_info_.addInterruptBlockCount = std::abs(score_info_.totalInterruptBlockCount);
-            state_info_.hasIceBlock = false;
-            score_info_.totalInterruptBlockCount = 0;
-        }
-        else
-        {
-            state_info_.hasIceBlock = true;
-        }
-    }
-    else
-    {
-        state_info_.hasIceBlock = false;
-        score_info_.totalInterruptBlockCount = 0;
-    }
-
     UpdateInterruptBlockState();
 }
 
+// 방해 블록 상태 업데이트
 void LocalPlayer::UpdateInterruptBlockState()
 {
     if (score_info_.totalInterruptBlockCount > 0)
@@ -878,7 +857,6 @@ void LocalPlayer::UpdateInterruptBlockState()
         if (score_info_.totalInterruptBlockCount <= 0)
         {
             score_info_.addInterruptBlockCount = std::abs(score_info_.totalInterruptBlockCount);
-            state_info_.hasIceBlock = false;
             score_info_.totalInterruptBlockCount = 0;
 
             if (NETWORK.IsServer())
@@ -888,11 +866,7 @@ void LocalPlayer::UpdateInterruptBlockState()
                     score_info_.totalEnemyInterruptBlockCount += score_info_.addInterruptBlockCount;
                 }
             }
-        }
-        else
-        {
-            state_info_.hasIceBlock = true;
-        }
+        }       
     }
     else
     {
@@ -903,7 +877,10 @@ void LocalPlayer::UpdateInterruptBlockState()
                 score_info_.totalEnemyInterruptBlockCount += score_info_.addInterruptBlockCount;
             }
         }
-        state_info_.hasIceBlock = false;
         score_info_.totalInterruptBlockCount = 0;
     }
+
+    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+
+    LOGGER.Info("LocalPlayer::UpdateInterruptBlockState() state_info_.hasIceBlock {}", state_info_.hasIceBlock);
 }
