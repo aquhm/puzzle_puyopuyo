@@ -16,6 +16,7 @@
 #include "../../../network/NetworkController.hpp"
 #include "../../../network/player/Player.hpp"
 #include "../../../ui/EditBox.hpp"
+#include "../../../utils/StringUtils.hpp"
 
 
 // 로비 관련 패킷 프로세서들
@@ -104,7 +105,10 @@ private:
         {
             if (const auto& edit_box = roomState->GetChatBox())
             {
-                edit_box->InputContent("새로운 사용자가 입장하였습니다.");
+                std::wstring wideMessage = std::format(L"새로운 사용자가 입장하였습니다.");
+                std::string message = StringUtils::WideToUtf8(wideMessage);
+
+                edit_box->InputContent(message);
             }
         }
     }
@@ -124,7 +128,8 @@ public:
         {
             if (const auto edit_box = roomState->GetChatBox())
             {
-                edit_box->InputContent(chat_packet.message.data());
+                std::string formatted_message = std::format("[Player({})]: {}", chat_packet.player_id, chat_packet.message.data());
+                edit_box->InputContent(formatted_message);
             }
         }
 
