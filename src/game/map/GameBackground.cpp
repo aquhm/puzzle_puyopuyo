@@ -25,7 +25,7 @@ GameBackground::GameBackground()
     const float deltaY = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y - Constants::GroupBlock::NEXT_BLOCK_POS_Y;
     const float deltaX = Constants::GroupBlock::NEXT_BLOCK_POS_X - Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X;
     const float next_angle = GameUtils::CalculateAngleInDegrees(deltaY, deltaX);
-    GameUtils::SetDirectionVectorFromDegrees(next_angle, localData.directionVector.x, localData.directionVector.y);
+    GameUtils::SetDirectionVectorFromDegrees(next_angle, localData.direction_vector.x, localData.direction_vector.y);
     player_data_[Constants::PlayerType::Local] = localData;
 
     // 원격 플레이어 초기화
@@ -33,7 +33,7 @@ GameBackground::GameBackground()
     const float playerDeltaY = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y - Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y;
     const float playerDeltaX = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X - Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X;
     const float player_next_angle = GameUtils::CalculateAngleInDegrees(playerDeltaY, playerDeltaX);
-    GameUtils::SetDirectionVectorFromDegrees(player_next_angle, remoteData.directionVector.x, remoteData.directionVector.y);
+    GameUtils::SetDirectionVectorFromDegrees(player_next_angle, remoteData.direction_vector.x, remoteData.direction_vector.y);
     player_data_[Constants::PlayerType::Remote] = remoteData;
 }
 
@@ -70,13 +70,13 @@ void GameBackground::Update(float delta_time)
     {
         data.accumulatedTime += delta_time;
 
-        while (data.groupBlocks.size() > MAX_BLOCKS_IN_QUEUE) 
+        while (data.group_blocks.size() > MAX_BLOCKS_IN_QUEUE) 
         {
-            data.groupBlocks.pop_front();
+            data.group_blocks.pop_front();
             LOGGER.Info("Excessive blocks detected for player {}, truncating queue", static_cast<int>(type));
         }
 
-        if (data.isChangingBlock) 
+        if (data.is_changing_block) 
         {
             UpdateBlockAnimations(delta_time, type);
         }
@@ -89,22 +89,22 @@ GameBackground::BlockAnimationConfig GameBackground::GetAnimationConfig(Constant
 
     if (playerType == Constants::PlayerType::Local) 
     {
-        config.nextBlockPosX = Constants::GroupBlock::NEXT_BLOCK_POS_X;
-        config.nextBlockPosY = Constants::GroupBlock::NEXT_BLOCK_POS_Y;
-        config.nextBlockPosSmallX = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X;
-        config.nextBlockPosSmallY = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y;
+        config.next_block_position_x = static_cast<float>(Constants::GroupBlock::NEXT_BLOCK_POS_X);
+        config.next_block_position_y = static_cast<float>(Constants::GroupBlock::NEXT_BLOCK_POS_Y);
+        config.next_block_position_small_X = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_X;
+        config.next_block_position_small_y = Constants::GroupBlock::NEXT_BLOCK_POS_SMALL_Y;
     }
     else 
     {
-        config.nextBlockPosX = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X;
-        config.nextBlockPosY = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y;
-        config.nextBlockPosSmallX = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X;
-        config.nextBlockPosSmallY = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y;
+        config.next_block_position_x = static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_X);
+        config.next_block_position_y = static_cast<float>(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_Y);
+        config.next_block_position_small_X = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X;
+        config.next_block_position_small_y = Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y;
     }
 
-    config.blockVelocity = Constants::Background::NEW_BLOCK_VELOCITY;
-    config.scaleVelocity = Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
-    config.directionVector = player_data_.at(playerType).directionVector;
+    config.block_velocity = Constants::Background::NEW_BLOCK_VELOCITY;
+    config.scale_velocity = Constants::Background::NEW_BLOCK_SCALE_VELOCITY;
+    config.direction_vector = player_data_.at(playerType).direction_vector;
 
     return config;
 }
@@ -112,14 +112,14 @@ GameBackground::BlockAnimationConfig GameBackground::GetAnimationConfig(Constant
 void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerType playerType)
 {
     auto& data = player_data_[playerType];
-    if (data.groupBlocks.size() < 3)
+    if (data.group_blocks.size() < 3)
     {
         return;
     }
 
-    auto& big_block = data.groupBlocks[0];
-    auto& small_block = data.groupBlocks[1];
-    auto& new_block = data.groupBlocks[2];
+    auto& big_block = data.group_blocks[0];
+    auto& small_block = data.group_blocks[1];
+    auto& new_block = data.group_blocks[2];
 
     auto config = GetAnimationConfig(playerType);
 
@@ -130,7 +130,7 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
     if (big_block) 
     {
         float y = big_block->GetY();
-        y -= delta_time * config.blockVelocity;
+        y -= delta_time * config.block_velocity;
         big_block->SetPosY(y);
 
         if (y <= -(Constants::Block::SIZE * 3)) 
@@ -147,24 +147,24 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
         float width = small_block->GetWidth();
         float height = small_block->GetHeight();
 
-        x += delta_time * config.directionVector.x * config.blockVelocity;
-        y += delta_time * config.directionVector.y * config.blockVelocity;
-        width += delta_time * config.scaleVelocity;
-        height += delta_time * config.scaleVelocity;
+        x += delta_time * config.direction_vector.x * config.block_velocity;
+        y += delta_time * config.direction_vector.y * config.block_velocity;
+        width += delta_time * config.scale_velocity;
+        height += delta_time * config.scale_velocity;
 
         if (playerType == Constants::PlayerType::Local) 
         {
-            if (x < config.nextBlockPosX) 
-                x = config.nextBlockPosX;
+            if (x < config.next_block_position_x) 
+                x = config.next_block_position_x;
         }
         else 
         {
-            if (x > config.nextBlockPosX) 
-                x = config.nextBlockPosX;
+            if (x > config.next_block_position_x) 
+                x = config.next_block_position_x;
         }
 
-        if (y < config.nextBlockPosY)
-            y = config.nextBlockPosY;
+        if (y < config.next_block_position_y)
+            y = config.next_block_position_y;
 
         small_block->SetPosXY(x, y);
 
@@ -176,13 +176,13 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
 
         small_block->SetScale(width, height);
 
-        bool sameX = std::abs(x - config.nextBlockPosX) < 0.1f;
-        bool sameY = std::abs(y - config.nextBlockPosY) < 0.1f;
+        bool sameX = std::abs(x - config.next_block_position_x) < 0.1f;
+        bool sameY = std::abs(y - config.next_block_position_y) < 0.1f;
         bool correctSize = std::abs(width - Constants::Block::SIZE) < 0.1f && std::abs(height - Constants::Block::SIZE) < 0.1f;
 
         if (sameX && sameY && correctSize)
         {
-            small_block->SetPosXY(static_cast<float>(config.nextBlockPosX),static_cast<float>(config.nextBlockPosY));
+            small_block->SetPosXY(static_cast<float>(config.next_block_position_x),static_cast<float>(config.next_block_position_y));
             small_block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
             move_finished = true;
         }
@@ -192,34 +192,34 @@ void GameBackground::UpdateBlockAnimations(float delta_time, Constants::PlayerTy
     if (new_block) 
     {
         float y = new_block->GetY();
-        y -= delta_time * config.blockVelocity;
+        y -= delta_time * config.block_velocity;
 
-        if (static_cast<int>(y) <= config.nextBlockPosSmallY) 
+        if (static_cast<int>(y) <= config.next_block_position_small_y) 
         {
             
 
-            y = static_cast<float>(config.nextBlockPosSmallY);
+            y = static_cast<float>(config.next_block_position_small_y);
 
             /*if (playerType == Constants::PlayerType::Remote)
             {
-                LOGGER.Info("GameBackground::UpdateBlockAnimations move_finish {} size {}", move_finished, data.groupBlocks.size());
+                LOGGER.Info("GameBackground::UpdateBlockAnimations move_finish {} size {}", move_finished, data.group_blocks.size());
             }*/
             if (move_finished) 
             {
-                data.groupBlocks.pop_front();
+                data.group_blocks.pop_front();
 
-                if (data.groupBlocks.size() != 2) 
+                if (data.group_blocks.size() != 2) 
                 {
-                    LOGGER.Info("GameBackground::UpdateBlockAnimations Invalid block count after pop: {} for player {}", data.groupBlocks.size(), static_cast<int>(playerType));
+                    LOGGER.Info("GameBackground::UpdateBlockAnimations Invalid block count after pop: {} for player {}", data.group_blocks.size(), static_cast<int>(playerType));
 
                     // 상태 교정 - 항상 2개의 블록만 남기도록 함
-                    while (data.groupBlocks.size() > 2) 
+                    while (data.group_blocks.size() > 2) 
                     {
-                        data.groupBlocks.pop_front();
+                        data.group_blocks.pop_front();
                     }
                 }
 
-                data.isChangingBlock = false;
+                data.is_changing_block = false;
 
                 // 플레이어에게 알림
                 if (auto gameState = dynamic_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get())) 
@@ -265,7 +265,7 @@ void GameBackground::Render()
     bool shouldRenderBlocks = false;
     for (const auto& [type, data] : player_data_) 
     {
-        if (!data.groupBlocks.empty()) {
+        if (!data.group_blocks.empty()) {
             shouldRenderBlocks = true;
             break;
         }
@@ -287,7 +287,7 @@ void GameBackground::Render()
         // 모든 플레이어의 블록 렌더링
         for (const auto& [type, data] : player_data_) 
         {
-            for (const auto& block : data.groupBlocks) 
+            for (const auto& block : data.group_blocks) 
             {
                 if (block) block->Render();
             }
@@ -312,8 +312,8 @@ void GameBackground::Release()
 
     for (auto& [type, data] : player_data_) 
     {
-        data.groupBlocks.clear();
-        data.isChangingBlock = false;
+        data.group_blocks.clear();
+        data.is_changing_block = false;
     }
 
     render_target_.reset();
@@ -323,8 +323,8 @@ void GameBackground::Reset()
 {
     for (auto& [type, data] : player_data_) 
     {
-        data.groupBlocks.clear();
-        data.isChangingBlock = false;
+        data.group_blocks.clear();
+        data.is_changing_block = false;
     }
 }
 
@@ -337,26 +337,26 @@ void GameBackground::SetNextBlock(const std::shared_ptr<GroupBlock>& block, Cons
 
     auto& data = player_data_[playerType];
 
-    if (data.groupBlocks.size() >= MAX_BLOCKS_IN_QUEUE) 
+    if (data.group_blocks.size() >= MAX_BLOCKS_IN_QUEUE) 
     {
         //LOGGER.Info("GameBackground::SetNextBlock Maximum block count reached for player {}, removing oldest block", static_cast<int>(playerType));
-        data.groupBlocks.pop_front();
+        data.group_blocks.pop_front();
     }
 
     /*if (playerType == Constants::PlayerType::Remote)
     {
-        LOGGER.Info("GameBackground::SetNextBlock size {}", data.groupBlocks.size());
+        LOGGER.Info("GameBackground::SetNextBlock size {}", data.group_blocks.size());
     }*/
 
 
-    data.groupBlocks.emplace_back(block);
-    data.isChangingBlock = true;
+    data.group_blocks.emplace_back(block);
+    data.is_changing_block = true;
     data.accumulatedTime = 0;
 }
 
 void GameBackground::SetChangingBlock(bool state, Constants::PlayerType playerType)
 {
-    player_data_[playerType].isChangingBlock = state;
+    player_data_[playerType].is_changing_block = state;
 }
 
 bool GameBackground::IsChangingBlock(Constants::PlayerType playerType) const
@@ -364,7 +364,7 @@ bool GameBackground::IsChangingBlock(Constants::PlayerType playerType) const
     if (player_data_.count(playerType) == 0) return false;
 
     const auto& data = player_data_.at(playerType);
-    return data.isChangingBlock && data.groupBlocks.size() == 3;
+    return data.is_changing_block && data.group_blocks.size() == 3;
 }
 
 uint8_t GameBackground::GetNewBlockCount(Constants::PlayerType playerType) const
@@ -373,15 +373,15 @@ uint8_t GameBackground::GetNewBlockCount(Constants::PlayerType playerType) const
     {
         return 0;
     }
-    return static_cast<uint8_t>(player_data_.at(playerType).groupBlocks.size());
+    return static_cast<uint8_t>(player_data_.at(playerType).group_blocks.size());
 }
 
 bool GameBackground::IsReadyGame() const
 {
     return player_data_.count(Constants::PlayerType::Local) > 0 &&
         player_data_.count(Constants::PlayerType::Remote) > 0 &&
-        player_data_.at(Constants::PlayerType::Local).groupBlocks.size() == 2 &&
-        player_data_.at(Constants::PlayerType::Remote).groupBlocks.size() == 2;
+        player_data_.at(Constants::PlayerType::Local).group_blocks.size() == 2 &&
+        player_data_.at(Constants::PlayerType::Remote).group_blocks.size() == 2;
 }
 
 bool GameBackground::LoadBackgroundTextures()

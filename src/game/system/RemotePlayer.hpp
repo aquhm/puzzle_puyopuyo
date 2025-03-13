@@ -62,8 +62,6 @@ public:
     // 블록 위치
     void SyncPositionY(float targetY, float velocity);
 
-protected:
-
 private:
     // 초기화 메서드
     void InitializeNextBlocks(const std::span<const uint8_t>& blockType1, const std::span<const uint8_t>& blockType2);

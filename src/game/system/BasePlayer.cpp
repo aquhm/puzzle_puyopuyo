@@ -1,3 +1,4 @@
+
 #include "BasePlayer.hpp"
 
 #include "../../core/manager/ResourceManager.hpp"
@@ -81,9 +82,9 @@ void BasePlayer::Reset()
     
     score_info_.reset();
     state_info_ = GameStateInfo{};
-	state_info_.currentPhase = GamePhase::Playing;
-	state_info_.previousPhase = GamePhase::Playing;
-	state_info_.playTime = 0.0f;
+	state_info_.current_phase = GamePhase::Playing;
+	state_info_.previous_phase = GamePhase::Playing;
+	state_info_.play_time = 0.0f;
     is_game_quit_ = false;
 }
 
@@ -123,7 +124,7 @@ void BasePlayer::Release()
 
 void BasePlayer::Update(float deltaTime)
 {
-    state_info_.playTime += deltaTime;
+    state_info_.play_time += deltaTime;
 
     for (auto* obj : draw_objects_)
     {
@@ -431,11 +432,11 @@ uint8_t BasePlayer::GetTypeBonus(size_t count) const
 
 uint8_t BasePlayer::GetMargin() const
 {
-    const float playTime = state_info_.playTime;
+    const float play_time = state_info_.play_time;
 
     for (const auto& margin : Constants::Game::SCORE_MARGINS)
     {
-        if (playTime <= margin.time)
+        if (play_time <= margin.time)
         {
             return margin.margin;
         }
@@ -462,21 +463,21 @@ void BasePlayer::LoseGame(bool isWin)
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
 
-    state_info_.currentPhase = GamePhase::GameOver;
+    state_info_.current_phase = GamePhase::GameOver;
 
     SetGameQuit();
 }
 
 void BasePlayer::AddInterruptBlock(int16_t count)
 {
-    score_info_.totalInterruptBlockCount += count;
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+    score_info_.total_interrupt_block_count += count;
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
 
-    state_info_.isComboAttack = true;
+    state_info_.is_combo_attack = true;
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -495,8 +496,8 @@ void BasePlayer::SetGameBoardState(BoardState bordState)
 
 void BasePlayer::UpdateInterruptBlock(int16_t count)
 {
-    score_info_.totalInterruptBlockCount = count;
-    state_info_.hasIceBlock = count > 0;
+    score_info_.total_interrupt_block_count = count;
+    state_info_.has_ice_block = count > 0;
 
     if (interrupt_view_)
     {
@@ -660,43 +661,43 @@ bool BasePlayer::FindMatchedBlocks(std::list<BlockVector>& matchedGroups)
 
 void BasePlayer::UpdateComboState() 
 {
-    if (state_info_.previousPhase == GamePhase::Shattering) 
+    if (state_info_.previous_phase == GamePhase::Shattering) 
     {
-        score_info_.comboCount++;
+        score_info_.combo_count++;
     }
-    else if (state_info_.previousPhase == GamePhase::Playing) 
+    else if (state_info_.previous_phase == GamePhase::Playing) 
     {
-        score_info_.comboCount = 1;
+        score_info_.combo_count = 1;
     }
 }
 
 void BasePlayer::ResetComboState() 
 {
-    if (score_info_.comboCount > 0) 
+    if (score_info_.combo_count > 0) 
     {
-        score_info_.comboCount = 0;
+        score_info_.combo_count = 0;
     }
 
-    if (score_info_.restScore > 0) 
+    if (score_info_.rest_score > 0) 
     {
-        score_info_.restScore = 0;
+        score_info_.rest_score = 0;
     }
 }
 
 void BasePlayer::HandlePhaseTransition(GamePhase newPhase) 
 {
-    if (state_info_.currentPhase == newPhase) 
+    if (state_info_.current_phase == newPhase) 
     {
         return;
     }
 
-    state_info_.previousPhase = state_info_.currentPhase;
-    state_info_.currentPhase = newPhase;
+    state_info_.previous_phase = state_info_.current_phase;
+    state_info_.current_phase = newPhase;
 }
 
 void BasePlayer::GenerateIceBlocks() 
 {
-    if (score_info_.totalInterruptBlockCount <= 0 || state_info_.currentPhase != GamePhase::Playing) {
+    if (score_info_.total_interrupt_block_count <= 0 || state_info_.current_phase != GamePhase::Playing) {
         return;
     }
 
@@ -708,7 +709,7 @@ void BasePlayer::GenerateIceBlocks()
 
     const auto playerID = player_id_;
 
-    if (score_info_.totalInterruptBlockCount > 30) 
+    if (score_info_.total_interrupt_block_count > 30) 
     {
         GenerateLargeIceBlockGroup(texture, playerID);
     }
@@ -719,18 +720,18 @@ void BasePlayer::GenerateIceBlocks()
 
     if (interrupt_view_) 
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     HandlePhaseTransition(GamePhase::IceBlocking);
 
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
-    state_info_.defenseCount = 0;
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+    state_info_.defense_count = 0;
 }
 
 void BasePlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID) 
 {
-    score_info_.totalInterruptBlockCount -= 30;    
+    score_info_.total_interrupt_block_count -= 30;    
 
     for (int y = 0; y < 5; y++) 
     {
@@ -746,8 +747,8 @@ void BasePlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>&
 void BasePlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID,
     const std::span<const uint8_t>& xIdxList) 
 {
-    const auto yCnt = score_info_.totalInterruptBlockCount / Constants::Board::BOARD_X_COUNT;
-    const auto xCnt = score_info_.totalInterruptBlockCount % Constants::Board::BOARD_X_COUNT;
+    const auto yCnt = score_info_.total_interrupt_block_count / Constants::Board::BOARD_X_COUNT;
+    const auto xCnt = score_info_.total_interrupt_block_count % Constants::Board::BOARD_X_COUNT;
 
     for (int y = 0; y < yCnt; y++) 
     {
@@ -792,7 +793,7 @@ void BasePlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>&
         }
     }
 
-    score_info_.totalInterruptBlockCount = 0;
+    score_info_.total_interrupt_block_count = 0;
 }
 
 void BasePlayer::InitializeIceBlock(IceBlock* block, const std::shared_ptr<ImageTexture>& texture, int x, int y, uint8_t playerID) 
@@ -852,7 +853,7 @@ bool BasePlayer::ProcessGameOver()
     {
         LoseGame(false);
         NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
-        state_info_.currentPhase = GamePhase::GameOver;
+        state_info_.current_phase = GamePhase::GameOver;
         return true;
     }
     return false;
@@ -918,9 +919,9 @@ void BasePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& group
 
         CreateBullet(firstBlock);
 
-        if (combo_view_ && score_info_.comboCount > 0)
+        if (combo_view_ && score_info_.combo_count > 0)
         {
-            combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.comboCount);
+            combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.combo_count);
         }
     }
 
@@ -962,8 +963,8 @@ void BasePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
+        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
         return;
     }
 
@@ -980,10 +981,10 @@ void BasePlayer::UpdateAfterBlocksCleared()
 
         if (!CheckGameBlockState() && !is_game_quit_)
         {
-            state_info_.currentPhase = GamePhase::Playing;
-            state_info_.previousPhase = state_info_.currentPhase;
+            state_info_.current_phase = GamePhase::Playing;
+            state_info_.previous_phase = state_info_.current_phase;
 
-            if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
+            if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
             {
                 GenerateIceBlocks();
             }
@@ -1045,7 +1046,7 @@ short BasePlayer::RecursionCheckBlock(short x, short y, Constants::Direction dir
 
 void BasePlayer::CollectRemoveIceBlocks()
 {
-    if (block_list_.empty() || matched_blocks_.empty() || state_info_.currentPhase != GamePhase::Shattering)
+    if (block_list_.empty() || matched_blocks_.empty() || state_info_.current_phase != GamePhase::Shattering)
     {
         return;
     }

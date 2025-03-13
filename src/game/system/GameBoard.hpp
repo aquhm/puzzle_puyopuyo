@@ -57,11 +57,11 @@ public:
 
     void SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture);
     void CreateNewBlockInGame(const std::shared_ptr<GroupBlock>& block);
-    void ClearActiveGroupBlock() { activeGroupBlock_ = nullptr; }
+    void ClearActiveGroupBlock() { active_group_block_ = nullptr; }
     void UpdateTargetBlockMark(const std::array<BlockTargetMark, 2>& markInfo);
     void ResetGroupBlock();
 
-    void SetRenderTargetMark(bool render) { isTargetMark_ = render; }
+    void SetRenderTargetMark(bool render) { is_target_mark_ = render; }
     void SetState(BoardState state);
     [[nodiscard]] BoardState GetState() const { return state_; }
 
@@ -83,30 +83,30 @@ private:
 
 private:
 
-    SDL_FRect backgroundSourceRect_{};
-    std::array<BlockTargetMark, 2> targetBlockMarks_{};
+    SDL_FRect background_source_rect_{};
+    std::array<BlockTargetMark, 2> target_block_marks_{};
 
-    std::shared_ptr<ImageTexture> sourceBlock_;
-    std::shared_ptr<ImageTexture> puyoSourceTexture_;
+    std::shared_ptr<ImageTexture> source_block_;
+    std::shared_ptr<ImageTexture> source_texture_;
 
-    SDL_Texture* targetRenderTexture_{ nullptr };
-    SDL_FRect targetRenderRect_{};
+    SDL_Texture* target_render_texture_{ nullptr };
+    SDL_FRect target_render_rect_{};
 
-    bool isScaled_{ false };
-    bool isTargetMark_{ false };
-    uint8_t playerID_{ 0 };
+    bool is_scaled_{ false };
+    bool is_target_mark_{ false };
+    uint8_t player_id_{ 0 };
 
-    std::shared_ptr<GroupBlock> activeGroupBlock_;
-    std::list<std::shared_ptr<Block>>* blockList_;
+    std::shared_ptr<GroupBlock> active_group_block_;
+    std::list<std::shared_ptr<Block>>* block_list_{};
 
     BoardState state_{ BoardState::Normal };
     SDL_FlipMode flip_{ SDL_FLIP_NONE };
 
     // 애니메이션 관련 멤버
-    float accumTime_{ 0.0f };
-    bool isRewind_{ false };
-    float rotAccumAngle_{ 0.0f };
-    float downVelocity_{ 0.0f };
+    float accumulate_time_{ 0.0f };
+    bool is_rewind_{ false };
+    float rotation_Accumulate_angle_{ 0.0f };
+    float down_velocity_{ 0.0f };
     double angle_{ 0.0f };
 
     SDL_FPoint renderTargetPos_{};

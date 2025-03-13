@@ -74,13 +74,13 @@ protected:
     // 블록 애니메이션 상수 구조체
     struct BlockAnimationConfig 
     {
-        SDL_FPoint directionVector;
-        int nextBlockPosX;
-        int nextBlockPosY;
-        int nextBlockPosSmallX;
-        int nextBlockPosSmallY;
-        float blockVelocity;
-        float scaleVelocity;
+        SDL_FPoint direction_vector;
+        float next_block_position_x;
+        float next_block_position_y;
+        int next_block_position_small_X;
+        int next_block_position_small_y;
+        float block_velocity;
+        float scale_velocity;
     };
 
     // 플레이어 타입별 설정 가져오기
@@ -89,7 +89,7 @@ protected:
 protected:
     std::array<std::shared_ptr<ImageTexture>, 2> background_textures_;
     std::array<std::shared_ptr<ImageTexture>, 2> mask_textures_;
-    std::array<SDL_FRect, 2> background_rects_;
+    std::array<SDL_FRect, 2> background_rects_{};
 
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> render_target_;
     SDL_FRect render_target_rect_{};
@@ -97,10 +97,10 @@ protected:
     // 플레이어 타입별 블록 컨테이너 및 상태 관리
     struct PlayerData 
     {
-        bool isChangingBlock = false;
-        std::deque<std::shared_ptr<GroupBlock>> groupBlocks;
+        bool is_changing_block = false;
+        std::deque<std::shared_ptr<GroupBlock>> group_blocks{};
         float accumulatedTime = 0.0f;
-        SDL_FPoint directionVector;
+        SDL_FPoint direction_vector{};
     };
 
     std::map<Constants::PlayerType, PlayerData> player_data_;

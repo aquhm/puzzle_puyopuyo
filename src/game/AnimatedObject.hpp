@@ -66,10 +66,10 @@ public:
     [[nodiscard]] int GetCurrentFrame() const { return animation_info_.current_frame; }
     [[nodiscard]] const SDL_FRect& GetViewRect() const { return sprite_sheet_info_.view_rect; }
 
+    void UpdateFrameRect();
+
 protected:
     std::shared_ptr<ImageTexture> texture_;
     AnimationInfo animation_info_;
     SpriteSheetInfo sprite_sheet_info_;
-
-    void UpdateFrameRect();
 };

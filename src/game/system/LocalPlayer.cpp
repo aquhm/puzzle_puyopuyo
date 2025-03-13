@@ -23,10 +23,6 @@
 #include <algorithm>
 #include <random>
 
-LocalPlayer::LocalPlayer() : BasePlayer(), lastInputTime_(0)
-{
-}
-
 LocalPlayer::~LocalPlayer()
 {
     Release();
@@ -69,8 +65,8 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
 
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = GamePhase::Playing;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = GamePhase::Playing;
 
 
         std::array<uint8_t, 2> first_block_types{};
@@ -123,7 +119,7 @@ void LocalPlayer::InitializeNextBlocks()
 
 void LocalPlayer::UpdateGameLogic(float deltaTime)
 {
-    switch (state_info_.currentPhase)
+    switch (state_info_.current_phase)
     {
     case GamePhase::GameOver:
         if (result_view_)
@@ -167,14 +163,14 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
         {
             if (ProcessGameOver() == false)
             {
-                state_info_.currentPhase = GamePhase::Playing;
+                state_info_.current_phase = GamePhase::Playing;
                 CreateNextBlock();
             }            
         }
     }
     else
     {
-        state_info_.currentPhase = GamePhase::Playing;
+        state_info_.current_phase = GamePhase::Playing;
     }
 }
 
@@ -202,9 +198,9 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
                     CreateBullet(firstBlock);                    
 
-                    if (combo_view_ && score_info_.comboCount > 0 && !groupIter->empty())
+                    if (combo_view_ && score_info_.combo_count > 0 && !groupIter->empty())
                     {
-                        combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.comboCount);
+                        combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.combo_count);
                     }
                 }
 
@@ -277,9 +273,9 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
 
                 if (CheckGameBlockState() == false)
                 {
-                    if (!state_info_.shouldQuit)
+                    if (!state_info_.should_quit)
                     {
-                        if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
+                        if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
                         {
                             GenerateIceBlocks();
                         }
@@ -293,9 +289,9 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
         }
         else
         {
-            if (state_info_.shouldQuit)
+            if (state_info_.should_quit)
             {
-                state_info_.currentPhase = GamePhase::GameOver;
+                state_info_.current_phase = GamePhase::GameOver;
             }
             else
             {
@@ -304,10 +300,10 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
                     NETWORK.StopComboAttack();
                 }
 
-                state_info_.currentPhase = GamePhase::Playing;
-                state_info_.previousPhase = GamePhase::Playing;
+                state_info_.current_phase = GamePhase::Playing;
+                state_info_.previous_phase = GamePhase::Playing;
 
-                if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
+                if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
                 {
                     GenerateIceBlocks();
                 }
@@ -475,15 +471,15 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
         game_board_->ClearActiveGroupBlock();
     }
 
-    if (CheckGameBlockState() == false && state_info_.currentPhase == GamePhase::Playing)
+    if (CheckGameBlockState() == false && state_info_.current_phase == GamePhase::Playing)
     {
-        if (state_info_.isDefending)
+        if (state_info_.is_defending)
         {
-            state_info_.isDefending = false;
-            state_info_.defenseCount = 0;
+            state_info_.is_defending = false;
+            state_info_.defense_count = 0;
         }
 
-        if (score_info_.totalInterruptBlockCount > 0 && !state_info_.isComboAttack && !state_info_.isDefending)
+        if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
         {
             GenerateIceBlocks();
         }
@@ -494,17 +490,17 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
     }
     else
     {
-        if (state_info_.hasIceBlock)
+        if (state_info_.has_ice_block)
         {
-            if (state_info_.defenseCount >= 1 && !state_info_.isComboAttack)
+            if (state_info_.defense_count >= 1 && !state_info_.is_combo_attack)
             {
-                state_info_.isDefending = false;
-                state_info_.defenseCount = 0;
+                state_info_.is_defending = false;
+                state_info_.defense_count = 0;
                 return true;
             }
 
-            state_info_.defenseCount++;
-            state_info_.isDefending = true;
+            state_info_.defense_count++;
+            state_info_.is_defending = true;
         }
     }
 
@@ -515,16 +511,16 @@ bool LocalPlayer::PushBlockInGame(GameGroupBlock* groupBlock)
 
 void LocalPlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 {
-    NETWORK.AttackInterruptBlock(score_info_.addInterruptBlockCount, x, y, type);
+    NETWORK.AttackInterruptBlock(score_info_.add_interrupt_block_count, x, y, type);
 }
 
 void LocalPlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
-    score_info_.totalEnemyInterruptBlockCount -= count;
+    score_info_.total_enemy_interrupt_block_count -= count;
 
-    if (score_info_.totalEnemyInterruptBlockCount < 0)
+    if (score_info_.total_enemy_interrupt_block_count < 0)
     {
-        score_info_.totalEnemyInterruptBlockCount = 0;
+        score_info_.total_enemy_interrupt_block_count = 0;
     }
        
     NotifyEvent(std::make_shared<DefenseBlockEvent>(player_id_, count, x, y, type));
@@ -556,8 +552,8 @@ bool LocalPlayer::Restart(const std::span<const uint8_t>& blockType1, const std:
 
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = GamePhase::Playing;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = GamePhase::Playing;
 
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
@@ -595,6 +591,11 @@ void LocalPlayer::UpdateTargetPosIdx()
             for (int yIdx = 0; yIdx < Constants::Board::BOARD_Y_COUNT; ++yIdx)
             {
                 if (checkIdxX == xIdx && checkIdxY == yIdx)
+                {
+                    continue;
+                }
+
+                if (yIdx < 0 || yIdx >= Constants::Board::BOARD_Y_COUNT)
                 {
                     continue;
                 }
@@ -637,8 +638,8 @@ void LocalPlayer::CreateBullet(Block* block)
 
     SDL_FPoint endPos;
 
-    //LOGGER.Info("LocalPlayer::CreateBullet - state_info_.hasIceBlock = {}", state_info_.hasIceBlock);
-    if (state_info_.hasIceBlock)
+    //LOGGER.Info("LocalPlayer::CreateBullet - state_info_.has_ice_block = {}", state_info_.has_ice_block);
+    if (state_info_.has_ice_block)
     {
         endPos =
         {
@@ -647,7 +648,7 @@ void LocalPlayer::CreateBullet(Block* block)
         };
 
         NETWORK.DefenseInterruptBlock(
-            score_info_.addInterruptBlockCount,
+            score_info_.add_interrupt_block_count,
             block->GetX(),
             block->GetY(),
             static_cast<uint8_t>(block->GetBlockType())
@@ -656,7 +657,7 @@ void LocalPlayer::CreateBullet(Block* block)
         // 플레이어 방해블록개수 갱신
         if (interrupt_view_)
         {
-            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+            interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
         }
     }
     else
@@ -669,7 +670,7 @@ void LocalPlayer::CreateBullet(Block* block)
 
         // 플레이어 방해블록개수 갱신
         NETWORK.AttackInterruptBlock(
-            score_info_.addInterruptBlockCount,
+            score_info_.add_interrupt_block_count,
             block->GetX(),
             block->GetY(),
             static_cast<uint8_t>(block->GetBlockType())
@@ -678,16 +679,16 @@ void LocalPlayer::CreateBullet(Block* block)
 
         if (NETWORK.IsServer())
         {
-            NotifyEvent(std::make_shared<AddInterruptBlockEvent>(player_id_, score_info_.addInterruptBlockCount));
+            NotifyEvent(std::make_shared<AddInterruptBlockEvent>(player_id_, score_info_.add_interrupt_block_count));
         }        
 
         if (interrupt_view_)
         {
-            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+            interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
         }
     }
 
-    score_info_.addInterruptBlockCount = 0;
+    score_info_.add_interrupt_block_count = 0;
 
     auto bullet = std::make_shared<BulletEffect>();
     if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
@@ -696,7 +697,7 @@ void LocalPlayer::CreateBullet(Block* block)
         return;
     }
 
-    bullet->SetAttacking(!state_info_.hasIceBlock);
+    bullet->SetAttacking(!state_info_.has_ice_block);
 
     bullet_list_.push_back(bullet);
 
@@ -764,7 +765,7 @@ bool LocalPlayer::ProcessGameOver()
 
         NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
 
-		state_info_.currentPhase = GamePhase::GameOver;
+		state_info_.current_phase = GamePhase::GameOver;
 
 		return true;
     }
@@ -776,8 +777,8 @@ void LocalPlayer::AddInterruptBlockCount(int16_t count, float x, float y, uint8_
 {
     if (NETWORK.IsServer())
     {
-		state_info_.isComboAttack = true;
-        score_info_.totalEnemyInterruptBlockCount = 0;
+		state_info_.is_combo_attack = true;
+        score_info_.total_enemy_interrupt_block_count = 0;
 
         AddInterruptBlock(count);
 		
@@ -792,7 +793,7 @@ bool LocalPlayer::CheckGameBlockState()
         game_board_->SetRenderTargetMark(false);
     }
 
-    if (state_info_.shouldQuit)
+    if (state_info_.should_quit)
     {
         HandlePhaseTransition(GamePhase::GameOver);
         ResetComboState();
@@ -835,8 +836,8 @@ bool LocalPlayer::CheckGameBlockState()
         return true;
     }
 
-    state_info_.currentPhase = GamePhase::Playing;
-    state_info_.previousPhase = GamePhase::Playing;
+    state_info_.current_phase = GamePhase::Playing;
+    state_info_.previous_phase = GamePhase::Playing;
 
     return false;
 }
@@ -856,7 +857,7 @@ void LocalPlayer::CalculateScore()
     uint8_t linkBonus = 0;
     uint8_t blockCount = 0;
     uint8_t typeBonus = GetTypeBonus(matched_blocks_.size());
-    short comboBonus = GetComboConstant(score_info_.comboCount);
+    short comboBonus = GetComboConstant(score_info_.combo_count);
 
     for (const auto& group : matched_blocks_)
     {
@@ -866,9 +867,9 @@ void LocalPlayer::CalculateScore()
 
     int currentScore = ((blockCount * Constants::Game::Score::BASE_MATCH_SCORE) * (comboBonus + linkBonus + typeBonus + 1));
 
-    score_info_.addInterruptBlockCount = (currentScore + score_info_.restScore) / GetMargin();
-    score_info_.restScore = (currentScore + score_info_.restScore) % GetMargin();
-    score_info_.totalScore += currentScore;
+    score_info_.add_interrupt_block_count = (currentScore + score_info_.rest_score) / GetMargin();
+    score_info_.rest_score = (currentScore + score_info_.rest_score) % GetMargin();
+    score_info_.total_score += currentScore;
 
     UpdateInterruptBlockState();
 }
@@ -876,20 +877,20 @@ void LocalPlayer::CalculateScore()
 // 방해 블록 상태 업데이트
 void LocalPlayer::UpdateInterruptBlockState()
 {
-    if (score_info_.totalInterruptBlockCount > 0)
+    if (score_info_.total_interrupt_block_count > 0)
     {
-        score_info_.totalInterruptBlockCount -= score_info_.addInterruptBlockCount;
+        score_info_.total_interrupt_block_count -= score_info_.add_interrupt_block_count;
 
-        if (score_info_.totalInterruptBlockCount <= 0)
+        if (score_info_.total_interrupt_block_count <= 0)
         {
-            score_info_.addInterruptBlockCount = std::abs(score_info_.totalInterruptBlockCount);
-            score_info_.totalInterruptBlockCount = 0;
+            score_info_.add_interrupt_block_count = std::abs(score_info_.total_interrupt_block_count);
+            score_info_.total_interrupt_block_count = 0;
 
             if (NETWORK.IsServer())
             {
-                if (score_info_.addInterruptBlockCount > 0)
+                if (score_info_.add_interrupt_block_count > 0)
                 {
-                    score_info_.totalEnemyInterruptBlockCount += score_info_.addInterruptBlockCount;
+                    score_info_.total_enemy_interrupt_block_count += score_info_.add_interrupt_block_count;
                 }
             }
         }       
@@ -898,15 +899,15 @@ void LocalPlayer::UpdateInterruptBlockState()
     {
         if (NETWORK.IsServer())
         {
-            if (score_info_.addInterruptBlockCount > 0)
+            if (score_info_.add_interrupt_block_count > 0)
             {
-                score_info_.totalEnemyInterruptBlockCount += score_info_.addInterruptBlockCount;
+                score_info_.total_enemy_interrupt_block_count += score_info_.add_interrupt_block_count;
             }
         }
-        score_info_.totalInterruptBlockCount = 0;
+        score_info_.total_interrupt_block_count = 0;
     }
 
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
 
-    //LOGGER.Info("LocalPlayer::UpdateInterruptBlockState() state_info_.hasIceBlock {}", state_info_.hasIceBlock);
+    //LOGGER.Info("LocalPlayer::UpdateInterruptBlockState() state_info_.has_ice_block {}", state_info_.has_ice_block);
 }

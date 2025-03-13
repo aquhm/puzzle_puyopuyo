@@ -14,23 +14,23 @@ void IceBlock::SetState(BlockState state)
     switch (state_) 
     {
     case BlockState::Stationary:
-        sourceRect_.x = blockOriginPos_.x;
-        sourceRect_.y = blockOriginPos_.y;
-        downVelocity_ = 0.0f;
-        accumEffectTime_ = 0.0f;
+        source_rect_.x = block_origin_Position_.x;
+        source_rect_.y = block_origin_Position_.y;
+        down_velocity_ = 0.0f;
+        accumulate_time_ = 0.0f;
         break;
 
     case BlockState::Destroying:
         alpha_ = 255.0f;
-        accumEffectTime_ = 0.0f;
+        accumulate_time_ = 0.0f;
         break;
 
     case BlockState::DownMoving:
         break;
 
     case BlockState::PlayOut:
-        accumEffectTime_ = 0.0f;
-        rotationAngle_ = 0.0f;
+        accumulate_time_ = 0.0f;
+        rotation_angle_ = 0.0f;
         break;
 
     default:
@@ -60,23 +60,23 @@ void IceBlock::UpdateDestroying(float deltaTime)
     constexpr float DESTROY_DURATION = 1.5f;
     constexpr float ALPHA_RATE = 255.0f / DESTROY_DURATION;
 
-    accumEffectTime_ += deltaTime;
+    accumulate_time_ += deltaTime;
 
-    if (accumEffectTime_ <= DESTROY_DURATION) 
+    if (accumulate_time_ <= DESTROY_DURATION) 
     {
         if (texture_ && alpha_ > 0) 
         {
-            alpha_ = 255.0f - (accumEffectTime_ * ALPHA_RATE);
+            alpha_ = 255.0f - (accumulate_time_ * ALPHA_RATE);
         }
     }
 }
 
 void IceBlock::UpdateDownMoving(float deltaTime) 
 {
-    float fallSpeed = deltaTime * static_cast<float>(Constants::Board::BOARD_Y_COUNT - indexY_);
+    float fallSpeed = deltaTime * static_cast<float>(Constants::Board::BOARD_Y_COUNT - index_y_);
 
-    downVelocity_ += fallSpeed * 0.1f;
-    position_.y += downVelocity_;
+    down_velocity_ += fallSpeed * 0.1f;
+    position_.y += down_velocity_;
     SetY(position_.y);
 
     Block* (*blocks)[Constants::Board::BOARD_X_COUNT] = nullptr;
@@ -98,7 +98,7 @@ void IceBlock::UpdateDownMoving(float deltaTime)
 
     for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y) 
     {
-        Block* block = blocks[y][indexX_];
+        Block* block = blocks[y][index_x_];
         if (!block || block == this)
         {
             continue;
@@ -127,12 +127,12 @@ void IceBlock::UpdateDownMoving(float deltaTime)
 
     if (!canMove) 
     {
-        if (isInitialized_) 
+        if (is_initialized_) 
         {
-            if (indexY_ >= 0 && indexY_ < Constants::Board::BOARD_Y_COUNT &&
-                indexX_ >= 0 && indexX_ < Constants::Board::BOARD_X_COUNT)
+            if (index_y_ >= 0 && index_y_ < Constants::Board::BOARD_Y_COUNT &&
+                index_x_ >= 0 && index_x_ < Constants::Board::BOARD_X_COUNT)
             {
-                blocks[indexY_][indexX_] = nullptr;
+                blocks[index_y_][index_x_] = nullptr;
             }
         }
 
@@ -140,11 +140,11 @@ void IceBlock::UpdateDownMoving(float deltaTime)
         newIndexY = std::max<int>(0, std::min<int>(newIndexY, Constants::Board::BOARD_Y_COUNT - 1));
 
         if (newIndexY >= 0 && newIndexY < Constants::Board::BOARD_Y_COUNT &&
-            indexX_ >= 0 && indexX_ < Constants::Board::BOARD_X_COUNT)
+            index_x_ >= 0 && index_x_ < Constants::Board::BOARD_X_COUNT)
         {
-            blocks[newIndexY][indexX_] = this;
-            indexY_ = newIndexY;
-            isInitialized_ = true;
+            blocks[newIndexY][index_x_] = this;
+            index_y_ = newIndexY;
+            is_initialized_ = true;
             SetState(BlockState::Stationary);
         }       
     }
@@ -159,12 +159,12 @@ void IceBlock::Render()
 
     texture_->SetAlpha(static_cast<uint8_t>(alpha_));
 
-    if (isScaled_) 
+    if (is_scaled_) 
     {
-        texture_->RenderScaled(&sourceRect_, &destination_rect_, rotationAngle_);
+        texture_->RenderScaled(&source_rect_, &destination_rect_, rotation_angle_);
     }
     else 
     {
-        texture_->Render(position_.x, position_.y, &sourceRect_);
+        texture_->Render(position_.x, position_.y, &source_rect_);
     }
 }

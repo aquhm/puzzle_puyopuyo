@@ -53,7 +53,7 @@ public:
     [[nodiscard]] bool IsGameRunning() const noexcept { return is_running_; }
     [[nodiscard]] int GetWindowWidth() const noexcept { return window_width_; }
     [[nodiscard]] int GetWindowHeight() const noexcept { return window_height_; }
-    [[nodiscard]] bool IsFullscreen() const noexcept { return is_fullscreen_; }
+    [[nodiscard]] bool IsFullscreen() const noexcept { return is_full_screen_; }
     [[nodiscard]] float GetAccumulatedTime() const noexcept { return accumulated_time_; }
     [[nodiscard]] float GetElapsedTime() const noexcept { return elapsed_time_; }
 
@@ -142,7 +142,7 @@ private:
     std::unique_ptr<WindowsMessageHandler> windowMessageHandler_;
 
     std::atomic<bool> is_running_{ false };
-    std::atomic<bool> is_fullscreen_{ false };
+    std::atomic<bool> is_full_screen_{ false };
     int window_width_{ Constants::Window::DEFAULT_WIDTH };
     int window_height_{ Constants::Window::DEFAULT_HEIGHT };
     float accumulated_time_{ 0.0f };

@@ -20,7 +20,7 @@ private:
         std::function<void()> callback;
     };
 
-    TimerScheduler() : nextTimerId_(1) {}
+    TimerScheduler() : next_timer_id_(1) {}
     ~TimerScheduler() = default;
 
     TimerScheduler(const TimerScheduler&) = delete;
@@ -44,9 +44,9 @@ public:
             std::chrono::duration_cast<std::chrono::steady_clock::duration>(
                 std::chrono::duration<float>(delayInSeconds));
 
-        TimerId newId = nextTimerId_++;
+        TimerId newId = next_timer_id_++;
 
-        scheduledTasks_.push_back({ newId, executeTime, std::move(callback) });
+        scheduled_tasks_.push_back({ newId, executeTime, std::move(callback) });
 
         return newId;
     }
@@ -54,15 +54,15 @@ public:
     // 예약된 작업 취소
     bool CancelTask(TimerId id) 
     {
-        auto it = std::find_if(scheduledTasks_.begin(), scheduledTasks_.end(),
+        auto it = std::find_if(scheduled_tasks_.begin(), scheduled_tasks_.end(),
             [id](const Task& task) 
             {
                 return task.id == id; 
             });
 
-        if (it != scheduledTasks_.end()) 
+        if (it != scheduled_tasks_.end()) 
         {
-            scheduledTasks_.erase(it);
+            scheduled_tasks_.erase(it);
             return true;
         }
 
@@ -75,7 +75,7 @@ public:
 
         std::vector<std::function<void()>> tasksToExecute;
 
-        auto newEnd = std::remove_if(scheduledTasks_.begin(), scheduledTasks_.end(),
+        auto newEnd = std::remove_if(scheduled_tasks_.begin(), scheduled_tasks_.end(),
             [&](const Task& task) 
             {
                 if (task.executeTime <= now) 
@@ -86,7 +86,7 @@ public:
                 return false;
             });
 
-        scheduledTasks_.erase(newEnd, scheduledTasks_.end());
+        scheduled_tasks_.erase(newEnd, scheduled_tasks_.end());
 
         for (const auto& callback : tasksToExecute) 
         {
@@ -95,8 +95,8 @@ public:
     }
 
 private:
-    std::vector<Task> scheduledTasks_;
-    TimerId nextTimerId_;
+    std::vector<Task> scheduled_tasks_;
+    TimerId next_timer_id_;
 };
 
 #define TIMER_SCHEDULER TimerScheduler::GetInstance()

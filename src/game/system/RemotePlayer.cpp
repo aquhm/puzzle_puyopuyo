@@ -63,9 +63,9 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
-		state_info_.playTime = 0.0f;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
+		state_info_.play_time = 0.0f;
 
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
@@ -123,9 +123,9 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
         InitializeViews();
 
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
-		state_info_.playTime = 0.0f;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
+		state_info_.play_time = 0.0f;
 
         return true;
     }
@@ -138,7 +138,7 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
 void RemotePlayer::UpdateGameState(float deltaTime)
 {
-    switch (state_info_.currentPhase)
+    switch (state_info_.current_phase)
     {
     case GamePhase::GameOver:
         UpdateGameOverState(deltaTime);
@@ -220,7 +220,7 @@ void RemotePlayer::UpdateIceBlockDowningState()
 
     if (all_blocks_stationary)
     {
-		state_info_.currentPhase = GamePhase::Playing;
+		state_info_.current_phase = GamePhase::Playing;
         PlayNextBlock();
     }
 }
@@ -297,9 +297,9 @@ void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& gro
 
 void RemotePlayer::UpdateComboDisplay(const SDL_FPoint& pos)
 {	
-    if (combo_view_ && score_info_.comboCount > 0)
+    if (combo_view_ && score_info_.combo_count > 0)
     {
-        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, score_info_.comboCount);
+        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, score_info_.combo_count);
     }
 }
 
@@ -312,8 +312,8 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
+        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
         return;
     }
 
@@ -330,8 +330,8 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
         if (CheckGameBlockState() == false && !is_game_quit_)
         {
-            state_info_.currentPhase = GamePhase::Playing;
-            state_info_.previousPhase = state_info_.currentPhase;
+            state_info_.current_phase = GamePhase::Playing;
+            state_info_.previous_phase = state_info_.current_phase;
         }
     }
 }
@@ -369,7 +369,7 @@ void RemotePlayer::PlayNextBlock()
 
 bool RemotePlayer::CheckGameBlockState()
 {
-    if (state_info_.shouldQuit)
+    if (state_info_.should_quit)
     {
 		HandlePhaseTransition(GamePhase::GameOver);
         return true;
@@ -409,7 +409,7 @@ bool RemotePlayer::CheckGameBlockState()
         ResetComboState();
     }
 
-    HandlePhaseTransition(state_info_.shouldQuit ? GamePhase::GameOver : GamePhase::Playing);
+    HandlePhaseTransition(state_info_.should_quit ? GamePhase::GameOver : GamePhase::Playing);
 
     return false;
 }
@@ -530,7 +530,7 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
             game_board_->ClearActiveGroupBlock();
         }
 
-        if (!is_game_quit_ && !CheckGameBlockState() && state_info_.currentPhase == GamePhase::Playing)
+        if (!is_game_quit_ && !CheckGameBlockState() && state_info_.current_phase == GamePhase::Playing)
         {
             //DestroyNextBlock();
         }
@@ -543,8 +543,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
 
 void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx)
 {
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
-    if (state_info_.hasIceBlock == false)
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+    if (state_info_.has_ice_block == false)
     {
         return;
     }
@@ -568,11 +568,11 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
         if (interrupt_view_)
         {
-            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+            interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
         }
 
-        state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
-        state_info_.currentPhase = GamePhase::IceBlocking;
+        state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+        state_info_.current_phase = GamePhase::IceBlocking;
     }
     catch (const std::exception& e)
     {
@@ -582,14 +582,14 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
 void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
 {
-    score_info_.totalInterruptBlockCount += cnt;    
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;
+    score_info_.total_interrupt_block_count += cnt;    
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
 
-    state_info_.isComboAttack = true;
+    state_info_.is_combo_attack = true;
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -607,7 +607,7 @@ void RemotePlayer::CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& t
             CreateSingleIceBlock(x, y, texture);
         }
     }
-    score_info_.totalInterruptBlockCount -= 30;
+    score_info_.total_interrupt_block_count -= 30;
 }
 
 void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx, std::shared_ptr<ImageTexture>& texture)
@@ -625,7 +625,7 @@ void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std:
         CreateSingleIceBlock(x_idx[i], y_row_cnt, texture);
     }
 
-    score_info_.totalInterruptBlockCount -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
+    score_info_.total_interrupt_block_count -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
 }
 
 void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTexture>& texture)
@@ -655,7 +655,7 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
     };
 
     SDL_FPoint end_pos;
-    if (state_info_.hasIceBlock)
+    if (state_info_.has_ice_block)
     {
         end_pos =
         {
@@ -691,12 +691,12 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 
 void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
-    score_info_.totalInterruptBlockCount = std::max<uint16_t>(0, score_info_.totalInterruptBlockCount - count);
-    state_info_.hasIceBlock = score_info_.totalInterruptBlockCount > 0;    
+    score_info_.total_interrupt_block_count = std::max<uint16_t>(0, score_info_.total_interrupt_block_count - count);
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;    
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     const SDL_FPoint start_pos
@@ -792,7 +792,7 @@ void RemotePlayer::CreateBullet(Block* block)
     };
 
     SDL_FPoint endPos;
-    if (state_info_.hasIceBlock)
+    if (state_info_.has_ice_block)
     {
         endPos =
         {
@@ -818,7 +818,7 @@ void RemotePlayer::CreateBullet(Block* block)
 
 
     //LOGGER.Error("1111111 RemotePlayer::CreateBullet");
-    bullet->SetAttacking(!state_info_.hasIceBlock);
+    bullet->SetAttacking(!state_info_.has_ice_block);
     bullet_list_.push_back(bullet);
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)

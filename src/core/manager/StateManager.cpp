@@ -7,8 +7,8 @@
 #include <format>
 
 StateManager::StateManager()
-    : currentStateId_(StateID::Max)
-    , currentState_(nullptr)
+    : current_state_id_(StateID::Max)
+    , current_state_(nullptr)
     , initialized_(false)
     , paused_(false)
 {
@@ -58,58 +58,58 @@ void StateManager::Update(float deltaTime)
     ProcessStateChangeRequests();
 
     // 현재 상태 업데이트
-    if (currentState_) 
+    if (current_state_) 
     {
-        currentState_->Update(deltaTime);
+        current_state_->Update(deltaTime);
     }
 }
 
 void StateManager::ProcessStateChangeRequests()
 {
-    while (!stateChangeQueue_.empty()) 
+    while (!state_change_queue_.empty()) 
     {
-        StateID newState = stateChangeQueue_.front();
+        StateID newState = state_change_queue_.front();
         ChangeState(newState);
-        stateChangeQueue_.pop();
+        state_change_queue_.pop();
     }
 }
 
 void StateManager::Render()
 {
-    if (currentState_ != nullptr)
+    if (current_state_ != nullptr)
     {
-        currentState_->Render();
+        current_state_->Render();
     }
 }
 
 void StateManager::HandleEvent(const SDL_Event& event)
 {
-    if (!initialized_ || paused_ || !currentState_) 
+    if (!initialized_ || paused_ || !current_state_) 
     {
         return;
     }
 
-    currentState_->HandleEvent(event);
+    current_state_->HandleEvent(event);
 }
 
 void StateManager::HandleNetworkMessage(uint8_t connectionId, std::span<const char> message, uint32_t length)
 {
-    if (!initialized_ || paused_ || !currentState_) 
+    if (!initialized_ || paused_ || !current_state_) 
     {
         return;
     }
 
-    currentState_->HandleNetworkMessage(connectionId, message, length);
+    current_state_->HandleNetworkMessage(connectionId, message, length);
 }
 
 void StateManager::RequestStateChange(StateID newState)
 {
-    if (currentStateId_ == newState) 
+    if (current_state_id_ == newState) 
     {
         return;
     }
 
-    stateChangeQueue_.push(newState);
+    state_change_queue_.push(newState);
 }
 
 void StateManager::ChangeState(StateID newState)
@@ -121,27 +121,27 @@ void StateManager::ChangeState(StateID newState)
         throw std::runtime_error(std::format("Invalid state requested: {}", static_cast<int>(newState)));
     }
 
-    if (currentState_) 
+    if (current_state_) 
     {
-        currentState_->Leave();
+        current_state_->Leave();
     }
 
-    currentStateId_ = newState;
-    currentState_ = it->second;
+    current_state_id_ = newState;
+    current_state_ = it->second;
 
-    if (currentState_->isInitialized() == false)
+    if (current_state_->isInitialized() == false)
     {
-        currentState_->Init();
+        current_state_->Init();
     }
     
-    currentState_->Enter();
+    current_state_->Enter();
 
     LOGGER.Info("State changed to: {}", static_cast<int>(newState));
 }
 
 void StateManager::PauseCurrentState()
 {
-    if (!paused_ && currentState_) 
+    if (!paused_ && current_state_) 
     {
         paused_ = true;
     }
@@ -149,7 +149,7 @@ void StateManager::PauseCurrentState()
 
 void StateManager::ResumeCurrentState()
 {
-    if (paused_ && currentState_) 
+    if (paused_ && current_state_) 
     {
         paused_ = false;
     }
@@ -162,9 +162,9 @@ void StateManager::Release()
         return;
     }
 
-    if (currentState_) 
+    if (current_state_) 
     {
-        currentState_->Leave();
+        current_state_->Leave();
     }
 
     // 모든 상태들의 리소스 해제
@@ -179,13 +179,13 @@ void StateManager::Release()
 
     // 컨테이너들 정리
     states_.clear();
-    while (!stateChangeQueue_.empty()) 
+    while (!state_change_queue_.empty()) 
     {
-        stateChangeQueue_.pop();
+        state_change_queue_.pop();
     }
 
-    currentState_.reset();
-    currentStateId_ = StateID::Max;
+    current_state_.reset();
+    current_state_id_ = StateID::Max;
     initialized_ = false;
     paused_ = false;
 }

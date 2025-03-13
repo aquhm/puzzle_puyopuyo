@@ -18,7 +18,7 @@ class ImageTexture;
 class LocalPlayer : public BasePlayer 
 {
 public:
-    LocalPlayer();
+    LocalPlayer() = default;
     ~LocalPlayer() override;
 
     bool Initialize(const std::span<const uint8_t>& blockType1,
@@ -64,5 +64,5 @@ private:
 private:
 
     // 상태 변수
-    uint64_t lastInputTime_{ 0 };
+    uint64_t last_inputTime_{ 0 };
 };

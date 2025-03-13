@@ -80,15 +80,15 @@ public:
     virtual void SetGameQuit() { is_game_quit_ = true; }
 
     // 상태 조회
-    GamePhase GetGameState() const { return state_info_.currentPhase; }
+    GamePhase GetGameState() const { return state_info_.current_phase; }
     uint8_t GetPlayerID() const { return player_id_; }
-    int16_t GetTotalInterruptBlockCount() const { return score_info_.totalInterruptBlockCount; }
-    int16_t GetTotalEnemyInterruptBlockCount() const { return score_info_.totalEnemyInterruptBlockCount; }
+    int16_t GetTotalInterruptBlockCount() const { return score_info_.total_interrupt_block_count; }
+    int16_t GetTotalEnemyInterruptBlockCount() const { return score_info_.total_enemy_interrupt_block_count; }
     std::shared_ptr<GameBoard> GetGameBoard() const { return game_board_; }
     Block* (*GetGameBlocks())[Constants::Board::BOARD_X_COUNT] { return board_blocks_; }
 
-    bool IsRunning() const { return state_info_.isRunning; }
-    void SetRunning(bool running) { state_info_.isRunning = running; }
+    bool IsRunning() const { return state_info_.is_running; }
+    void SetRunning(bool running) { state_info_.is_running = running; }
     [[nodiscard]] bool IsPossibleMove(int xIdx);
     [[nodiscard]] const std::shared_ptr<InterruptBlockView>& GetInterruptView() { return interrupt_view_; }
 
@@ -104,11 +104,11 @@ public:
     void SetBackGround(const std::shared_ptr<GameBackground>& backGround) { background_ = backGround; }
     void SetGameBoardState(BoardState bordState);
 
-    void SetComboAttackState(bool enable) { state_info_.isComboAttack = enable; }
+    void SetComboAttackState(bool enable) { state_info_.is_combo_attack = enable; }
     void SetTotalInterruptBlockCount(uint16_t count) 
     { 
-        score_info_.totalInterruptBlockCount = count; 
-        state_info_.hasIceBlock = count > 0;
+        score_info_.total_interrupt_block_count = count; 
+        state_info_.has_ice_block = count > 0;
     }
 
 
@@ -170,34 +170,35 @@ protected:
     // 게임 상태 관리 구조체
     struct GameStateInfo 
 {
-        GamePhase currentPhase{ GamePhase::Standing };
-        GamePhase previousPhase{ GamePhase::Standing };
-        float playTime{ 0.0f };
-        bool isRunning{ false };
-        bool isDefending{ false };
-        bool isAttacked{ false };
-        bool isComboAttack{ false };
-        bool shouldQuit{ false };
-        uint8_t defenseCount{ 0 };
-        bool hasIceBlock{ false };  // 방해 블록 보유 여부
+        GamePhase current_phase{ GamePhase::Standing };
+        GamePhase previous_phase{ GamePhase::Standing };
+        float play_time{ 0.0f };
+        bool is_running{ false };
+        bool is_defending{ false };
+        bool is_attacked{ false };
+        bool is_combo_attack{ false };
+        bool should_quit{ false };
+        uint8_t defense_count{ 0 };
+        bool has_ice_block{ false };  // 방해 블록 보유 여부
     };
 
     // 점수 관리 구조체
     struct ScoreInfo 
     {
-        uint32_t totalScore{ 0 };
-        uint32_t restScore{ 0 };
-        uint8_t comboCount{ 0 };
-        int16_t totalInterruptBlockCount{ 0 };
-        int16_t totalEnemyInterruptBlockCount{ 0 };
-        int16_t addInterruptBlockCount{ 0 };
+        uint32_t total_score{ 0 };
+        uint32_t rest_score{ 0 };
+        uint8_t combo_count{ 0 };
+        int16_t total_interrupt_block_count{ 0 };
+        int16_t total_enemy_interrupt_block_count{ 0 };
+        int16_t add_interrupt_block_count{ 0 };
 
         void reset() {
-            totalScore = restScore = 0;
-            comboCount = 0;
-            totalInterruptBlockCount = 0;
-            totalEnemyInterruptBlockCount = 0;
-            addInterruptBlockCount = 0;
+            total_score = 0;
+            rest_score = 0;
+            combo_count = 0;
+            total_interrupt_block_count = 0;
+            total_enemy_interrupt_block_count = 0;
+            add_interrupt_block_count = 0;
         }
     };
 

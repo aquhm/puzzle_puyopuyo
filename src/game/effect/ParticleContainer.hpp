@@ -24,10 +24,10 @@ public:
     ParticleAliveChecker() = default;
 
     void operator()(const std::unique_ptr<Particle>& particle);
-    [[nodiscard]] int GetAliveCount() const { return aliveCount_; }
+    [[nodiscard]] int GetAliveCount() const { return alive_count_; }
 
 private:
-    int aliveCount_{ 0 };
+    int alive_count_{ 0 };
 };
 
 class ParticleContainer
@@ -47,12 +47,12 @@ public:
     virtual void Release();
 
     [[nodiscard]] int GetAliveParticleCount() const;
-    [[nodiscard]] bool IsAlive() const { return initialLifetime_ > accumulatedLifetime_; }
-    [[nodiscard]] uint8_t GetPlayerID() const { return playerID_; }
+    [[nodiscard]] bool IsAlive() const { return initial_lifetime_ > accumulated_lifetime_; }
+    [[nodiscard]] uint8_t GetPlayerID() const { return player_id_; }
 
     void SetPosition(const SDL_FPoint& pos) { position_ = pos; }
-    void SetTexture(std::shared_ptr<ImageTexture> texture) { sourceTexture_ = texture; }
-    void SetPlayerID(uint8_t id) { playerID_ = id; }
+    void SetTexture(std::shared_ptr<ImageTexture> texture) { source_texture_ = texture; }
+    void SetPlayerID(uint8_t id) { player_id_ = id; }
 
 protected:
 
@@ -61,14 +61,14 @@ protected:
 
 protected:
     SDL_FPoint position_{};
-    float initialLifetime_{ 0.0f };
-    float accumulatedLifetime_{ 0.0f };
-    size_t maxParticles_{ 0 };
-    float limitRadius_{ 0.0f };
+    float initial_lifetime_{ 0.0f };
+    float accumulated_lifetime_{ 0.0f };
+    size_t max_particles_{ 0 };
+    float limit_radius_{ 0.0f };
 
     std::vector<std::unique_ptr<Particle>> particles_;
-    std::shared_ptr<ImageTexture> sourceTexture_;
-    SDL_FRect sourceRect_{};
-    uint8_t playerID_{ 0 };
+    std::shared_ptr<ImageTexture> source_texture_;
+    SDL_FRect source_rect_{};
+    uint8_t player_id_{ 0 };
 
 };

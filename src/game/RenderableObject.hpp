@@ -41,6 +41,16 @@ public:
 
     void SetVisible(bool visible) { is_visible_ = visible; }
 
+
+protected:
+    virtual void UpdateDestinationRect()
+    {
+        destination_rect_.x = position_.x;
+        destination_rect_.y = position_.y;
+        destination_rect_.w = size_.x;
+        destination_rect_.h = size_.y;
+    }
+
 protected:
 	
     SDL_FPoint position_{ 0.0f, 0.0f };
@@ -48,12 +58,4 @@ protected:
 
     SDL_FRect destination_rect_{ 0.0f, 0.0f, 0.0f, 0.0f };
     bool is_visible_{ true };
-
-    virtual void UpdateDestinationRect() 
-    {
-        destination_rect_.x = position_.x;
-        destination_rect_.y = position_.y;
-        destination_rect_.w = size_.x;
-        destination_rect_.h = size_.y;
-    }
 };

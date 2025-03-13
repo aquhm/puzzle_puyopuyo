@@ -10,8 +10,8 @@
 // 채팅 관련
 struct ChatMessagePacket : PacketBase
 {
-    uint8_t player_id;
-    std::array<char, 151> message;
+    uint8_t player_id{};
+    std::array<char, 151> message{};
 
     ChatMessagePacket()
     {
@@ -30,9 +30,9 @@ struct ChatMessagePacket : PacketBase
 // 캐릭터 선택 관련
 struct ChangeCharSelectPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t x_pos;
-    uint8_t y_pos;
+    uint8_t player_id{};
+    uint8_t x_pos{};
+    uint8_t y_pos{};
 
     ChangeCharSelectPacket()
     {
@@ -43,9 +43,9 @@ struct ChangeCharSelectPacket : PacketBase
 
 struct DecideCharacterPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t x_pos;
-    uint8_t y_pos;
+    uint8_t player_id{};
+    uint8_t x_pos{};
+    uint8_t y_pos{};
 
     DecideCharacterPacket()
     {
@@ -57,11 +57,11 @@ struct DecideCharacterPacket : PacketBase
 // 게임 초기화/블록 관련
 struct GameInitPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t map_id;
-    uint16_t character_id;
-    std::array<uint8_t, 2> block1;
-    std::array<uint8_t, 2> block2;
+    uint8_t player_id{};
+    uint8_t map_id{};
+    uint16_t character_id{};
+    std::array<uint8_t, 2> block1{};
+    std::array<uint8_t, 2> block2{};
 
     GameInitPacket()
     {
@@ -72,9 +72,9 @@ struct GameInitPacket : PacketBase
 
 struct MoveBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t move_type;
-    float position;
+    uint8_t player_id{};
+    uint8_t move_type{};
+    float position{};
 
     MoveBlockPacket()
     {
@@ -85,9 +85,9 @@ struct MoveBlockPacket : PacketBase
 
 struct RotateBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t rotate_type;
-    bool is_horizontal_moving;
+    uint8_t player_id{};
+    uint8_t rotate_type{};
+    bool is_horizontal_moving{};
 
     RotateBlockPacket()
     {
@@ -99,11 +99,11 @@ struct RotateBlockPacket : PacketBase
 // 공격/방어 관련
 struct AttackInterruptPacket : PacketBase
 {
-    uint8_t player_id;
-    int16_t count;
-    float position_x;
-    float position_y;
-    uint8_t block_type;
+    uint8_t player_id{};
+    int16_t count{};
+    float position_x{};
+    float position_y{};
+    uint8_t block_type{};
 
     AttackInterruptPacket()
     {
@@ -115,11 +115,11 @@ struct AttackInterruptPacket : PacketBase
 
 struct DefenseInterruptPacket : PacketBase
 {
-    uint8_t player_id;
-    int16_t count;
-    float position_x;
-    float position_y;
-    uint8_t block_type;
+    uint8_t player_id{};
+    int16_t count{};
+    float position_x{};
+    float position_y{};
+    uint8_t block_type{};
 
     DefenseInterruptPacket()
     {
@@ -130,10 +130,10 @@ struct DefenseInterruptPacket : PacketBase
 
 struct AddInterruptBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t y_row_count;
-    uint8_t x_count;
-    std::array<uint8_t, 5> x_indices;
+    uint8_t player_id{};
+    uint8_t y_row_count{};
+    uint8_t x_count{};
+    std::array<uint8_t, 5> x_indices{};
 
     AddInterruptBlockPacket()
     {
@@ -145,7 +145,7 @@ struct AddInterruptBlockPacket : PacketBase
 // 게임 상태 관련
 struct CheckBlockStatePacket : PacketBase
 {
-    uint8_t player_id;
+    uint8_t player_id{};
 
     CheckBlockStatePacket()
     {
@@ -156,9 +156,9 @@ struct CheckBlockStatePacket : PacketBase
 
 struct UpdateBlockPosPacket : PacketBase
 {
-    uint8_t player_id;
-    float position1;
-    float position2;
+    uint8_t player_id{};
+    float position1{};
+    float position2{};
 
     UpdateBlockPosPacket()
     {
@@ -169,9 +169,9 @@ struct UpdateBlockPosPacket : PacketBase
 
 struct FallingBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t falling_index;
-    bool is_falling;
+    uint8_t player_id{};
+    uint8_t falling_index{};
+    bool is_falling{};
 
     FallingBlockPacket()
     {
@@ -182,8 +182,8 @@ struct FallingBlockPacket : PacketBase
 
 struct ChangeBlockStatePacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t state;
+    uint8_t player_id{};
+    uint8_t state{};
 
     ChangeBlockStatePacket()
     {
@@ -194,9 +194,9 @@ struct ChangeBlockStatePacket : PacketBase
 
 struct PushBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    std::array<float, 2> position1;
-    std::array<float, 2> position2;
+    uint8_t player_id{};
+    std::array<float, 2> position1{};
+    std::array<float, 2> position2{};
 
     PushBlockPacket()
     {
@@ -208,7 +208,7 @@ struct PushBlockPacket : PacketBase
 // 게임 진행/종료 관련
 struct StopComboPacket : PacketBase
 {
-    uint8_t player_id;
+    uint8_t player_id{};
 
     StopComboPacket()
     {
@@ -219,7 +219,7 @@ struct StopComboPacket : PacketBase
 
 struct LoseGamePacket : PacketBase
 {
-    uint8_t player_id;
+    uint8_t player_id{};
 
     LoseGamePacket()
     {
@@ -248,10 +248,10 @@ struct GameOverPacket : PacketBase
 
 struct RestartGamePacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t map_id;
-    std::array<uint8_t, 2> block1;
-    std::array<uint8_t, 2> block2;
+    uint8_t player_id{};
+    uint8_t map_id{};
+    std::array<uint8_t, 2> block1{};
+    std::array<uint8_t, 2> block2{};
 
     RestartGamePacket()
     {
@@ -262,10 +262,10 @@ struct RestartGamePacket : PacketBase
 
 struct InitializePlayerPacket : PacketBase
 {
-    uint8_t player_id;
-    uint16_t character_idx;
-    std::array<uint8_t, 2> block_type1;
-    std::array<uint8_t, 2> block_type2;
+    uint8_t player_id{};
+    uint16_t character_idx{};
+    std::array<uint8_t, 2> block_type1{};
+    std::array<uint8_t, 2> block_type2{};
 
     InitializePlayerPacket()
     {
@@ -276,8 +276,8 @@ struct InitializePlayerPacket : PacketBase
 
 struct AddNewBlockPacket : PacketBase
 {
-    uint8_t player_id;
-    std::array<uint8_t, 2> block_type;  // 블록 타입 2개
+    uint8_t player_id{};
+    std::array<uint8_t, 2> block_type{};  // 블록 타입 2개
 
     AddNewBlockPacket()
     {
@@ -288,11 +288,11 @@ struct AddNewBlockPacket : PacketBase
 
 struct ComboPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t combo_count;        // 현재 콤보 카운트
-    float combo_position_x;     // 콤보 발생 위치 x
-    float combo_position_y;     // 콤보 발생 위치 y
-    bool is_continue;           // 콤보가 계속되는지 여부
+    uint8_t player_id{};
+    uint8_t combo_count{};        // 현재 콤보 카운트
+    float combo_position_x{};     // 콤보 발생 위치 x
+    float combo_position_y{};     // 콤보 발생 위치 y
+    bool is_continue{};           // 콤보가 계속되는지 여부
 
     ComboPacket()
     {
@@ -303,7 +303,7 @@ struct ComboPacket : PacketBase
 
 struct GiveIdPacket : PacketBase
 {
-    uint8_t player_id;
+    uint8_t player_id{};
 
     GiveIdPacket()
     {
@@ -323,7 +323,7 @@ struct StartCharSelectPacket : PacketBase
 
 struct RemovePlayerPacket : PacketBase
 {
-    uint8_t player_id;
+    uint8_t player_id{};
 
     RemovePlayerPacket()
     {
@@ -334,8 +334,8 @@ struct RemovePlayerPacket : PacketBase
 
 struct PlayerInfoPacket : PacketBase
 {
-    uint8_t player_id;
-    uint8_t character_id;
+    uint8_t player_id{};
+    uint8_t character_id{};
 
     PlayerInfoPacket()
     {
@@ -346,8 +346,8 @@ struct PlayerInfoPacket : PacketBase
 
 struct AddPlayerPacket : PacketBase
 {
-    uint8_t player_id;
-    uint16_t character_id;
+    uint8_t player_id{};
+    uint16_t character_id{};
 
     AddPlayerPacket()
     {
@@ -358,7 +358,7 @@ struct AddPlayerPacket : PacketBase
 
 struct RemovePlayerInRoomPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t id{};
 
     RemovePlayerInRoomPacket()
     {
@@ -369,7 +369,7 @@ struct RemovePlayerInRoomPacket : PacketBase
 
 struct ConnectLobbyPacket : PacketBase
 {
-    uint8_t id;
+    uint8_t id{};
 
     ConnectLobbyPacket()
     {
@@ -380,8 +380,8 @@ struct ConnectLobbyPacket : PacketBase
 
 struct DefenseResultInterruptBlockCountPacket : PacketBase
 {
-    uint8_t player_id;
-    uint16_t count;
+    uint8_t player_id{};
+    uint16_t count{};
 
     DefenseResultInterruptBlockCountPacket()
     {
@@ -392,9 +392,9 @@ struct DefenseResultInterruptBlockCountPacket : PacketBase
 
 struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
 {
-    uint8_t player_id;
-    uint16_t count;
-    uint16_t attackerCount;
+    uint8_t player_id{};
+    uint16_t count{};
+    uint16_t attackerCount{};
 
     AttackResultPlayerInterruptBlocCountPacket()
     {
@@ -405,15 +405,15 @@ struct AttackResultPlayerInterruptBlocCountPacket : PacketBase
 
 struct SyncBlockPositionYPacket : public PacketBase
 {
+    uint8_t player_id{};
+    float position_y{};
+    float velocity{};
+
     SyncBlockPositionYPacket()
     {
         type = static_cast<uint16_t>(PacketType::SyncBlockPositionY);
         size = sizeof(SyncBlockPositionYPacket);
     }
-
-    uint8_t player_id;
-    float position_y;
-    float velocity;
 };
 
 #pragma pack(pop)
