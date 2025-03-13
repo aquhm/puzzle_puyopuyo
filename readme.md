@@ -183,128 +183,112 @@ graph TD
 
 ```mermaid
 classDiagram
-    namespace Core {
-        class GameApp
-        class IManager
-        class IResource
-        class IRenderable
-        class IEventHandler
-        class Managers
-    }
+    %% Core 모듈
+    class Core_GameApp
+    class Core_IManager
+    class Core_IResource
+    class Core_IRenderable
+    class Core_IEventHandler
+    class Core_Managers
 
-    namespace Managers {
-        class ResourceManager
-        class StateManager
-        class FontManager
-        class MapManager
-        class PlayerManager
-        class ParticleManager
-    }
+    %% Managers 모듈
+    class Managers_ResourceManager
+    class Managers_StateManager
+    class Managers_FontManager
+    class Managers_MapManager
+    class Managers_PlayerManager
+    class Managers_ParticleManager
 
-    namespace States {
-        class BaseState
-        class LoginState
-        class RoomState
-        class CharacterSelectState
-        class GameState
-    }
+    %% States 모듈
+    class States_BaseState
+    class States_LoginState
+    class States_RoomState
+    class States_CharacterSelectState
+    class States_GameState
 
-    namespace Network {
-        class NetworkController
-        class GameServer
-        class GameClient
-        class PacketProcessor
-        class PacketBase
-        class CriticalSection
-        class NetCommon
-        class RingBuffer
-    }
+    %% Network 모듈
+    class Network_Controller
+    class Network_Server
+    class Network_Client
+    class Network_PacketProcessor
+    class Network_PacketBase
 
-    namespace Game {
-        class Block
-        class IceBlock
-        class GroupBlock
-        class GameGroupBlock
-        class BasePlayer
-        class LocalPlayer
-        class RemotePlayer
-        class RenderableObject
-        class AnimatedObject
-    }
+    %% Game 모듈
+    class Game_Block
+    class Game_IceBlock
+    class Game_GroupBlock
+    class Game_GameGroupBlock
+    class Game_BasePlayer
+    class Game_LocalPlayer
+    class Game_RemotePlayer
+    class Game_RenderableObject
+    class Game_AnimatedObject
 
-    namespace Background {
-        class GameBackground
-        class GrasslandBackground
-        class IcelandBackground
-        class BackgroundParticleSystem
-    }
+    %% Background 모듈
+    class Game_Background
+    class Game_GrasslandBG
+    class Game_IcelandBG
+    class Game_ParticleSystem
 
-    namespace UI {
-        class Button
-        class Label
-        class TextBox
-        class EditBox
-    }
+    %% UI 모듈
+    class UI_Button
+    class UI_Label
+    class UI_TextBox
+    class UI_EditBox
 
-    namespace Effects {
-        class Particle
-        class ParticleContainer
-        class ExplosionEffect
-        class BulletEffect
-    }
+    %% Textures 모듈
+    class Textures_ImageTexture
+    class Textures_StringTexture
 
-    namespace Textures {
-        class ImageTexture
-        class StringTexture
-    }
+    %% Effects 모듈
+    class Effects_Particle
+    class Effects_ParticleContainer
+    class Effects_ExplosionEffect
 
-    namespace Utils {
-        class Timer
-        class Logger
-        class PathUtil
-        class RectUtil
-        class GameUtils
-    }
+    %% Utils 모듈
+    class Utils_Timer
+    class Utils_Logger
+    class Utils_PathUtil
 
     %% 주요 관계
-    Core.GameApp --> Managers.Managers
-    Core.IManager <|-- Managers.ResourceManager
-    Core.IManager <|-- Managers.StateManager
-    Core.IManager <|-- Managers.FontManager
-    Core.IManager <|-- Managers.MapManager
-    Core.IManager <|-- Managers.PlayerManager
-    Core.IManager <|-- Managers.ParticleManager
+    Core_GameApp --> Core_Managers
+    Core_IManager <|-- Managers_ResourceManager
+    Core_IManager <|-- Managers_StateManager
+    Core_IManager <|-- Managers_FontManager
+    Core_IManager <|-- Managers_MapManager
+    Core_IManager <|-- Managers_PlayerManager
+    Core_IManager <|-- Managers_ParticleManager
 
-    States.BaseState <|-- States.LoginState
-    States.BaseState <|-- States.RoomState
-    States.BaseState <|-- States.CharacterSelectState
-    States.BaseState <|-- States.GameState
+    States_BaseState <|-- States_LoginState
+    States_BaseState <|-- States_RoomState
+    States_BaseState <|-- States_CharacterSelectState
+    States_BaseState <|-- States_GameState
 
-    Managers.StateManager --> States.BaseState
+    Managers_StateManager --> States_BaseState
 
-    Game.RenderableObject <|-- Game.AnimatedObject
-    Game.RenderableObject <|-- Game.Block
-    Game.Block <|-- Game.IceBlock
-    Game.RenderableObject <|-- Game.GroupBlock
-    Game.GroupBlock <|-- Game.GameGroupBlock
+    Game_RenderableObject <|-- Game_AnimatedObject
+    Game_RenderableObject <|-- Game_Block
+    Game_Block <|-- Game_IceBlock
+    Game_RenderableObject <|-- Game_GroupBlock
+    Game_GroupBlock <|-- Game_GameGroupBlock
 
-    Core.IRenderable <|-- Game.RenderableObject
-    Core.IRenderable <|-- UI.Button
-    Core.IRenderable <|-- UI.Label
-    Core.IRenderable <|-- UI.TextBox
+    Core_IRenderable <|-- Game_RenderableObject
+    Core_IRenderable <|-- UI_Button
+    Core_IRenderable <|-- UI_Label
+    Core_IRenderable <|-- UI_TextBox
 
-    UI.TextBox <|-- UI.EditBox
+    UI_TextBox <|-- UI_EditBox
 
-    Core.IResource <|-- Textures.ImageTexture
-    Textures.ImageTexture <|-- Textures.StringTexture
+    Core_IResource <|-- Textures_ImageTexture
+    Textures_ImageTexture <|-- Textures_StringTexture
 
-    Game.BasePlayer <|-- Game.LocalPlayer
-    Game.BasePlayer <|-- Game.RemotePlayer
+    Game_BasePlayer <|-- Game_LocalPlayer
+    Game_BasePlayer <|-- Game_RemotePlayer
 
-    Background.GameBackground <|-- Background.GrasslandBackground
-    Background.GameBackground <|-- Background.IcelandBackground
+    Game_Background <|-- Game_GrasslandBG
+    Game_Background <|-- Game_IcelandBG
 
-    Effects.Particle <|-- Effects.ExplosionEffect
+    Effects_Particle <|-- Effects_ExplosionEffect
 ```
 
 ### 주요 클래스
