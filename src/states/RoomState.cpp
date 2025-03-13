@@ -115,6 +115,15 @@ bool RoomState::InitializeUI()
         return false;
     }
 
+    // 채팅 레이블 초기화
+    ui_elements_.chat_label = std::make_unique<Label>();
+    if (!ui_elements_.chat_label->Init((screen_width - 300) / 2.0f - 70, 400.0f, 65.0f, 23.0f))
+    {
+        return false;
+    }
+    ui_elements_.chat_label->Configure("Chat:", TextAlignment::Right, SDL_Color{ 255, 255, 255, 255 });
+    
+
     // 채팅 박스 초기화
     ui_elements_.chat_box = std::make_unique<EditBox>();
     if (!ui_elements_.chat_box->Init((screen_width - 300) / 2.0f, 400.0f, 300.0f, 23.0f))
@@ -153,6 +162,7 @@ void RoomState::Enter()
     SDL_StartTextInput(GAME_APP.GetWindow());
 
     // UI 상태 설정
+    ui_elements_.chat_label->SetVisible(true);
     ui_elements_.start_button->SetVisible(NETWORK.IsServer());
     ui_elements_.exit_button->SetVisible(true);
     ui_elements_.chat_box->SetVisible(true);
@@ -172,6 +182,9 @@ void RoomState::Enter()
 
 void RoomState::Leave()
 {
+    if (ui_elements_.chat_label)
+        ui_elements_.chat_label->SetVisible(false);
+
     if (ui_elements_.start_button)
         ui_elements_.start_button->SetVisible(false);
 
@@ -218,7 +231,9 @@ void RoomState::Update(float deltaTime)
 {
     UpdateBackgroundAnimation(deltaTime);
 
-    // UI 업데이트
+    if (ui_elements_.chat_label) {
+        ui_elements_.chat_label->Update(deltaTime);
+    }    
     if (ui_elements_.chat_box) {
         ui_elements_.chat_box->Update(deltaTime);
     }
@@ -284,6 +299,9 @@ void RoomState::RenderBackground() const
 
 void RoomState::RenderUI() const
 {
+    if (ui_elements_.chat_label) {
+        ui_elements_.chat_label->Render();
+    }
     if (ui_elements_.chat_box) {
         ui_elements_.chat_box->Render();
     }
@@ -347,7 +365,7 @@ void RoomState::HandleChatMessage(uint8_t connectionId, const ChatMessagePacket*
     {
         if (ui_elements_.chat_box)
         {
-            std::string formatted_message = std::format("[{}]: {}",
+            std::string formatted_message = std::format("[Player({})]: {}",
                 packet->player_id,
                 packet->message.data());
 

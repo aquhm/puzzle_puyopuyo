@@ -11,9 +11,6 @@
 
 GroupBlock::GroupBlock()
     : RenderableObject()
-    , blocks_{}
-    , groupBlockType_(GroupBlockType::Default)
-    , state_(BlockState::Max)
 {    
     InitializeBlocks();
     SetScale(Constants::Block::SIZE, Constants::Block::SIZE);

@@ -1,3 +1,4 @@
+
 #include "BasePlayer.hpp"
 
 #include "../../core/manager/ResourceManager.hpp"
@@ -81,9 +82,9 @@ void BasePlayer::Reset()
     
     score_info_.reset();
     state_info_ = GameStateInfo{};
-	state_info_.currentPhase = GamePhase::Playing;
-	state_info_.previousPhase = GamePhase::Playing;
-	state_info_.playTime = 0.0f;
+	state_info_.current_phase = GamePhase::Playing;
+	state_info_.previous_phase = GamePhase::Playing;
+	state_info_.play_time = 0.0f;
     is_game_quit_ = false;
 }
 
@@ -123,7 +124,7 @@ void BasePlayer::Release()
 
 void BasePlayer::Update(float deltaTime)
 {
-    state_info_.playTime += deltaTime;
+    state_info_.play_time += deltaTime;
 
     for (auto* obj : draw_objects_)
     {
@@ -288,57 +289,6 @@ void BasePlayer::UpdateLinkState(Block* block)
     block->SetLinkState(static_cast<LinkState>(linkState));
 }
 
-void BasePlayer::CreateBullet(Block* block)
-{
-    if (!block)
-    {
-        LOGGER.Error("CreateBullet: block is null");
-        return;
-    }
-
-    float boardPosX = (player_id_ == GAME_APP.GetPlayerManager().GetMyPlayer()->GetId()) ?
-        Constants::Board::POSITION_X : Constants::Board::PLAYER_POSITION_X;
-
-    SDL_FPoint startPos
-    {
-        boardPosX + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
-        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
-    };
-
-    SDL_FPoint endPos;
-    if (state_info_.hasIceBlock)
-    {
-        endPos =
-        {
-            GAME_APP.GetWindowWidth() - (boardPosX + (Constants::Board::WIDTH / 2)),
-            Constants::Board::POSITION_Y
-        };
-    }
-    else
-    {
-        endPos =
-        {
-            boardPosX + (Constants::Board::WIDTH / 2),
-            Constants::Board::POSITION_Y
-        };
-    }
-
-    auto bullet = std::make_shared<BulletEffect>();
-    if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
-    {
-        LOGGER.Error("Failed to create bullet effect");
-        return;
-    }
-
-    bullet->SetAttacking(!state_info_.hasIceBlock);
-    bullet_list_.push_back(bullet);
-
-    if (game_board_ && game_board_->GetState() != BoardState::Lose)
-    {
-        game_board_->SetState(BoardState::Attacking);
-    }
-}
-
 void BasePlayer::UpdateBullets(float delta_time)
 {
     auto it = bullet_list_.begin();
@@ -482,18 +432,17 @@ uint8_t BasePlayer::GetTypeBonus(size_t count) const
 
 uint8_t BasePlayer::GetMargin() const
 {
-    const float playTime = state_info_.playTime;
+    const float play_time = state_info_.play_time;
 
     for (const auto& margin : Constants::Game::SCORE_MARGINS)
     {
-        if (playTime <= margin.time)
+        if (play_time <= margin.time)
         {
             return margin.margin;
         }
     }
 
-    return Constants::Game::SCORE_MARGINS[
-        std::size(Constants::Game::SCORE_MARGINS) - 1].margin;
+    return Constants::Game::SCORE_MARGINS[std::size(Constants::Game::SCORE_MARGINS) - 1].margin;
 }
 
 void BasePlayer::LoseGame(bool isWin)
@@ -514,18 +463,21 @@ void BasePlayer::LoseGame(bool isWin)
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
 
-    state_info_.currentPhase = GamePhase::GameOver;
+    state_info_.current_phase = GamePhase::GameOver;
 
     SetGameQuit();
 }
 
 void BasePlayer::AddInterruptBlock(int16_t count)
 {
-    score_info_.totalInterruptBlockCount += count;
+    score_info_.total_interrupt_block_count += count;
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+
+    state_info_.is_combo_attack = true;
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -544,7 +496,8 @@ void BasePlayer::SetGameBoardState(BoardState bordState)
 
 void BasePlayer::UpdateInterruptBlock(int16_t count)
 {
-    score_info_.totalInterruptBlockCount = count;
+    score_info_.total_interrupt_block_count = count;
+    state_info_.has_ice_block = count > 0;
 
     if (interrupt_view_)
     {
@@ -649,5 +602,499 @@ void BasePlayer::RemoveEventListener(IPlayerEventListener* listener)
     if (it != event_listeners_.end()) 
     {
         event_listeners_.erase(it);
+    }
+}
+
+
+bool BasePlayer::FindMatchedBlocks(std::list<BlockVector>& matchedGroups) 
+{
+    std::vector<Block*> currentGroup;
+    int blockCount = 0;
+    auto blockListSize = block_list_.size();
+
+    for (int y = 0; y < Constants::Board::BOARD_Y_COUNT; y++) 
+    {
+        for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++) 
+        {
+            if (blockCount == blockListSize) 
+            {
+                break;
+            }
+
+            Block* block = board_blocks_[y][x];
+            if (!block) 
+            {
+                continue;
+            }
+            else 
+            {
+                blockCount++;
+            }
+
+            if (block->GetBlockType() == BlockType::Ice || block->IsRecursionCheck()) 
+            {
+                continue;
+            }
+
+            block->SetRecursionCheck(true);
+            currentGroup.clear();
+
+            if (RecursionCheckBlock(x, y, Constants::Direction::None, currentGroup) >= Constants::Game::MIN_MATCH_COUNT - 1) 
+            {
+                currentGroup.push_back(block);
+                matchedGroups.push_back(currentGroup);
+            }
+            else 
+            {
+                block->SetRecursionCheck(false);
+
+                for (auto* matchedBlock : currentGroup) 
+                {
+                    matchedBlock->SetRecursionCheck(false);
+                }
+            }
+        }
+    }
+
+    return !matchedGroups.empty();
+}
+
+void BasePlayer::UpdateComboState() 
+{
+    if (state_info_.previous_phase == GamePhase::Shattering) 
+    {
+        score_info_.combo_count++;
+    }
+    else if (state_info_.previous_phase == GamePhase::Playing) 
+    {
+        score_info_.combo_count = 1;
+    }
+}
+
+void BasePlayer::ResetComboState() 
+{
+    if (score_info_.combo_count > 0) 
+    {
+        score_info_.combo_count = 0;
+    }
+
+    if (score_info_.rest_score > 0) 
+    {
+        score_info_.rest_score = 0;
+    }
+}
+
+void BasePlayer::HandlePhaseTransition(GamePhase newPhase) 
+{
+    if (state_info_.current_phase == newPhase) 
+    {
+        return;
+    }
+
+    state_info_.previous_phase = state_info_.current_phase;
+    state_info_.current_phase = newPhase;
+}
+
+void BasePlayer::GenerateIceBlocks() 
+{
+    if (score_info_.total_interrupt_block_count <= 0 || state_info_.current_phase != GamePhase::Playing) {
+        return;
+    }
+
+    auto texture = ImageTexture::Create("PUYO/puyo_beta.png");
+    if (!texture) {
+        LOGGER.Error("Failed to get ice block texture");
+        return;
+    }
+
+    const auto playerID = player_id_;
+
+    if (score_info_.total_interrupt_block_count > 30) 
+    {
+        GenerateLargeIceBlockGroup(texture, playerID);
+    }
+    else 
+    {
+        GenerateSmallIceBlockGroup(texture, playerID);
+    }    
+
+    if (interrupt_view_) 
+    {
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
+    }
+
+    HandlePhaseTransition(GamePhase::IceBlocking);
+
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+    state_info_.defense_count = 0;
+}
+
+void BasePlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID) 
+{
+    score_info_.total_interrupt_block_count -= 30;    
+
+    for (int y = 0; y < 5; y++) 
+    {
+        for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++) 
+        {
+            auto iceBlock = std::make_shared<IceBlock>();
+            InitializeIceBlock(iceBlock.get(), texture, x, y, playerID);
+            block_list_.push_back(iceBlock);
+        }
+    }
+}
+
+void BasePlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>& texture, uint8_t playerID,
+    const std::span<const uint8_t>& xIdxList) 
+{
+    const auto yCnt = score_info_.total_interrupt_block_count / Constants::Board::BOARD_X_COUNT;
+    const auto xCnt = score_info_.total_interrupt_block_count % Constants::Board::BOARD_X_COUNT;
+
+    for (int y = 0; y < yCnt; y++) 
+    {
+        for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++) 
+        {
+            auto iceBlock = std::make_shared<IceBlock>();
+            InitializeIceBlock(iceBlock.get(), texture, x, y, playerID);
+            block_list_.push_back(iceBlock);
+        }
+    }
+
+    if (xCnt > 0) 
+    {
+        std::set<int> positions;
+
+        if (!xIdxList.empty()) 
+        {
+            // 네트워크에서 받은 인덱스 사용
+            for (int i = 0; i < xCnt && i < xIdxList.size(); i++) 
+            {
+                positions.insert(xIdxList[i]);
+            }
+        }
+        else 
+        {
+            // 랜덤 인덱스 생성
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dist(0, Constants::Board::BOARD_X_COUNT - 1);
+
+            while (positions.size() < xCnt) 
+            {
+                positions.insert(dist(gen));
+            }
+        }
+
+        for (int pos : positions) 
+        {
+            auto iceBlock = std::make_shared<IceBlock>();
+            InitializeIceBlock(iceBlock.get(), texture, pos, yCnt, playerID);
+            block_list_.push_back(iceBlock);
+        }
+    }
+
+    score_info_.total_interrupt_block_count = 0;
+}
+
+void BasePlayer::InitializeIceBlock(IceBlock* block, const std::shared_ptr<ImageTexture>& texture, int x, int y, uint8_t playerID) 
+{
+    if (!block) 
+    {
+        return;
+    }
+
+    float renderX = Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * x;
+    float renderY = -Constants::Block::SIZE * (y + 1);
+
+    block->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
+    block->SetBlockType(BlockType::Ice);
+    block->SetLinkState(LinkState::Max);
+    block->SetState(BlockState::DownMoving);
+    block->SetBlockTex(texture);
+    block->SetPosIdx(x, y);
+    block->SetPosition(renderX, renderY);
+    block->SetPlayerID(playerID);
+}
+
+
+void BasePlayer::RemoveIceBlocks(std::list<SDL_Point>& x_index_list)
+{
+    if (ice_blocks_.empty())
+    {
+        return;
+    }
+
+    for (const auto& ice_block : ice_blocks_)
+    {
+        SDL_Point pos_idx{ ice_block->GetPosIdx_X(), ice_block->GetPosIdx_Y() };
+
+        board_blocks_[pos_idx.y][pos_idx.x] = nullptr;
+        block_list_.remove(ice_block);
+        x_index_list.push_back(pos_idx);
+    }
+
+    ice_blocks_.clear();
+}
+
+bool BasePlayer::IsGameOver() const 
+{
+    bool isGameOverState =
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][2] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 1][3] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][2] != nullptr ||
+        board_blocks_[Constants::Board::BOARD_Y_COUNT - 2][3] != nullptr;
+
+    return isGameOverState;
+}
+
+bool BasePlayer::ProcessGameOver() 
+{
+    if (IsGameOver()) 
+    {
+        LoseGame(false);
+        NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
+        state_info_.current_phase = GamePhase::GameOver;
+        return true;
+    }
+    return false;
+}
+
+void BasePlayer::UpdateAllBlocksState(BlockState state)
+{
+    for (auto& blockGroup : matched_blocks_)
+    {
+        for (auto* block : blockGroup)
+        {
+            if (block)
+            {
+                block->SetState(state);
+            }
+        }
+    }
+}
+
+void BasePlayer::UpdateShatteringPhase(float deltaTime)
+{
+    if (matched_blocks_.empty())
+    {
+        // 매치된 블록이 없으면 후처리 진행
+        UpdateAfterBlocksCleared();
+        return;
+    }
+
+    std::vector<SDL_FPoint> positions;
+    std::list<SDL_Point> indexList;
+
+    // 각 블록 그룹 처리
+    auto groupIter = matched_blocks_.begin();
+    while (groupIter != matched_blocks_.end())
+    {
+        bool allPlayedOut = std::all_of(groupIter->begin(), groupIter->end(),
+            [](const Block* block)
+            {
+                return block->GetState() == BlockState::PlayOut;
+            });
+
+        if (allPlayedOut)
+        {
+            HandleClearedBlockGroup(groupIter, indexList);
+        }
+        else
+        {
+            ++groupIter;
+        }
+    }
+
+    if (matched_blocks_.empty())
+    {
+        UpdateFallingBlocks(indexList);
+    }
+}
+
+void BasePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& group_it, std::list<SDL_Point>& indexList)
+{
+    if (!group_it->empty())
+    {
+        auto* firstBlock = group_it->front();
+
+        CreateBullet(firstBlock);
+
+        if (combo_view_ && score_info_.combo_count > 0)
+        {
+            combo_view_->UpdateComboCount(firstBlock->GetX(), firstBlock->GetY(), score_info_.combo_count);
+        }
+    }
+
+    for (auto* block : *group_it)
+    {
+        if (!block) continue;
+
+        SDL_FPoint pos{ block->GetX(), block->GetY() };
+        SDL_Point idx{ block->GetPosIdx_X(), block->GetPosIdx_Y() };
+
+        CreateBlockClearEffect(std::shared_ptr<Block>(block, [](Block*) {}));
+
+        board_blocks_[idx.y][idx.x] = nullptr;
+
+        auto it = std::find_if(block_list_.begin(), block_list_.end(),
+            [block](const std::shared_ptr<Block>& ptr)
+            {
+                return ptr.get() == block;
+            });
+
+        if (it != block_list_.end())
+        {
+            (*it)->Release();
+            block_list_.erase(it);
+        }
+
+        indexList.push_back(idx);
+    }
+
+    RemoveIceBlocks(indexList);
+
+    // 그룹 제거
+    group_it = matched_blocks_.erase(group_it);
+}
+
+void BasePlayer::UpdateAfterBlocksCleared()
+{
+    block_list_.sort([](const auto& a, const auto& b) { return *a < *b; });
+
+    if (block_list_.empty())
+    {
+        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
+        return;
+    }
+
+    bool all_blocks_stationary = std::all_of(block_list_.begin(), block_list_.end(),
+        [](const auto& block)
+        {
+            return block->GetState() == BlockState::Stationary;
+        }
+    );
+
+    if (all_blocks_stationary)
+    {
+        UpdateBlockLinks();
+
+        if (!CheckGameBlockState() && !is_game_quit_)
+        {
+            state_info_.current_phase = GamePhase::Playing;
+            state_info_.previous_phase = state_info_.current_phase;
+
+            if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
+            {
+                GenerateIceBlocks();
+            }
+            else
+            {
+                CreateNextBlock();
+            }
+        }
+    }
+}
+
+short BasePlayer::RecursionCheckBlock(short x, short y, Constants::Direction direction, std::vector<Block*>& matchedBlocks)
+{
+    if (!board_blocks_[y][x])
+    {
+        return 0;
+    }
+
+    Block* block = board_blocks_[y][x];
+    BlockType blockType = block->GetBlockType();
+    short matchCount = 0;
+
+    // 주변 블록 검사 (정적 상수 사용)
+    for (const auto& [dir, offset] : Constants::DirectionInfo::DIRECTION_OFFSETS)
+    {
+        if (direction == dir)
+        {
+            continue;
+        }
+
+        const auto [dx, dy] = offset;
+        short checkX = x + dx;
+        short checkY = y + dy;
+
+        if (checkX < 0 || checkX >= Constants::Board::BOARD_X_COUNT ||
+            checkY < 0 || checkY >= Constants::Board::BOARD_Y_COUNT)
+        {
+            continue;
+        }
+
+        Block* checkBlock = board_blocks_[checkY][checkX];
+        if (!checkBlock || checkBlock->IsRecursionCheck() || checkBlock->GetState() != BlockState::Stationary)
+        {
+            continue;
+        }
+
+        if (blockType == checkBlock->GetBlockType())
+        {
+            checkBlock->SetRecursionCheck(true);
+            matchedBlocks.push_back(checkBlock);
+            matchCount++;
+            matchCount += RecursionCheckBlock(checkX, checkY, GameStateDetail::GetOppositeDirection(dir), matchedBlocks);
+        }
+    }
+
+    return matchCount;
+}
+
+
+void BasePlayer::CollectRemoveIceBlocks()
+{
+    if (block_list_.empty() || matched_blocks_.empty() || state_info_.current_phase != GamePhase::Shattering)
+    {
+        return;
+    }
+
+    for (const auto& group : matched_blocks_)
+    {
+        for (auto* block : group)
+        {
+            if (block == nullptr)
+            {
+                continue;
+            }
+
+            const int x = block->GetPosIdx_X();
+            const int y = block->GetPosIdx_Y();
+
+            // 정적 방향 상수 사용
+            for (const auto& [dx, dy] : Constants::DirectionInfo::OFFSETS)
+            {
+                const int checkX = x + dx;
+                const int checkY = y + dy;
+
+                if (checkX >= 0 && checkX < Constants::Board::BOARD_X_COUNT &&
+                    checkY >= 0 && checkY < Constants::Board::BOARD_Y_COUNT)
+                {
+                    Block* checkBlock = board_blocks_[checkY][checkX];
+                    if (!checkBlock ||
+                        checkBlock->GetState() != BlockState::Stationary ||
+                        checkBlock->GetBlockType() != BlockType::Ice)
+                    {
+                        continue;
+                    }
+
+                    if (auto iceBlock = dynamic_cast<IceBlock*>(checkBlock))
+                    {
+                        iceBlock->SetState(BlockState::Destroying);
+
+                        auto found = std::find_if(block_list_.begin(), block_list_.end(),
+                            [iceBlock](const auto& block) {
+                                return block.get() == iceBlock;
+                            });
+
+                        if (found != block_list_.end()) {
+                            ice_blocks_.insert(std::static_pointer_cast<IceBlock>(*found));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

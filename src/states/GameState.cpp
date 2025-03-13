@@ -150,7 +150,7 @@ bool GameState::CreateUI()
 
 void GameState::Enter()
 {
-    localPlayerId_ = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
+    local_player_id_ = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
     auto characterId = GAME_APP.GetPlayerManager().GetMyPlayer()->GetCharacterId();
     
     if (NETWORK.IsServer() || !NETWORK.IsRunning())
@@ -158,17 +158,17 @@ void GameState::Enter()
         background_ = GAME_APP.GetMapManager().GetRandomMap();
         if (background_->Initialize())
         {
-            isNetworkGame_ = NETWORK.IsRunning();
+            is_network_game_ = NETWORK.IsRunning();
         }
     }
 
     if (restart_button_) restart_button_->SetVisible(false);
     if (exit_button_) exit_button_->SetVisible(false);
 
-    CreateGamePlayer(std::span<const uint8_t>(), std::span<const uint8_t>(), localPlayerId_, characterId);
+    CreateGamePlayer(std::span<const uint8_t>(), std::span<const uint8_t>(), local_player_id_, characterId);
     ScheduleGameStart();
 
-    shouldQuit_ = false;
+    should_quit_ = false;
     lastInputTime_ = SDL_GetTicks();
 
     SDL_StartTextInput(GAME_APP.GetWindow());    
@@ -215,7 +215,7 @@ void GameState::Update(float deltaTime)
         local_player_->UpdateGameLogic(deltaTime);
     }
 
-    if (remote_player_ && isNetworkGame_)
+    if (remote_player_ && is_network_game_)
     {
         remote_player_->Update(deltaTime);
         remote_player_->UpdateGameState(deltaTime);
@@ -239,7 +239,7 @@ void GameState::Render()
         local_player_->Render();
     }
 
-    if (remote_player_ && isNetworkGame_)
+    if (remote_player_ && is_network_game_)
     {
         remote_player_->Render();
     }
@@ -347,7 +347,7 @@ void GameState::HandleMouseInput(const SDL_Event& event)
 
 void GameState::HandleKeyboardInput(const SDL_Event& event)
 {
-    if (shouldQuit_)
+    if (should_quit_)
     {
         return;
     }
@@ -403,7 +403,7 @@ void GameState::HandleKeyboardState()
                 local_player_->MoveBlock(static_cast<uint8_t>(Constants::Direction::Bottom), 0);
             }
         }
-        else if (local_player_->GetGameState() == GamePhase::GameOver && shouldQuit_)
+        else if (local_player_->GetGameState() == GamePhase::GameOver && should_quit_)
         {
             if (keyStates[SDL_SCANCODE_RETURN] || keyStates[SDL_SCANCODE_SPACE])
             {
@@ -490,7 +490,7 @@ bool GameState::GameRestart()
         if (restart_button_) restart_button_->SetVisible(false);
         if (exit_button_) exit_button_->SetVisible(false);
 
-        shouldQuit_ = false;
+        should_quit_ = false;
         lastInputTime_ = SDL_GetTicks();
 
         ScheduleGameStart();
@@ -512,7 +512,7 @@ bool GameState::GameExit()
 
 void GameState::GameQuit()
 {
-    shouldQuit_ = true;
+    should_quit_ = true;
 
     if (NETWORK.IsServer() && restart_button_)
     {
@@ -651,7 +651,12 @@ void GameState::InitializePacketHandlers()
         }
     );
 
-    
+    packet_processor_.RegisterHandler<SyncBlockPositionYPacket>(
+        PacketType::SyncBlockPositionY,
+        [this](uint8_t connectionId, const SyncBlockPositionYPacket* packet) {
+            HandleSyncBlockPositionY(connectionId, packet);
+        }
+    );    
 }
 
 void GameState::HandleGameInitialize(uint8_t connectionId, const GameInitPacket* packet)
@@ -703,7 +708,7 @@ void GameState::CreateGamePlayer(const std::span<const uint8_t>& blockType1, con
 
         remote_player_->AddEventListener(this);
 
-        isNetworkGame_ = true;
+        is_network_game_ = true;
     }
 }
 
@@ -715,7 +720,7 @@ void GameState::HandleAddNewBlock(uint8_t connectionId, const AddNewBlockPacket*
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         remote_player_->AddNewBlock(packet->block_type);
     }
@@ -729,7 +734,7 @@ void GameState::HandleUpdateBlockMove(uint8_t connectionId, const MoveBlockPacke
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         remote_player_->MoveBlock(packet->move_type, packet->position);
     }
@@ -743,7 +748,7 @@ void GameState::HandleBlockRotate(uint8_t connectionId, const RotateBlockPacket*
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         remote_player_->RotateBlock(packet->rotate_type, packet->is_horizontal_moving);
     }
@@ -765,7 +770,7 @@ void GameState::HandleCheckBlockState(uint8_t connectionId, const CheckBlockStat
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         remote_player_->CheckGameBlockState();
     }
@@ -779,7 +784,7 @@ void GameState::HandleChangeBlockState(uint8_t connectionId, const ChangeBlockSt
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         remote_player_->ChangeBlockState(packet->state);
     }
@@ -793,7 +798,7 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         std::span<const float, 2> pos1{ packet->position1 };
         std::span<const float, 2> pos2{ packet->position2 };
@@ -806,6 +811,8 @@ void GameState::HandlePushBlockInGame(uint8_t connectionId, const PushBlockPacke
 
 void GameState::HandleAddInterruptBlock(uint8_t connectionId, const AddInterruptBlockPacket* packet)
 {
+    LOGGER.Info("GameState::HandleAddInterruptBlock y_row_count {} x_count {} ", packet->y_row_count, packet->x_count);
+
     if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
         if (remote_player_)
@@ -822,6 +829,7 @@ void GameState::HandleAttackInterrupt(uint8_t connectionId, const AttackInterrup
     {
         if (local_player_)
         {
+            //LOGGER.Info("GameState::HandleAttackInterrupt count {} ", packet->count);
             local_player_->AddInterruptBlock(packet->count);
             local_player_->SetComboAttackState(true);
         }
@@ -842,7 +850,7 @@ void GameState::HandleRestart(uint8_t connectionId, const RestartGamePacket* pac
         return;
     }
 
-    if (player->GetId() != localPlayerId_ && remote_player_)
+    if (player->GetId() != local_player_id_ && remote_player_)
     {
         std::span<const uint8_t> blockType1(packet->block1);
         std::span<const uint8_t> blockType2(packet->block2);
@@ -857,7 +865,7 @@ void GameState::HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterr
 {
     if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
     {
-        if (player->GetId() != localPlayerId_ && remote_player_)
+        if (player->GetId() != local_player_id_ && remote_player_)
         {
             remote_player_->DefenseInterruptBlockCount(packet->count, packet->position_x, packet->position_y, packet->block_type);
         }
@@ -906,6 +914,18 @@ void GameState::HandleStopCombo(uint8_t connectionId, const StopComboPacket* pac
     if (local_player_)
     {
         local_player_->SetComboAttackState(false);
+    }
+}
+
+void GameState::HandleSyncBlockPositionY(uint8_t connectionId, const SyncBlockPositionYPacket* packet)
+{
+    auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id);
+    if (auto player = GAME_APP.GetPlayerManager().FindPlayer(packet->player_id))
+    {
+        if (player->GetId() != local_player_id_ && remote_player_)
+        {
+            remote_player_->SyncPositionY(packet->position_y, packet->velocity);
+        }
     }
 }
 
@@ -975,7 +995,7 @@ void GameState::Release()
     }
 
     initialized_ = false;
-    isNetworkGame_ = false;
+    is_network_game_ = false;
 
     GAME_APP.GetMapManager().Release();
 

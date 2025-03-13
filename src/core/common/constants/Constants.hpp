@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <array>
 #include <numbers>
 #include <SDL3/SDL.h>
 #include <limits>
@@ -8,8 +9,24 @@
 
 #define SDL_USEREVENT_SOCK		WM_USER + 1
 
+
 namespace Constants
 {
+    enum class PlayerType : uint8_t
+    {
+        Local,
+        Remote
+    };
+
+    enum class Direction
+    {
+        None = -1,
+        Left,
+        Top,
+        Right,
+        Bottom
+    };
+
     inline namespace Game
     {
         constexpr float PLAY_START_DELAY = 2.0f;
@@ -212,15 +229,45 @@ namespace Constants
             constexpr float DEFAULT_LIFETIME = 5.0f;
             constexpr size_t PARTICLE_COUNT = 10;
         }
-    }
+    }   
 
-    enum class Direction
+    namespace DirectionInfo 
     {
-        None = -1,
-        Left,
-        Top,
-        Right,
-        Bottom
-    };
+        // 방향 오프셋 (순서: 좌, 우, 상, 하)
+        inline static const std::array<std::pair<int, int>, 4> OFFSETS = 
+        {
+            std::make_pair(-1, 0),  // Left
+            std::make_pair(1, 0),   // Right 
+            std::make_pair(0, 1),   // Top
+            std::make_pair(0, -1)   // Bottom
+        };
+
+        // 방향과 오프셋 (방향 정보 포함)
+        inline static const std::array<std::pair<Constants::Direction, std::pair<int, int>>, 4> DIRECTION_OFFSETS =
+        {
+            std::make_pair(Constants::Direction::Left, std::make_pair(-1, 0)),
+            std::make_pair(Constants::Direction::Right, std::make_pair(1, 0)),
+            std::make_pair(Constants::Direction::Top, std::make_pair(0, 1)),
+            std::make_pair(Constants::Direction::Bottom, std::make_pair(0, -1))
+        };
+
+        // 위치와 방향에서 새 위치 계산
+        inline std::pair<int, int> GetNewPosition(int x, int y, Constants::Direction dir) 
+        {
+            switch (dir) 
+            {
+            case Constants::Direction::Left:
+                return { x - 1, y };
+            case Constants::Direction::Right:
+                return { x + 1, y };
+            case Constants::Direction::Top:
+                return { x, y + 1 };
+            case Constants::Direction::Bottom:
+                return { x, y - 1 };
+            default:
+                return { x, y };
+            }
+        }
+    }
 }
 

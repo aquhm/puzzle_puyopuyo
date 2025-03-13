@@ -85,7 +85,7 @@ bool GameApp::InitializeSDL()
         "PuyoPuyo",
         window_width_,
         window_height_,
-        SDL_WINDOW_RESIZABLE,
+        SDL_WINDOW_NOT_FOCUSABLE,
         &window,
         &renderer))
     {
@@ -179,7 +179,7 @@ void GameApp::HandleEvents(const SDL_Event& event)
         case SDL_EVENT_KEY_DOWN:
             if (event.key.key== SDLK_F11) 
             {
-                SetFullscreen(!is_fullscreen_);
+                SetFullscreen(!is_full_screen_);
             }
             break;
         case SDL_EVENT_USER:
@@ -216,7 +216,7 @@ void GameApp::Render()
 bool GameApp::SetFullscreen(bool enable) 
 {
     
-    if (is_fullscreen_ == enable) 
+    if (is_full_screen_ == enable) 
     {
         return true;
     }
@@ -227,7 +227,7 @@ bool GameApp::SetFullscreen(bool enable)
         return false;
     } 
 
-    is_fullscreen_ = enable;
+    is_full_screen_ = enable;
     return true;
 }
 

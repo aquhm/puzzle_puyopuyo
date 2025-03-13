@@ -96,8 +96,6 @@ void EditBox::UpdateMessageList(float deltaTime)
 
             if (view_text->alpha <= 0.0f)
             {
-                it = message_list_.erase(it);
-
                 if (view_text->message)
                 {
                     view_text->message->Release();
@@ -212,8 +210,6 @@ void EditBox::HandleEvent(const SDL_Event& event)
 
 void EditBox::InputContent(std::string_view text)
 {
-    return; 
-
     if (text.empty())
     {
         return;
@@ -318,8 +314,13 @@ void EditBox::AddMessageToList(std::string_view text)
 {
     constexpr size_t MAX_MESSAGES = 50;
 
-    if (message_list_.size() >= MAX_MESSAGES && !message_list_.empty())
+    while (message_list_.size() >= MAX_MESSAGES && !message_list_.empty())
     {
+        // 가장 오래된 메시지의 리소스 정리
+        if (message_list_.front() && message_list_.front()->message)
+        {
+            message_list_.front()->message->Release();
+        }
         message_list_.pop_front();
     }
 

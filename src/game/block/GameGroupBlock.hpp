@@ -51,8 +51,8 @@ public:
 
     void ForceVelocityY(float velocity);
     void ForceAddVelocityY(float velocity, bool send = true);    
-    void SetAddVelocityY(float velocity) { addVelocity_ = velocity; }
-    [[nodiscard]] float GetAddForceVelocityY() const { return addVelocity_; }
+    void SetAddVelocityY(float velocity) { add_velocity_ = velocity; }
+    [[nodiscard]] float GetAddForceVelocityY() const { return add_velocity_; }
 
     void SetEnableRotState(RotateState state = RotateState::Default, bool horizontalMoving = false, bool enable = true, bool send = true);
     [[nodiscard]] RotateState GetRotateState() const { return rotateState_; }
@@ -60,7 +60,7 @@ public:
     [[nodiscard]] int CalculateIdxY(float y) const;
 
     void SetGroupBlock(GroupBlock* block);
-    void SetGameBlocks(std::list<std::shared_ptr<Block>>* gameBlocks) { gameBlockList_ = gameBlocks; }
+    void SetGameBlocks(std::list<std::shared_ptr<Block>>* gameBlocks) { game_block_list_ = gameBlocks; }
     void SetEffectState(EffectState state);
     void ResetBlock();
     void SetPlayerID(uint8_t id);
@@ -79,31 +79,29 @@ private:
     void HandleEffectingState();
     void HandleDefaultTopRotation();
 
-    //void UpdateBlockPositions();
     void UpdateBlockIndices();
     void ResetVelocities();
     void ProcessBlockPlacement();
-    //bool CheckBlockCollision(const SDL_FRect& rect);
 
 private:
 
     RotateState rotateState_{ RotateState::Default };
-    bool isFalling_{ false };
-    bool isRotating_{ false };
-    bool isHorizontalMoving_{ false };
-    bool checkingCollision_{ false };
-    bool canMove_{ true };
+    bool is_falling_{ false };
+    bool is_rotating_{ false };
+    bool is_horizontal_moving_{ false };
+    bool checking_collision_{ false };
+    bool can_move_{ true };
 
-    int fallingIdx_{ -1 };
-    int blockIndexX_{ 0 };
-    uint8_t playerID_{ 0 };
-    uint64_t updateTime_{ 0 };
+    int falling_Index_{ -1 };
+    int block_index_x_{ 0 };
+    uint8_t player_id_{ 0 };
+    uint64_t update_time_{ 0 };
 
     float velocity_{ 0.0f };
-    float addVelocity_{ 1.0f };
-    float rotateVelocity_{ 0.0f };
-    float horizontalVelocity_{ 0.0f };
+    float add_velocity_{ 1.0f };
+    float rotate_velocity_{ 0.0f };
+    float horizontal_velocity_{ 0.0f };
 
-    SDL_FRect intersectResultRect_[2]{};
-    std::list<std::shared_ptr<Block>>* gameBlockList_;
+    SDL_FRect intersect_result_rect_[2]{};
+    std::list<std::shared_ptr<Block>>* game_block_list_;
 };

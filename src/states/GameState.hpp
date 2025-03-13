@@ -152,7 +152,7 @@ private:
     void HandleDefenseInterrupt(uint8_t connectionId, const DefenseInterruptPacket* packet);
     void HandleDefenseResultInterruptBlockCount(uint8_t connectionId, const DefenseResultInterruptBlockCountPacket* packet);
     void HandleAttackResultPlayerInterruptBlocCount(uint8_t connectionId, const AttackResultPlayerInterruptBlocCountPacket* packet);
-    
+    void HandleSyncBlockPositionY(uint8_t connectionId, const SyncBlockPositionYPacket* packet);    
     void HandleGameOver();
 
     // 이벤트 핸들러
@@ -176,9 +176,9 @@ private:
     // 상태 변수
     uint64_t lastInputTime_{ 0 };
     bool initialized_{ false };
-    bool isNetworkGame_{ false };
-    uint8_t localPlayerId_{ 0 };
-    bool shouldQuit_{ false };
+    bool is_network_game_{ false };
+    uint8_t local_player_id_{ 0 };
+    bool should_quit_{ false };
 
     // 패킷 프로세서
     PacketProcessor packet_processor_{};

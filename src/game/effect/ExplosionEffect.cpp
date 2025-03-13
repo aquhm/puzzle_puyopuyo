@@ -12,7 +12,7 @@ ExplosionParticle::ExplosionParticle() = default;
 
 ExplosionContainer::ExplosionContainer() 
 {
-    sourceRect_ = 
+    source_rect_ = 
     {
         0, 0,
         Constants::Particle::Explosion::SIZE,
@@ -22,15 +22,15 @@ ExplosionContainer::ExplosionContainer()
 
 bool ExplosionContainer::InitializeParticles() 
 {
-    sourceTexture_ = ImageTexture::Create("PUYO/puyo_beta.png");
-    if (!sourceTexture_)
+    source_texture_ = ImageTexture::Create("PUYO/puyo_beta.png");
+    if (!source_texture_)
     {
         assert(false && "Failed to load explosion texture");
         return false;
     }
 
-    initialLifetime_ = Constants::Particle::Explosion::DEFAULT_LIFETIME;
-    accumulatedLifetime_ = 0.0f;
+    initial_lifetime_ = Constants::Particle::Explosion::DEFAULT_LIFETIME;
+    accumulated_lifetime_ = 0.0f;
 
     particles_.clear();
     particles_.reserve(Constants::Particle::Explosion::PARTICLE_COUNT);
@@ -54,7 +54,7 @@ bool ExplosionContainer::InitializeParticles()
         particle->SetScale(size, size);
 
         particle->lifetime_ = 0.0f;
-        particle->isAlive_ = true;
+        particle->is_alive_ = true;
 
         particles_.push_back(std::move(particle));
     }
@@ -67,9 +67,9 @@ void ExplosionContainer::UpdateParticlePhysics(ExplosionParticle& particle, floa
 
     particle.lifetime_ += deltaTime;
 
-    if (particle.lifetime_ >= initialLifetime_)
+    if (particle.lifetime_ >= initial_lifetime_)
     {
-        particle.isAlive_ = false;
+        particle.is_alive_ = false;
         return;
     }
 
@@ -103,7 +103,7 @@ void ExplosionContainer::Update(float deltaTime)
 
 void ExplosionContainer::Render()
 {
-    if (!sourceTexture_ || particles_.empty()) 
+    if (!source_texture_ || particles_.empty()) 
     {
         return;
     }
@@ -129,7 +129,7 @@ void ExplosionContainer::Render()
         {
             SDL_FRect destRect = particle->GetRect();
 
-            sourceTexture_->RenderScaled(&sourceRect_, &destRect);
+            source_texture_->RenderScaled(&source_rect_, &destRect);
         }
     }
 }
@@ -145,24 +145,24 @@ void ExplosionContainer::SetBlockType(BlockType type)
     switch (type) 
     {
     case BlockType::Red:
-        sourceRect_.x = particleX;
-        sourceRect_.y = particleY;
+        source_rect_.x = particleX;
+        source_rect_.y = particleY;
         break;
     case BlockType::Green:
-        sourceRect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing);
-        sourceRect_.y = particleY;
+        source_rect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing);
+        source_rect_.y = particleY;
         break;
     case BlockType::Blue:
-        sourceRect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 2;
-        sourceRect_.y = particleY;
+        source_rect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 2;
+        source_rect_.y = particleY;
         break;
     case BlockType::Yellow:
-        sourceRect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 3;
-        sourceRect_.y = particleY;
+        source_rect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 3;
+        source_rect_.y = particleY;
         break;
     case BlockType::Purple:
-        sourceRect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 4;
-        sourceRect_.y = particleY;
+        source_rect_.x = particleX + (Constants::Particle::Explosion::SIZE + spacing) * 4;
+        source_rect_.y = particleY;
         break;
     }
 }

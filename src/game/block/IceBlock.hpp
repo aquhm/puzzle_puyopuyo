@@ -29,5 +29,5 @@ private:
 
 private:
     float alpha_{ 255.0f };
-    bool isInitialized_{ false };
+    bool is_initialized_{ false };
 };

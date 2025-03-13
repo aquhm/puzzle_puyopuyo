@@ -95,35 +95,35 @@ public:
     void SetBlockType(BlockType type);    
     void SetLinkState(LinkState state = LinkState::Normal);
     void SetBlockTex(const std::shared_ptr<ImageTexture>& tex) { texture_ = tex; }
-    void SetEffectState(EffectState state) { effectState_ = state; }
+    void SetEffectState(EffectState state) { effect_state_ = state; }
     void SetLevel(uint8_t level) { level_ = level; }
 
     void SetPosIdx(int x, int y)
     {
-		indexX_ = x;
-		indexY_ = y;
+		index_x_ = x;
+		index_y_ = y;
     }
     void SetPosIdx_X(int x)
     {
-		indexX_ = x;
+		index_x_ = x;
     }
 
     void SetScale(float width, float height) override;
 
     
     [[nodiscard]] uint8_t GetPlayerId() const { return playerID_; }
-    [[nodiscard]] int GetPosIdx_X() const { return indexX_; }
-    [[nodiscard]] int GetPosIdx_Y() const { return indexY_; }
-    [[nodiscard]] BlockType GetBlockType() const { return blockType_; }
+    [[nodiscard]] int GetPosIdx_X() const { return index_x_; }
+    [[nodiscard]] int GetPosIdx_Y() const { return index_y_; }
+    [[nodiscard]] BlockType GetBlockType() const { return block_type_; }
     [[nodiscard]] BlockState GetState() const { return state_; }
-    [[nodiscard]] LinkState GetLinkState() const { return linkState_; }
-    [[nodiscard]] EffectState GetEffectState() const { return effectState_; }
+    [[nodiscard]] LinkState GetLinkState() const { return link_state_; }
+    [[nodiscard]] EffectState GetEffectState() const { return effect_state_; }
 
-    void SetRecursionCheck(bool check) { isRecursionCheck_ = check; }
-    [[nodiscard]] bool IsRecursionCheck() const { return isRecursionCheck_; }
+    void SetRecursionCheck(bool check) { is_recursionCheck_ = check; }
+    [[nodiscard]] bool IsRecursionCheck() const { return is_recursionCheck_; }
 
-    void SetStandard(bool standard) { isStandard_ = standard; }
-    [[nodiscard]] bool IsStandard() const { return isStandard_; }   
+    void SetStandard(bool standard) { is_standard_ = standard; }
+    [[nodiscard]] bool IsStandard() const { return is_standard_; }   
 
 private:
     void UpdateBlockEffect(float deltaTime);     // 블록 이펙트 업데이트
@@ -140,31 +140,31 @@ private:
 
 protected:
 
-    SDL_FRect sourceRect_;                       // 텍스처 소스 영역
-    SDL_FPoint blockOriginPos_;                  // 블록 원점 위치
-    std::array<SDL_FPoint, static_cast<int>(EffectState::Max)> blockEffectPos_; // 이펙트 위치
+    SDL_FRect source_rect_;                       // 텍스처 소스 영역
+    SDL_FPoint block_origin_Position_;                  // 블록 원점 위치
+    std::array<SDL_FPoint, static_cast<int>(EffectState::Max)> block_effect_position_; // 이펙트 위치
 
-    BlockType blockType_{ BlockType::Max };      // 블록 타입
+    BlockType block_type_{ BlockType::Max };      // 블록 타입
     BlockState state_{ BlockState::Max };        // 블록 상태
-    LinkState linkState_{ LinkState::Normal };   // 링크 상태
-    EffectState effectState_{ EffectState::None };// 이펙트 상태
+    LinkState link_state_{ LinkState::Normal };   // 링크 상태
+    EffectState effect_state_{ EffectState::None };// 이펙트 상태
 
     uint8_t level_{ 0 };                         // 블록 레벨
     std::shared_ptr<ImageTexture> texture_;      // 블록 텍스처
 
-    bool isScaled_{ false };                     // 크기 변경 여부
-    bool isRecursionCheck_{ false };             // 재귀 체크 여부
-    bool isStandard_{ false };                   // 표준 블록 여부
-    bool isChanged_{ false };                    // 변경 여부
+    bool is_scaled_{ false };                     // 크기 변경 여부
+    bool is_recursionCheck_{ false };             // 재귀 체크 여부
+    bool is_standard_{ false };                   // 표준 블록 여부
+    bool is_changed_{ false };                    // 변경 여부
 
-    int indexX_{ -1 };                           // X 인덱스
-    int indexY_{ -1 };                           // Y 인덱스
+    int index_x_{ -1 };                           // X 인덱스
+    int index_y_{ -1 };                           // Y 인덱스
 
-    float accumTime_{ 0.0f };                    // 누적 시간
-    float accumEffectTime_{ 0.0f };              // 이펙트 누적 시간
-    float rotationAngle_{ 0.0f };                // 회전 각도
-    float scaleVelocity_{ 0.0f };                // 크기 변경 속도
-    float downVelocity_{ 0.0f };                 // 낙하 속도
+    float accumulate_time_{ 0.0f };                    // 누적 시간
+    float accumulate_effect_time_{ 0.0f };              // 이펙트 누적 시간
+    float rotation_angle_{ 0.0f };                // 회전 각도
+    float scale_velocity_{ 0.0f };                // 크기 변경 속도
+    float down_velocity_{ 0.0f };                 // 낙하 속도
 
     uint8_t playerID_{ 0 };                      // 플레이어 ID
 };

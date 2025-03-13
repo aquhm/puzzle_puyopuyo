@@ -42,6 +42,7 @@ enum class PacketType : uint16_t
     UpdateBlockFalling = 406,
     ChangeBlockState = 407,
     PushBlockInGame = 408,
+    SyncBlockPositionY = 409,
 
     // 공격/방어 관련 (500-599)
     AttackInterruptBlock = 500,

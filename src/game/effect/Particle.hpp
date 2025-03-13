@@ -22,8 +22,8 @@ public:
     virtual void Render() = 0;
     virtual void Release() = 0;
 
-    [[nodiscard]] bool IsAlive() const { return isAlive_; }
-    void SetAlive(bool alive) { isAlive_ = alive; }
+    [[nodiscard]] bool IsAlive() const { return is_alive_; }
+    void SetAlive(bool alive) { is_alive_ = alive; }
 
     [[nodiscard]] float GetLifetime() const { return lifetime_; }
     void SetLifetime(float lifetime) { lifetime_ = lifetime; }
@@ -35,5 +35,5 @@ protected:
     float size_{ 0.0f };
     float lifetime_{ 0.0f };
     float angle_{ 0.0f };
-    bool isAlive_{ false };
+    bool is_alive_{ false };
 };

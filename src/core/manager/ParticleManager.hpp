@@ -46,7 +46,7 @@ public:
     void AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container, const SDL_FPoint& position);
     void RemoveParticleContainer(const ParticleContainer& container);
 
-    void SetDrawEnabled(bool enabled) { isDrawEnabled_ = enabled; }
+    void SetDrawEnabled(bool enabled) { is_draw_enabled_ = enabled; }
     [[nodiscard]] std::shared_ptr<ImageTexture> FindParticleTexture(const std::string& name);
 
 private:    
@@ -57,6 +57,6 @@ private:
 
     ParticleContainerList containers_;
     TextureMap textures_;
-    bool isDrawEnabled_{ true };
-    bool isInitialized_{ false };
+    bool is_draw_enabled_{ true };
+    bool is_initialized_{ false };
 };

@@ -46,9 +46,9 @@ public:
     virtual void SetPosX(float x);
     virtual void SetPosY(float y);
     virtual void SetScale(float width, float height);
-    void SetType(GroupBlockType type) { groupBlockType_ = type; }
+    void SetType(GroupBlockType type) { group_block_type_ = type; }
 
-    [[nodiscard]] GroupBlockType GetType() const { return groupBlockType_; }
+    [[nodiscard]] GroupBlockType GetType() const { return group_block_type_; }
     [[nodiscard]] Block* GetBlock(int index);
     [[nodiscard]] const std::array<std::shared_ptr<Block>, Constants::GroupBlock::COUNT>& GetBlocks() const { return blocks_; }
 
@@ -61,7 +61,7 @@ private:
 
 protected:
 
-    std::array<std::shared_ptr<Block>, Constants::GroupBlock::COUNT> blocks_;
-    GroupBlockType groupBlockType_{ GroupBlockType::Default };
+    std::array<std::shared_ptr<Block>, Constants::GroupBlock::COUNT> blocks_{};
+    GroupBlockType group_block_type_{ GroupBlockType::Default };
     BlockState state_{ BlockState::Max };                 
 };

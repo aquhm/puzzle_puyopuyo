@@ -43,36 +43,30 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
         character_id_ = characterIdx;
         background_ = background;
 
-        // ��� �ʱ�ȭ
         InitializeNextBlocks(blockType1, blockType2);
 
-        // ���� ���� �ʱ�ȭ
         if (!InitializeGameBoard(Constants::Board::PLAYER_POSITION_X, Constants::Board::POSITION_Y))
         {
             LOGGER.Error("Failed to initialize remote player game board");
             return false;
         }
 
-        // ��Ʈ�� ��� �ʱ�ȭ
         if (!InitializeControlBlock())
         {
             LOGGER.Error("Failed to initialize remote player control block");
             return false;
         }
 
-        // �� �ʱ�ȭ
         InitializeViews();
         if (interrupt_view_) 
         {
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
-        // ���� ���� �ʱ�ȭ
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
-		state_info_.playTime = 0.0f;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
+		state_info_.play_time = 0.0f;
 
-        // �̺�Ʈ �߼� - ����� �̺�Ʈ
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
 
         return true;
@@ -99,13 +93,13 @@ void RemotePlayer::InitializeNextBlocks(const std::span<const uint8_t>& blockTyp
     next_block2->SetPosition(Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_X, Constants::GroupBlock::NEXT_PLAYER_BLOCK_POS_SMALL_Y);
     next_block2->SetScale(Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE, Constants::GroupBlock::NEXT_BLOCK_SMALL_SIZE);
 
-    new_blocks_.emplace_back(std::move(next_block1));
-    new_blocks_.emplace_back(std::move(next_block2));
+    next_blocks_.emplace_back(std::move(next_block1));
+    next_blocks_.emplace_back(std::move(next_block2));
 
     if (background_)
     {
-        background_->SetPlayerNextBlock(new_blocks_[0]);
-        background_->SetPlayerNextBlock(new_blocks_[1]);
+        background_->SetPlayerNextBlock(next_blocks_[0]);
+        background_->SetPlayerNextBlock(next_blocks_[1]);
     }
 }
 
@@ -115,10 +109,8 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
     try
     {
-        // �ʱ�ȭ
         InitializeNextBlocks(blockType1, blockType2);
 
-        // ���� ���� �ʱ�ȭ
         if (!InitializeGameBoard(Constants::Board::PLAYER_POSITION_X, Constants::Board::POSITION_Y))
         {
             return false;
@@ -131,10 +123,9 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
         InitializeViews();
 
-        // ���� ���� �ʱ�ȭ
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
-		state_info_.playTime = 0.0f;
+        state_info_.current_phase = GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
+		state_info_.play_time = 0.0f;
 
         return true;
     }
@@ -147,7 +138,7 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
 void RemotePlayer::UpdateGameState(float deltaTime)
 {
-    switch (state_info_.currentPhase)
+    switch (state_info_.current_phase)
     {
     case GamePhase::GameOver:
         UpdateGameOverState(deltaTime);
@@ -180,9 +171,36 @@ void RemotePlayer::UpdateGameOverState(float deltaTime)
 
 void RemotePlayer::UpdatePlayingState(float deltaTime)
 {
+
     if (control_block_)
     {
         control_block_->Update(deltaTime);
+
+        if (is_syncing_position_ && control_block_->GetState() == BlockState::Playing)
+        {
+            float current_y = control_block_->GetPosition().y;
+            float diff = target_y_position_ - current_y;
+
+            // 위치 차이가 임계값보다 크면 부드럽게 보간
+            if (std::abs(diff) > 0.5f)
+            {
+                float lerp_speed = sync_lerp_factor_ * deltaTime * 60.0f;
+                lerp_speed = std::min<float>(lerp_speed, 1.0f);
+
+                float new_y = current_y + diff * lerp_speed;
+
+                control_block_->SetPosY(new_y);
+
+                // 속도도 보간하여 적용
+                float current_vel = control_block_->GetAddForceVelocityY();
+                float vel_diff = current_sync_velocity_ - current_vel;
+                control_block_->SetAddVelocityY(current_vel + vel_diff * lerp_speed);
+            }
+            else
+            {
+                is_syncing_position_ = false;
+            }
+        }
     }
 }
 
@@ -202,14 +220,14 @@ void RemotePlayer::UpdateIceBlockDowningState()
 
     if (all_blocks_stationary)
     {
-		state_info_.currentPhase = GamePhase::Playing;
+		state_info_.current_phase = GamePhase::Playing;
         PlayNextBlock();
     }
 }
 
 void RemotePlayer::UpdateShatteringState()
 {
-    if (equal_block_list_.empty())
+    if (matched_blocks_.empty())
     {
         UpdateAfterBlocksCleared();
         return;
@@ -224,7 +242,7 @@ void RemotePlayer::UpdateMatchedBlocks()
     SDL_Point pos_idx;
     std::list<SDL_Point> x_index_list;
 
-    for (auto it = equal_block_list_.begin(); it != equal_block_list_.end();)
+    for (auto it = matched_blocks_.begin(); it != matched_blocks_.end();)
     {
         bool all_blocks_played_out = std::all_of(it->begin(), it->end(),
             [](const auto& block)
@@ -238,7 +256,7 @@ void RemotePlayer::UpdateMatchedBlocks()
             if (!it->empty())
             {
                 auto firstBlock = it->front();
-                CreateBullet(firstBlock);                
+                CreateBullet(firstBlock);
             }
 
             HandleClearedBlockGroup(it, pos, pos_idx, x_index_list);
@@ -249,11 +267,12 @@ void RemotePlayer::UpdateMatchedBlocks()
         }
     }
 
-    if (equal_block_list_.empty())
+    if (matched_blocks_.empty())
     {
         UpdateFallingBlocks(x_index_list);
     }
 }
+
 
 void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& group_it, SDL_FPoint& pos, SDL_Point& pos_idx, std::list<SDL_Point>& x_index_list)
 {
@@ -273,15 +292,14 @@ void RemotePlayer::HandleClearedBlockGroup(std::list<BlockVector>::iterator& gro
     
     RemoveIceBlocks(x_index_list);
 
-    // �׷� ����
-    group_it = equal_block_list_.erase(group_it);    
+    group_it = matched_blocks_.erase(group_it);    
 }
 
 void RemotePlayer::UpdateComboDisplay(const SDL_FPoint& pos)
 {	
-    if (combo_view_ && score_info_.comboCount > 0)
+    if (combo_view_ && score_info_.combo_count > 0)
     {
-        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, score_info_.comboCount);
+        combo_view_->UpdateComboCount(pos.x + Constants::Board::PLAYER_POSITION_X, pos.y, score_info_.combo_count);
     }
 }
 
@@ -294,8 +312,8 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
+        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
+        state_info_.previous_phase = state_info_.current_phase;
         return;
     }
 
@@ -312,26 +330,25 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
         if (CheckGameBlockState() == false && !is_game_quit_)
         {
-            state_info_.currentPhase = GamePhase::Playing;
-            state_info_.previousPhase = state_info_.currentPhase;
+            state_info_.current_phase = GamePhase::Playing;
+            state_info_.previous_phase = state_info_.current_phase;
         }
     }
 }
 
 void RemotePlayer::CreateNextBlock()
 {
-    // ���� �÷��̾�� ��Ʈ��ũ�κ��� ����� �޾� ����� �����ϹǷ� ���� ����
 }
 
 void RemotePlayer::PlayNextBlock()
 {
-    if (new_blocks_.size() != 3 || !control_block_)
+    if (next_blocks_.size() < 3 || !control_block_)
     {
         return;
     }
 
-    auto first_block = new_blocks_.front();
-    new_blocks_.pop_front();
+    auto first_block = next_blocks_.front();
+    next_blocks_.pop_front();
 
     if (first_block)
     {
@@ -340,7 +357,7 @@ void RemotePlayer::PlayNextBlock()
         control_block_->SetState(BlockState::Playing);
         control_block_->SetEnableRotState(RotateState::Default, false, false);
 
-        //LOGGER.Info("RemotePlayer.PlayNextBlock");
+        //LOGGER.Info("====> RemotePlayer.PlayNextBlock");
 
         if (game_board_)
         {
@@ -352,175 +369,51 @@ void RemotePlayer::PlayNextBlock()
 
 bool RemotePlayer::CheckGameBlockState()
 {
-    if (is_game_quit_)
+    if (state_info_.should_quit)
     {
-        state_info_.currentPhase = GamePhase::Playing;
-
+		HandlePhaseTransition(GamePhase::GameOver);
         return true;
     }
 
     const int block_count = static_cast<int>(block_list_.size());
     if (block_count < Constants::Game::MIN_MATCH_COUNT)
     {
-        state_info_.currentPhase = GamePhase::Playing;
-        state_info_.previousPhase = state_info_.currentPhase;
+        HandlePhaseTransition(GamePhase::Playing);
         return false;
     }
 
     int current_count = 0;
     std::vector<Block*> current_blocks;
 
-    // ���� ���� ��ȸ�ϸ� ����� ��� üũ
-    for (int16_t y = 0; y < Constants::Board::BOARD_Y_COUNT; ++y)
+    matched_blocks_.clear();
+
+    if (FindMatchedBlocks(matched_blocks_))
     {
-        for (int16_t x = 0; x < Constants::Board::BOARD_X_COUNT; ++x)
+        HandlePhaseTransition(GamePhase::Shattering);
+        UpdateComboState();
+        CollectRemoveIceBlocks();
+
+        // 매치된 블록들 파괴 상태로 설정
+        for (const auto& group : matched_blocks_)
         {
-            if (current_count == block_count)
+            for (auto* block : group)
             {
-                break;
-            }
-
-            Block* current_block = board_blocks_[y][x];
-            if (!current_block)
-            {
-                continue;
-            }
-
-            ++current_count;
-
-            if (current_block->GetBlockType() == BlockType::Ice ||
-                current_block->IsRecursionCheck())
-            {
-                continue;
-            }
-
-            current_block->SetRecursionCheck(true);
-            current_blocks.clear();
-
-            if (RecursionCheckBlock(x, y, -1, current_blocks) >= 3)
-            {
-                current_blocks.push_back(current_block);
-                equal_block_list_.push_back(current_blocks);
-            }
-            else
-            {
-                current_block->SetRecursionCheck(false);
-                for (auto* block : current_blocks)
-                {
-                    block->SetRecursionCheck(false);
-                }
+                block->SetState(BlockState::Destroying);
             }
         }
-    }
 
-    // ��ġ�� ����� �ִ� ���
-    if (equal_block_list_.empty() == false)
-    {
-        HandleMatchedBlocks();
         return true;
     }
+    else
+    {
+        ResetComboState();
+    }
 
-    // ��ġ�� ����� ���� ���
-    ResetMatchState();
+    HandlePhaseTransition(state_info_.should_quit ? GamePhase::GameOver : GamePhase::Playing);
+
     return false;
 }
 
-void RemotePlayer::HandleMatchedBlocks()
-{
-    state_info_.previousPhase = state_info_.currentPhase;
-    state_info_.currentPhase = GamePhase::Shattering;    
-
-    if (state_info_.previousPhase == GamePhase::Shattering)
-    {
-        ++score_info_.comboCount;
-    }
-    else if (state_info_.previousPhase == GamePhase::Playing)
-    {
-        score_info_.comboCount = 1;
-    }
-
-    // ��ġ�� ��ϵ��� �ı� ���·� ����
-    for (auto& block_group : equal_block_list_)
-    {
-        for (auto& block : block_group)
-        {
-            block->SetState(BlockState::Destroying);
-        }
-    }
-
-    CollectRemoveIceBlocks();
-}
-
-void RemotePlayer::ResetMatchState()
-{
-    if (score_info_.comboCount > 0)
-    {
-        score_info_.comboCount = 0;
-    }
-
-    if (score_info_.restScore> 0)
-    {
-        score_info_.restScore = 0;
-    }
-
-    state_info_.currentPhase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-    state_info_.previousPhase = state_info_.currentPhase;
-}
-
-int16_t RemotePlayer::RecursionCheckBlock(int16_t x, int16_t y, int16_t direction, std::vector<Block*>& block_list)
-{
-    if (!board_blocks_[y][x])
-    {
-        return 0;
-    }
-
-    Block* current_block = board_blocks_[y][x];
-    const auto block_type = current_block->GetBlockType();
-    int16_t equal_count = 0;
-
-    // ����� üũ ���� ����
-    const std::array<std::pair<std::pair<int16_t, int16_t>, Constants::Direction>, 4> check_dirs = { {
-        {{-1, 0}, Constants::Direction::Left},
-        {{1, 0}, Constants::Direction::Right},
-        {{0, 1}, Constants::Direction::Top},
-        {{0, -1}, Constants::Direction::Bottom}
-    } };
-
-    for (const auto& [dir, check_direction] : check_dirs)
-    {
-        if (check_direction == static_cast<Constants::Direction>(direction))
-        {
-            continue;
-        }
-
-        const int16_t check_x = x + dir.first;
-        const int16_t check_y = y + dir.second;
-
-        // ��� üũ
-        if (check_x < 0 || check_x >= Constants::Board::BOARD_X_COUNT || check_y < 0 || check_y >= Constants::Board::BOARD_Y_COUNT)
-        {
-            continue;
-        }
-
-        Block* check_block = board_blocks_[check_y][check_x];
-        if (!check_block || check_block->IsRecursionCheck() || check_block->GetState() != BlockState::Stationary)
-        {
-            continue;
-        }
-
-        if (block_type == check_block->GetBlockType())
-        {
-            check_block->SetRecursionCheck(true);
-            block_list.push_back(check_block);
-
-            equal_count += 1 + RecursionCheckBlock(check_x, check_y,
-                static_cast<int16_t>(static_cast<Constants::Direction>((static_cast<int>(check_direction) + 2) % 4)),
-                block_list);
-        }
-    }
-
-    return equal_count;
-}
 
 void RemotePlayer::MoveBlock(uint8_t moveType, float position)
 {
@@ -591,6 +484,8 @@ void RemotePlayer::ChangeBlockState(uint8_t state)
     if (control_block_)
     {
         control_block_->SetState(static_cast<BlockState>(state));
+
+        //LOGGER.Info("RemotePlayer.ChangeBlockState state : {}", state);
     }
 }
 
@@ -635,12 +530,10 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
             game_board_->ClearActiveGroupBlock();
         }
 
-        if (!is_game_quit_ && !CheckGameBlockState() && state_info_.currentPhase == GamePhase::Playing)
+        if (!is_game_quit_ && !CheckGameBlockState() && state_info_.current_phase == GamePhase::Playing)
         {
             //DestroyNextBlock();
         }
-
-        
 
         return true;
     }
@@ -650,8 +543,8 @@ bool RemotePlayer::PushBlockInGame(const std::span<const float>& pos1, const std
 
 void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx)
 {
-	
-    if (score_info_.totalInterruptBlockCount <= 0)
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+    if (state_info_.has_ice_block == false)
     {
         return;
     }
@@ -671,14 +564,15 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
         else
         {
             CreatePartialRowInterruptBlocks(y_row_cnt, x_idx, texture);
-        }
+        }        
 
         if (interrupt_view_)
         {
-            interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+            interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
         }
 
-        state_info_.currentPhase = GamePhase::IceBlocking;
+        state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
+        state_info_.current_phase = GamePhase::IceBlocking;
     }
     catch (const std::exception& e)
     {
@@ -688,16 +582,14 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
 
 void RemotePlayer::AddInterruptBlockCnt(short cnt, float x, float y, unsigned char type)
 {
-    // ���� ��� ī��Ʈ ����
-    score_info_.totalInterruptBlockCount += cnt;
+    score_info_.total_interrupt_block_count += cnt;    
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
 
-    // �޺� ���� ���� ����
-    state_info_.isComboAttack = true;
+    state_info_.is_combo_attack = true;
 
-    // UI ������Ʈ
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
@@ -715,12 +607,11 @@ void RemotePlayer::CreateFullRowInterruptBlocks(std::shared_ptr<ImageTexture>& t
             CreateSingleIceBlock(x, y, texture);
         }
     }
-    score_info_.totalInterruptBlockCount -= 30;
+    score_info_.total_interrupt_block_count -= 30;
 }
 
 void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std::span<const uint8_t>& x_idx, std::shared_ptr<ImageTexture>& texture)
 {
-    // Complete rows
     for (int y = 0; y < y_row_cnt; y++)
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++)
@@ -729,13 +620,12 @@ void RemotePlayer::CreatePartialRowInterruptBlocks(uint8_t y_row_cnt, const std:
         }
     }
 
-    // Partial row
     for (int i = 0; i < x_idx.size(); i++)
     {
         CreateSingleIceBlock(x_idx[i], y_row_cnt, texture);
     }
 
-    score_info_.totalInterruptBlockCount -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
+    score_info_.total_interrupt_block_count -= static_cast<uint16_t>(y_row_cnt * Constants::Board::BOARD_X_COUNT + x_idx.size());
 }
 
 void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTexture>& texture)
@@ -758,17 +648,29 @@ void RemotePlayer::CreateSingleIceBlock(int x, int y, std::shared_ptr<ImageTextu
 
 void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 {
-    const SDL_FPoint start_pos
+    /*const SDL_FPoint start_pos
     {
         Constants::Board::PLAYER_POSITION_X + Constants::Board::WIDTH_MARGIN + x + Constants::Block::SIZE / 2,
         Constants::Board::PLAYER_POSITION_Y + y + Constants::Block::SIZE / 2
     };
 
-    const SDL_FPoint end_pos
+    SDL_FPoint end_pos;
+    if (state_info_.has_ice_block)
     {
-        Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
-        Constants::Board::POSITION_Y
-    };
+        end_pos =
+        {
+            GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
+            Constants::Board::POSITION_Y
+        };
+    }
+    else
+    {
+        end_pos =
+        {
+            Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
+            Constants::Board::POSITION_Y
+        };
+    }
 
     auto bullet = std::make_shared<BulletEffect>();
     if (!bullet->Initialize(start_pos, end_pos, static_cast<BlockType>(type)))
@@ -776,8 +678,10 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
         return;
     }
 
+    LOGGER.Error("1111111 RemotePlayer::AttackInterruptBlock");
+
     bullet->SetAttacking(true);
-    bullet_list_.push_back(bullet);
+    bullet_list_.push_back(bullet);*/
 
     if (game_board_ && game_board_->GetState() != BoardState::Lose)
     {
@@ -787,11 +691,12 @@ void RemotePlayer::AttackInterruptBlock(float x, float y, uint8_t type)
 
 void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, uint8_t type)
 {
-    score_info_.totalInterruptBlockCount = std::max<uint16_t>(0, score_info_.totalInterruptBlockCount - count);
+    score_info_.total_interrupt_block_count = std::max<uint16_t>(0, score_info_.total_interrupt_block_count - count);
+    state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;    
 
     if (interrupt_view_)
     {
-        interrupt_view_->UpdateInterruptBlock(score_info_.totalInterruptBlockCount);
+        interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
     const SDL_FPoint start_pos
@@ -799,6 +704,7 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
         Constants::Board::PLAYER_POSITION_X + Constants::Board::WIDTH_MARGIN + x + Constants::Block::SIZE / 2,
         Constants::Board::PLAYER_POSITION_Y + y + Constants::Block::SIZE / 2
     };
+
 
     const SDL_FPoint end_pos
     {
@@ -811,6 +717,7 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
     {
         return;
     }
+    LOGGER.Error("1111111 RemotePlayer::DefenseInterruptBlockCount");
 
     bullet->SetAttacking(false);
     bullet_list_.push_back(bullet);
@@ -821,117 +728,18 @@ void RemotePlayer::DefenseInterruptBlockCount(int16_t count, float x, float y, u
     }
 }
 
-void RemotePlayer::CollectRemoveIceBlocks()
-{
-    if (block_list_.empty() || equal_block_list_.empty() || state_info_.currentPhase != GamePhase::Shattering)
-    {
-        return;
-    }
-
-    for (const auto& group : equal_block_list_)
-    {
-        for (const auto& block : group)
-        {
-            if (block == nullptr)
-            {
-                continue;
-            }
-
-            CollectAdjacentIceBlocks(block);
-        }
-    }
-
-    for (const auto& ice_block : ice_block_set_)
-    {
-        ice_block->SetState(BlockState::Destroying);
-    }
-}
-
-void RemotePlayer::CollectAdjacentIceBlocks(Block* block)
-{
-    const int x = block->GetPosIdx_X();
-    const int y = block->GetPosIdx_Y();
-
-    const std::array<std::pair<int, int>, 4> directions =
-    { {
-        {x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}
-    } };
-
-    for (const auto& [checkX, checkY] : directions)
-    {
-        if (checkX < 0 || checkX >= Constants::Board::BOARD_X_COUNT ||
-            checkY < 0 || checkY >= Constants::Board::BOARD_Y_COUNT)
-        {
-            continue;
-        }
-
-        Block* check_block = board_blocks_[checkX][checkY];
-        if (!check_block ||
-            check_block->GetState() != BlockState::Stationary ||
-            check_block->GetBlockType() != BlockType::Ice)
-        {
-            continue;
-        }
-
-        if (auto ice_block = dynamic_cast<IceBlock*>(check_block))
-        {
-            ice_block->SetState(BlockState::Destroying);
-
-            auto found = std::find_if(block_list_.begin(), block_list_.end(),
-                [ice_block](const auto& block) 
-                {
-                    return block.get() == ice_block;
-                });
-
-            if (found != block_list_.end()) 
-            {
-                ice_block_set_.insert(std::static_pointer_cast<IceBlock>(*found));
-            }
-        }        
-    }
-}
-
-void RemotePlayer::RemoveIceBlocks(std::list<SDL_Point>& x_index_list)
-{
-    if (ice_block_set_.empty())
-    {
-        return;
-    }
-
-    for (const auto& ice_block : ice_block_set_)
-    {
-        SDL_Point pos_idx{ ice_block->GetPosIdx_X(), ice_block->GetPosIdx_Y() };
-
-        board_blocks_[pos_idx.y][pos_idx.x] = nullptr;
-        block_list_.remove(ice_block);
-        x_index_list.push_back(pos_idx);
-    }
-
-    ice_block_set_.clear();
-}
-
-void RemotePlayer::CalculateIceBlockCount()
-{    
-    if (state_info_.previousPhase == GamePhase::Shattering)
-    {        
-        ++score_info_.comboCount;
-    }
-    else if (state_info_.previousPhase == GamePhase::Playing)
-    {
-        score_info_.comboCount = 1;
-    }
-
-    for (auto& block_group : equal_block_list_)
-    {
-        for (auto& block : block_group)
-        {
-            block->SetState(BlockState::Destroying);
-        }
-    }
-}
-
 void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 {
+    // 최대 큐 크기 제한 상수 추가
+    static constexpr size_t MAX_NEXT_BLOCKS = 3;
+
+    // 큐 크기 검사 및 초과 블록 제거
+    if (next_blocks_.size() >= MAX_NEXT_BLOCKS) 
+    {
+        LOGGER.Info("RemotePlayer::AddNewBlock - Maximum block count reached ({}/{}), removing oldest block", next_blocks_.size(), MAX_NEXT_BLOCKS);
+        next_blocks_.pop_front();
+    }
+
     auto next_block = std::make_shared<GroupBlock>();
     if (!next_block->Create(static_cast<BlockType>(block_type[0]), static_cast<BlockType>(block_type[1])))
     {
@@ -943,29 +751,94 @@ void RemotePlayer::AddNewBlock(const std::span<const uint8_t, 2>& block_type)
 
     if (background_)
     {
-        new_blocks_.push_back(next_block);
+        next_blocks_.emplace_back(next_block);
+
+        //LOGGER.Info("RemotePlayer::AddNewBlock - Added block, current queue size: {}", next_blocks_.size());
+
         background_->SetPlayerNextBlock(next_block);
     }
 }
 
 void RemotePlayer::Release()
 {
-    equal_block_list_.clear();
+    matched_blocks_.clear();
 
-    ReleaseContainer(del_bullet_array_);
-    ReleaseContainer(ice_block_set_);
-    ReleaseContainer(new_blocks_);
+    ReleaseContainer(next_blocks_);
 
     BasePlayer::Release();
 }
 
 void RemotePlayer::Reset()
 {
-    equal_block_list_.clear();
+    matched_blocks_.clear();
 
-    ReleaseContainer(del_bullet_array_);
-    ReleaseContainer(ice_block_set_);
-    ReleaseContainer(new_blocks_);
+    ReleaseContainer(next_blocks_);
 
     BasePlayer::Reset();
+}
+
+void RemotePlayer::CreateBullet(Block* block)
+{
+    if (!block)
+    {
+        LOGGER.Error("CreateBullet: block is null");
+        return;
+    }
+
+    SDL_FPoint startPos
+    {
+        Constants::Board::PLAYER_POSITION_X + Constants::Board::WIDTH_MARGIN + block->GetX() + Constants::Block::SIZE / 2,
+        Constants::Board::POSITION_Y + block->GetY() + Constants::Block::SIZE / 2
+    };
+
+    SDL_FPoint endPos;
+    if (state_info_.has_ice_block)
+    {
+        endPos =
+        {
+            GAME_APP.GetWindowWidth() - (Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2)),
+            Constants::Board::POSITION_Y
+        };
+    }
+    else
+    {
+        endPos =
+        {
+            Constants::Board::POSITION_X + (Constants::Board::WIDTH / 2),
+            Constants::Board::POSITION_Y
+        };
+    }
+
+    auto bullet = std::make_shared<BulletEffect>();
+    if (!bullet->Initialize(startPos, endPos, block->GetBlockType()))
+    {
+        LOGGER.Error("Failed to create bullet effect");
+        return;
+    }
+
+
+    //LOGGER.Error("1111111 RemotePlayer::CreateBullet");
+    bullet->SetAttacking(!state_info_.has_ice_block);
+    bullet_list_.push_back(bullet);
+
+    if (game_board_ && game_board_->GetState() != BoardState::Lose)
+    {
+        game_board_->SetState(BoardState::Attacking);
+    }
+}
+
+void RemotePlayer::SyncPositionY(float targetY, float velocity)
+{
+    if (!control_block_)
+        return;
+
+    // 현재 위치와 목표 위치의 차이가 크면 동기화 시작
+    float current_y = control_block_->GetPosition().y;
+    if (std::abs(targetY - current_y) > 3.0f ||
+        std::abs(velocity - control_block_->GetAddForceVelocityY()) > 0.5f)
+    {
+        target_y_position_ = targetY;
+        current_sync_velocity_ = velocity;
+        is_syncing_position_ = true;
+    }
 }

@@ -7,7 +7,7 @@
     {
         if (particle && particle->IsAlive())
         {
-            ++aliveCount_;
+            ++alive_count_;
         }
     }
 
@@ -19,7 +19,7 @@
     void ParticleContainer::Release()
     {
         ClearParticles();
-        sourceTexture_.reset();
+        source_texture_.reset();
     }
 
     int ParticleContainer::GetAliveParticleCount() const

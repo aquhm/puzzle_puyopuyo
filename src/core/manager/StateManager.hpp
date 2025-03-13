@@ -57,8 +57,8 @@ public:
     void PauseCurrentState();
     void ResumeCurrentState();
     
-    [[nodiscard]] const std::shared_ptr<BaseState>& GetCurrentState() const { return currentState_; }
-    [[nodiscard]] StateID GetCurrentStateID() const { return currentStateId_; }
+    [[nodiscard]] const std::shared_ptr<BaseState>& GetCurrentState() const { return current_state_; }
+    [[nodiscard]] StateID GetCurrentStateID() const { return current_state_id_; }
     template<std::derived_from<BaseState> T>
     [[nodiscard]] const std::shared_ptr<T>& GetState(StateID stateId) const;
 
@@ -68,9 +68,9 @@ public:
     void ProcessStateChangeRequests();
     
     StateMap states_;
-    std::queue<StateID> stateChangeQueue_;
-    std::shared_ptr<BaseState> currentState_;
-    StateID currentStateId_{ StateID::Max };
+    std::queue<StateID> state_change_queue_;
+    std::shared_ptr<BaseState> current_state_;
+    StateID current_state_id_{ StateID::Max };
     bool initialized_{ false };
     bool paused_{ false };
 };

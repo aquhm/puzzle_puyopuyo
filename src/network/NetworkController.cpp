@@ -323,6 +323,18 @@ void NetworkController::PushBlockInGame(std::span<const float> pos1, std::span<c
     }
 }
 
+void NetworkController::SyncPositionY(float positionY, float velocity)
+{
+    if (role_ == NetworkRole::Server && server_)
+    {
+        server_->SyncPositionY(positionY, velocity);
+    }
+    else if (role_ == NetworkRole::Client && client_)
+    {
+        client_->SyncPositionY(positionY, velocity);
+    }
+}
+
 void NetworkController::StopComboAttack() 
 {
     if (role_ == NetworkRole::Server && server_) 

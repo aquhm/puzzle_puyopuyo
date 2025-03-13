@@ -218,6 +218,16 @@ void GameClient::ChangBlockState(uint8_t state)
     SendPacketInternal(packet);
 }
 
+void GameClient::SyncPositionY(float positionY, float velocity)
+{
+    SyncBlockPositionYPacket packet;
+    packet.player_id = GAME_APP.GetPlayerManager().GetMyPlayer()->GetId();
+    packet.position_y = positionY;
+    packet.velocity = velocity;
+
+    SendPacketInternal(packet);
+}
+
 void GameClient::RequireFallingBlock(uint8_t fallingIdx, bool falling)
 {
     FallingBlockPacket packet;

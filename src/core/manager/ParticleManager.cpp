@@ -9,7 +9,7 @@
 
 ParticleManager::~ParticleManager() 
 {
-    if (isInitialized_) 
+    if (is_initialized_) 
     {
         Release();
     }
@@ -17,7 +17,7 @@ ParticleManager::~ParticleManager()
 
 bool ParticleManager::Initialize() 
 {
-    if (isInitialized_) 
+    if (is_initialized_) 
     {
         return true;
     }
@@ -26,8 +26,8 @@ bool ParticleManager::Initialize()
     {
         containers_.clear();
         textures_.clear();
-        isDrawEnabled_ = true;
-        isInitialized_ = true;
+        is_draw_enabled_ = true;
+        is_initialized_ = true;
         return true;
     }
     catch (const std::exception& e) 
@@ -39,7 +39,7 @@ bool ParticleManager::Initialize()
 
 void ParticleManager::Update(float deltaTime) 
 {
-    if (!isInitialized_)
+    if (!is_initialized_)
     {
         return;
     }
@@ -65,7 +65,7 @@ void ParticleManager::Render()
 
 void ParticleManager::RenderForPlayer(uint8_t playerId) 
 {
-    if (!isInitialized_ || !isDrawEnabled_)
+    if (!is_initialized_ || !is_draw_enabled_)
     {
         return;
     }
@@ -81,7 +81,7 @@ void ParticleManager::RenderForPlayer(uint8_t playerId)
 
 void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container)
 {
-    if (!isInitialized_) 
+    if (!is_initialized_) 
     {
         throw std::runtime_error("ParticleManager not initialized");
     }
@@ -96,7 +96,7 @@ void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContain
 
 void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContainer>&& container, const SDL_FPoint& position)
 {
-    if (!isInitialized_) 
+    if (!is_initialized_) 
     {
         throw std::runtime_error("ParticleManager not initialized");
     }
@@ -113,7 +113,7 @@ void ParticleManager::AddParticleContainer(const std::shared_ptr<ParticleContain
 
 void ParticleManager::RemoveParticleContainer(const ParticleContainer& container) 
 {
-    if (!isInitialized_)
+    if (!is_initialized_)
     {
         return;
     }
@@ -126,7 +126,7 @@ void ParticleManager::RemoveParticleContainer(const ParticleContainer& container
 
 std::shared_ptr<ImageTexture> ParticleManager::FindParticleTexture(const std::string& name) 
 {
-    if (!isInitialized_)
+    if (!is_initialized_)
     {
         return nullptr;
     }
@@ -138,12 +138,12 @@ std::shared_ptr<ImageTexture> ParticleManager::FindParticleTexture(const std::st
 void ParticleManager::Release() 
 {
     ClearAllResources();
-    isInitialized_ = false;
+    is_initialized_ = false;
 }
 
 void ParticleManager::ClearAllResources() 
 {
     containers_.clear();
     textures_.clear();
-    isDrawEnabled_ = true;
+    is_draw_enabled_ = true;
 }

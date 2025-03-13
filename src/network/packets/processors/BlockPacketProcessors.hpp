@@ -412,3 +412,47 @@ public:
     }
 };
 
+class SyncPositionYProcessor : public IPacketProcessor
+{
+public:
+    void Initialize() override {}
+
+    void Process(const PacketBase& packet, struct ClientInfo* client) override
+    {
+        const auto& sync_packet = static_cast<const SyncBlockPositionYPacket&>(packet);
+
+        if (GAME_APP.GetStateManager().GetCurrentStateID() != StateManager::StateID::Game)
+        {
+            return;
+        }
+
+        // 모든 플레이어에게 전달
+        auto& playerManager = GAME_APP.GetPlayerManager();
+        {
+            CriticalSection::Lock lock(playerManager.GetCriticalSection());
+            for (const auto& [_, player] : playerManager.GetPlayers())
+            {
+                if (player->GetId() != sync_packet.player_id)
+                {
+                    NETWORK.SendToClient(player->GetNetInfo(), sync_packet);
+                }
+            }
+        }
+
+        // 게임 상태 업데이트
+        if (auto gameState = static_cast<GameState*>(GAME_APP.GetStateManager().GetCurrentState().get()))
+        {
+            if (const auto& remotePlayer = gameState->GetRemotePlayer())
+            {
+                remotePlayer->SyncPositionY(sync_packet.position_y, sync_packet.velocity);
+            }
+        }
+    }
+
+    void Release() override {}
+
+    [[nodiscard]] PacketType GetPacketType() const override
+    {
+        return PacketType::SyncBlockPositionY;
+    }
+};

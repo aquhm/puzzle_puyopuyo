@@ -22,18 +22,18 @@
 GameGroupBlock::GameGroupBlock()
     : GroupBlock()
     , rotateState_(RotateState::Default)
-    , isFalling_(false)
-    , isRotating_(false)
-    , checkingCollision_(false)
-    , canMove_(true)
-    , fallingIdx_(-1)
-    , blockIndexX_(0)
-    , playerID_(0)
-    , updateTime_(0)
+    , is_falling_(false)
+    , is_rotating_(false)
+    , checking_collision_(false)
+    , can_move_(true)
+    , falling_Index_(-1)
+    , block_index_x_(0)
+    , player_id_(0)
+    , update_time_(0)
     , velocity_(0.0f)
-    , addVelocity_(1.0f)
-    , rotateVelocity_(0.0f)
-    , horizontalVelocity_(0.0f)
+    , add_velocity_(1.0f)
+    , rotate_velocity_(0.0f)
+    , horizontal_velocity_(0.0f)
     
 {
 }
@@ -46,12 +46,12 @@ GameGroupBlock::~GameGroupBlock()
 void GameGroupBlock::SetPosX(float x) 
 {
     position_.x = x;
-    blockIndexX_ = static_cast<int>((position_.x - Constants::Board::WIDTH_MARGIN) / Constants::Block::SIZE);
+    block_index_x_ = static_cast<int>((position_.x - Constants::Board::WIDTH_MARGIN) / Constants::Block::SIZE);
 
     if (blocks_[0]) 
     {
         blocks_[0]->SetX(position_.x);
-        blocks_[0]->SetPosIdx_X(blockIndexX_);
+        blocks_[0]->SetPosIdx_X(block_index_x_);
     }
 
     if (blocks_[1]) 
@@ -61,17 +61,17 @@ void GameGroupBlock::SetPosX(float x)
         case RotateState::Default:
         case RotateState::Top:
             blocks_[1]->SetX(position_.x);
-            blocks_[1]->SetPosIdx_X(blockIndexX_);
+            blocks_[1]->SetPosIdx_X(block_index_x_);
             break;
 
         case RotateState::Right:
             blocks_[1]->SetX(position_.x + Constants::Block::SIZE);
-            blocks_[1]->SetPosIdx_X(blockIndexX_ + 1);
+            blocks_[1]->SetPosIdx_X(block_index_x_ + 1);
             break;
 
         case RotateState::Left:
             blocks_[1]->SetX(position_.x - Constants::Block::SIZE);
-            blocks_[1]->SetPosIdx_X(blockIndexX_ - 1);
+            blocks_[1]->SetPosIdx_X(block_index_x_ - 1);
             break;
         }
     }
@@ -115,28 +115,28 @@ void GameGroupBlock::SetPosXY(float x, float y)
     if (!blocks_[0] || !blocks_[1]) return;
 
     blocks_[0]->SetPosition(position_.x, position_.y);
-    blockIndexX_ = static_cast<int>((position_.x - Constants::Board::WIDTH_MARGIN) / Constants::Block::SIZE);
-    blocks_[0]->SetPosIdx_X(blockIndexX_);
+    block_index_x_ = static_cast<int>((position_.x - Constants::Board::WIDTH_MARGIN) / Constants::Block::SIZE);
+    blocks_[0]->SetPosIdx_X(block_index_x_);
 
     switch (rotateState_) {
     case RotateState::Default:
         blocks_[1]->SetPosition(position_.x, position_.y + Constants::Block::SIZE);
-        blocks_[1]->SetPosIdx_X(blockIndexX_);
+        blocks_[1]->SetPosIdx_X(block_index_x_);
         break;
 
     case RotateState::Top:
         blocks_[1]->SetPosition(position_.x, position_.y - Constants::Block::SIZE);
-        blocks_[1]->SetPosIdx_X(blockIndexX_);
+        blocks_[1]->SetPosIdx_X(block_index_x_);
         break;
 
     case RotateState::Right:
         blocks_[1]->SetPosition(position_.x + Constants::Block::SIZE, position_.y);
-        blocks_[1]->SetPosIdx_X(blockIndexX_ + 1);
+        blocks_[1]->SetPosIdx_X(block_index_x_ + 1);
         break;
 
     case RotateState::Left:
         blocks_[1]->SetPosition(position_.x - Constants::Block::SIZE, position_.y);
-        blocks_[1]->SetPosIdx_X(blockIndexX_ - 1);
+        blocks_[1]->SetPosIdx_X(block_index_x_ - 1);
         break;
     }
 
@@ -145,7 +145,7 @@ void GameGroupBlock::SetPosXY(float x, float y)
 
 void GameGroupBlock::MoveLeft(bool collisionCheck) 
 {
-    if (isRotating_ || isFalling_ || checkingCollision_ || !canMove_) 
+    if (is_rotating_ || is_falling_ || checking_collision_ || !can_move_) 
     {
         return;
     }
@@ -162,7 +162,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
         bool canMove = true;
 
         // 충돌 체크
-        for (const auto& block : *gameBlockList_) 
+        for (const auto& block : *game_block_list_) 
         {
             RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
@@ -188,7 +188,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get())) 
                 {
-                    if (blockIndexX_ > 0 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ - 1)) 
+                    if (block_index_x_ > 0 && gameState->GetLocalPlayer()->IsPossibleMove(block_index_x_ - 1)) 
                     {
                         position_.x -= Constants::Block::SIZE;
 
@@ -214,7 +214,7 @@ void GameGroupBlock::MoveLeft(bool collisionCheck)
 
 void GameGroupBlock::MoveRight(bool collisionCheck) 
 {
-    if (isRotating_ || isFalling_ || checkingCollision_ || !canMove_) 
+    if (is_rotating_ || is_falling_ || checking_collision_ || !can_move_) 
     {
         return;
     }
@@ -229,7 +229,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
         bool canMove = true;
 
-        for (const auto& block : *gameBlockList_) 
+        for (const auto& block : *game_block_list_) 
         {
             RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
@@ -254,7 +254,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
                 // GameState 타입으로 캐스팅 시도
                 if (auto gameState = dynamic_cast<GameState*>(stateManager.get()))
                 {
-                    if (blockIndexX_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->GetLocalPlayer()->IsPossibleMove(blockIndexX_ + 1)) 
+                    if (block_index_x_ < Constants::Board::BOARD_X_COUNT - 1 && gameState->GetLocalPlayer()->IsPossibleMove(block_index_x_ + 1)) 
                     {
                         position_.x += Constants::Block::SIZE;
                         SetPosX(position_.x);
@@ -279,7 +279,7 @@ void GameGroupBlock::MoveRight(bool collisionCheck)
 
 bool GameGroupBlock::MoveDown(bool collisionCheck)
 {
-    checkingCollision_ = true;    
+    checking_collision_ = true;    
 
     bool hasCollision = false;
     bool canMove = true;
@@ -294,7 +294,7 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
     {
     case RotateState::Default:
         // 위-아래 배치일 때의 충돌 체크
-        for (const auto& block : *gameBlockList_) 
+        for (const auto& block : *game_block_list_) 
         {
             if (!block)
             {
@@ -315,19 +315,19 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
         {
             blocks_[Standard]->SetY(targetRect.y - Constants::Block::SIZE * 2);
             blocks_[Satellite]->SetY(targetRect.y - Constants::Block::SIZE);
-            canMove_ = false;
+            can_move_ = false;
         }
         else if (satelliteY + Constants::Block::SIZE >= Constants::Board::HEIGHT) 
         {
             blocks_[Standard]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE * 2));
             blocks_[Satellite]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE));
-            canMove_ = false;
+            can_move_ = false;
         }
         break;
 
     case RotateState::Right:
     case RotateState::Left:
-        if (isFalling_ == false) 
+        if (is_falling_ == false) 
         {
             // 좌-우 배치일 때의 충돌 체크
             HandleHorizontalCollision();
@@ -340,7 +340,7 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
 
     case RotateState::Top:
         // 아래-위 배치일 때의 충돌 체크
-        for (const auto& block : *gameBlockList_) 
+        for (const auto& block : *game_block_list_) 
         {
             if (!block)
             {
@@ -361,19 +361,19 @@ bool GameGroupBlock::MoveDown(bool collisionCheck)
         {
             blocks_[Standard]->SetY(targetRect.y - Constants::Block::SIZE);
             blocks_[Satellite]->SetY(targetRect.y - Constants::Block::SIZE * 2);
-            canMove_ = false;
+            can_move_ = false;
         }
         else if (satelliteY + Constants::Block::SIZE * 2 >= Constants::Board::HEIGHT) 
         {
             blocks_[Standard]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE));
             blocks_[Satellite]->SetY(static_cast<float>(Constants::Board::HEIGHT - Constants::Block::SIZE * 2));
-            canMove_ = false;
+            can_move_ = false;
         }
         break;
     }
 
-    checkingCollision_ = false;
-    return canMove_;
+    checking_collision_ = false;
+    return can_move_;
 }
 
 void GameGroupBlock::HandleHorizontalCollision() 
@@ -384,7 +384,7 @@ void GameGroupBlock::HandleHorizontalCollision()
     SDL_Rect controlRect[2]{};
     SDL_Rect targetRect[2]{};
 
-    for (const auto& block : *gameBlockList_) 
+    for (const auto& block : *game_block_list_) 
     {
         if (!block)
         {
@@ -398,13 +398,13 @@ void GameGroupBlock::HandleHorizontalCollision()
 
         if (SDL_GetRectIntersection(&controlRect[0], &targetRect[0], &resultRect[0]) == true)
         {
-            SDL_RectToFRect(&resultRect[0], &intersectResultRect_[0]);
+            SDL_RectToFRect(&resultRect[0], &intersect_result_rect_[0]);
             collision1 = true;
         }                
 
         if (SDL_GetRectIntersection(&controlRect[1], &targetRect[1], &resultRect[1]) == true)
         {
-            SDL_RectToFRect(&resultRect[1], &intersectResultRect_[1]);
+            SDL_RectToFRect(&resultRect[1], &intersect_result_rect_[1]);
             collision2 = true;
         }
 
@@ -421,23 +421,23 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
 {
     if (collision1 == true && collision2 == true)
     {
-        blocks_[Standard]->SetY(intersectResultRect_[0].y - Constants::Block::SIZE);
-        blocks_[Satellite]->SetY(intersectResultRect_[1].y - Constants::Block::SIZE);
-        canMove_ = false;
+        blocks_[Standard]->SetY(intersect_result_rect_[0].y - Constants::Block::SIZE);
+        blocks_[Satellite]->SetY(intersect_result_rect_[1].y - Constants::Block::SIZE);
+        can_move_ = false;
     }
     else if (collision1 == true && collision2 == false) 
     {
-        blocks_[Standard]->SetY(intersectResultRect_[0].y - Constants::Block::SIZE);
-        fallingIdx_ = Satellite;
-        isFalling_ = true;
-        NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
+        blocks_[Standard]->SetY(intersect_result_rect_[0].y - Constants::Block::SIZE);
+        falling_Index_ = Satellite;
+        is_falling_ = true;
+        NETWORK.RequireFallingBlock(falling_Index_, is_falling_);
     }
     else if (collision1 == false && collision2 == true) 
     {
-        blocks_[Satellite]->SetY(intersectResultRect_[1].y - Constants::Block::SIZE);
-        fallingIdx_ = Standard;
-        isFalling_ = true;
-        NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
+        blocks_[Satellite]->SetY(intersect_result_rect_[1].y - Constants::Block::SIZE);
+        falling_Index_ = Standard;
+        is_falling_ = true;
+        NETWORK.RequireFallingBlock(falling_Index_, is_falling_);
     }
     else
     {
@@ -447,7 +447,7 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
             blocks_[Standard]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
             blocks_[Satellite]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
 
-            canMove_ = false;
+            can_move_ = false;
         }
     }
 }
@@ -455,7 +455,7 @@ void GameGroupBlock::ProcessHorizontalCollisionResult(bool collision1, bool coll
 
 void GameGroupBlock::HandleRotation(float deltaTime) 
 {
-    if (!isRotating_)
+    if (!is_rotating_)
     {
         return;
     }
@@ -465,7 +465,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
     int direction = 0;
 
     float rotVelocity = deltaTime * Constants::Block::ROTATE_VELOCITY;
-    rotateVelocity_ += rotVelocity;
+    rotate_velocity_ += rotVelocity;
 
     // 회전 상태별 처리
     bool rotationComplete = false;
@@ -473,38 +473,38 @@ void GameGroupBlock::HandleRotation(float deltaTime)
     switch (rotateState_) 
     {
     case RotateState::Default:
-        if (rotateVelocity_ >= 270.0f) 
+        if (rotate_velocity_ >= 270.0f) 
         {
-            blocks_[Satellite]->SetPosIdx_X(blockIndexX_);
-            rotateVelocity_ = 270.0f;
+            blocks_[Satellite]->SetPosIdx_X(block_index_x_);
+            rotate_velocity_ = 270.0f;
             rotationComplete = true;
         }
         break;
 
     case RotateState::Right:
-        if (rotateVelocity_ >= 360.0f) 
+        if (rotate_velocity_ >= 360.0f) 
         {
-            blocks_[Satellite]->SetPosIdx_X(blockIndexX_ + 1);
-            rotateVelocity_ = 360.0f;
+            blocks_[Satellite]->SetPosIdx_X(block_index_x_ + 1);
+            rotate_velocity_ = 360.0f;
             rotationComplete = true;
             direction = 1;
         }
         break;
 
     case RotateState::Top:
-        if (rotateVelocity_ >= 90.0f) 
+        if (rotate_velocity_ >= 90.0f) 
         {
-            blocks_[Satellite]->SetPosIdx_X(blockIndexX_);
-            rotateVelocity_ = 90.0f;
+            blocks_[Satellite]->SetPosIdx_X(block_index_x_);
+            rotate_velocity_ = 90.0f;
             rotationComplete = true;
         }
         break;
 
     case RotateState::Left:
-        if (rotateVelocity_ >= 180.0f) 
+        if (rotate_velocity_ >= 180.0f) 
         {
-            blocks_[Satellite]->SetPosIdx_X(blockIndexX_ - 1);
-            rotateVelocity_ = 180.0f;
+            blocks_[Satellite]->SetPosIdx_X(block_index_x_ - 1);
+            rotate_velocity_ = 180.0f;
             rotationComplete = true;
             direction = -1;
         }
@@ -512,8 +512,8 @@ void GameGroupBlock::HandleRotation(float deltaTime)
     }
 
     // 회전 위치 계산
-    float x = fromX + (Constants::Block::SIZE * std::cos(GameUtils::ToRadians(rotateVelocity_)));
-    float y = fromY + (Constants::Block::SIZE * -std::sin(GameUtils::ToRadians(rotateVelocity_)));
+    float x = fromX + (Constants::Block::SIZE * std::cos(GameUtils::ToRadians(rotate_velocity_)));
+    float y = fromY + (Constants::Block::SIZE * -std::sin(GameUtils::ToRadians(rotate_velocity_)));
 
     x -= (Constants::Block::SIZE / 2.0f);
     y -= (Constants::Block::SIZE / 2.0f);
@@ -525,7 +525,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
             y = blocks_[Standard]->GetY();
         }
 
-        float finalX = GetPosXOfIdx(blockIndexX_);
+        float finalX = GetPosXOfIdx(block_index_x_);
         finalX += (direction * Constants::Block::SIZE);
 
         blocks_[Satellite]->SetPosition(finalX, y);
@@ -538,7 +538,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
             }
         }
 
-        isRotating_ = false;
+        is_rotating_ = false;
     }
     else
     {
@@ -546,7 +546,7 @@ void GameGroupBlock::HandleRotation(float deltaTime)
     }
 
     // 벽 또는 블록에 의한 회전으로 인한 기준 블록을 수평방향으로 이동시킬 때 처리
-    if (isHorizontalMoving_) 
+    if (is_horizontal_moving_) 
     {
         HandleHorizontalMovement(rotVelocity);
     }
@@ -555,17 +555,17 @@ void GameGroupBlock::HandleRotation(float deltaTime)
 void GameGroupBlock::HandleHorizontalMovement(float rotVelocity) 
 {
     float movement = rotVelocity * Constants::Block::HORIZONTAL_VELOCITY;
-    horizontalVelocity_ += movement;
+    horizontal_velocity_ += movement;
 
     float posX = blocks_[Standard]->GetX();
     int direction = (rotateState_ == RotateState::Right) ? -1 : 1;
 
     posX += (movement * direction);
 
-    if (!isRotating_ && horizontalVelocity_ >= Constants::Block::SIZE) 
+    if (!is_rotating_ && horizontal_velocity_ >= Constants::Block::SIZE) 
     {
-        blockIndexX_ += direction;
-        float newPosX = GetPosXOfIdx(blockIndexX_);
+        block_index_x_ += direction;
+        float newPosX = GetPosXOfIdx(block_index_x_);
         SetPosX(newPosX);
 
         if (auto& stateManager = GAME_APP.GetStateManager().GetCurrentState())
@@ -577,8 +577,8 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
         }
         
 
-        horizontalVelocity_ = 0.0f;
-        isHorizontalMoving_ = false;
+        horizontal_velocity_ = 0.0f;
+        is_horizontal_moving_ = false;
     }
     else 
     {
@@ -587,25 +587,30 @@ void GameGroupBlock::HandleHorizontalMovement(float rotVelocity)
 }
 
 void GameGroupBlock::Update(float deltaTime) 
-{
+{   
     if (state_ == BlockState::Playing || state_ == BlockState::Effecting) 
     {
         GroupBlock::Update(deltaTime);
     }
 
+    /*if (player_id_ == 1)
+    {
+        LOGGER.Info("GameGroupBlock::Update state_ = {} velocity_ = {} y = {}", (int)state_, velocity_, position_.y);
+    }*/
+
     if (state_ == BlockState::Playing && blocks_[Standard] && blocks_[Satellite]) 
     {
         // 회전 중인 경우 회전 처리
-        if (isRotating_)
+        if (is_rotating_)
         {
             HandleRotation(deltaTime);
         }
 
         // 하강 처리
-        float speed = deltaTime * Constants::Block::DOWN_VELOCITY * addVelocity_;
+        float speed = deltaTime * Constants::Block::DOWN_VELOCITY * add_velocity_;
         velocity_ += speed;
 
-        if (isRotating_) 
+        if (is_rotating_) 
         {
             // 회전 중 하강
             blocks_[Standard]->SetY(blocks_[0]->GetY() + speed);
@@ -616,7 +621,7 @@ void GameGroupBlock::Update(float deltaTime)
             ForceVelocityY(velocity_);
 
             // 충돌 체크 및 네트워크 처리
-            if ((NETWORK.IsRunning() && playerID_) || NETWORK.IsRunning() == false)
+            if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(player_id_) == true)
             {
                 if (MoveDown() == false)
                 {
@@ -665,12 +670,17 @@ void GameGroupBlock::UpdateBlockIndices()
 void GameGroupBlock::ResetVelocities() 
 {
     velocity_ = 0.0f;
-    addVelocity_ = 1.0f;
+    add_velocity_ = 1.0f;
 }
 
 void GameGroupBlock::ProcessBlockPlacement() 
 {
-    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(playerID_) == true)
+    if (!blocks_[Standard] || !blocks_[Satellite])
+    {
+        return;
+    }
+
+    if (NETWORK.IsRunning() && GAME_APP.GetPlayerManager().IsLocalPlayer(player_id_) == true)
     {
         SetState(BlockState::Stationary);
         NETWORK.ChangeBlockState(static_cast<uint8_t>(BlockState::Stationary));
@@ -678,7 +688,7 @@ void GameGroupBlock::ProcessBlockPlacement()
         std::array<float, 2> pos1 = { blocks_[0]->GetX(),  blocks_[0]->GetY() };
         std::array<float, 2> pos2 = { blocks_[1]->GetX(),  blocks_[1]->GetY() };
 
-        //LOGGER.Info("ProcessBlockPlacement playerID_{} pos1 {} pos2 {}", playerID_, pos1, pos2);
+        //LOGGER.Info("ProcessBlockPlacement player_id_{} pos1 {} pos2 {}", player_id_, pos1, pos2);
 
         NETWORK.PushBlockInGame(pos1, pos2);
 
@@ -748,17 +758,17 @@ void GameGroupBlock::ResetBlock()
         }
     }
 
-    isFalling_ = false;
-    isRotating_ = false;
-    checkingCollision_ = false;
-    isHorizontalMoving_ = false;
-    canMove_ = true;
-    fallingIdx_ = -1;
+    is_falling_ = false;
+    is_rotating_ = false;
+    checking_collision_ = false;
+    is_horizontal_moving_ = false;
+    can_move_ = true;
+    falling_Index_ = -1;
 
     velocity_ = 0.0f;
-    addVelocity_ = 1.0f;
-    rotateVelocity_ = 0.0f;
-    horizontalVelocity_ = 0.0f;
+    add_velocity_ = 1.0f;
+    rotate_velocity_ = 0.0f;
+    horizontal_velocity_ = 0.0f;
 
     SetState(BlockState::PlayOut);
 }
@@ -767,9 +777,9 @@ void GameGroupBlock::ForceVelocityY(float velocity)
 {
     position_.y += velocity;
 
-    if (isFalling_) 
+    if (is_falling_) 
     {
-        blocks_[static_cast<size_t>(BlockIndex::Standard) + fallingIdx_]->SetY(position_.y);
+        blocks_[static_cast<size_t>(BlockIndex::Standard) + falling_Index_]->SetY(position_.y);
     }
     else 
     {
@@ -805,11 +815,11 @@ void GameGroupBlock::ForceVelocityY(float velocity)
 
 void GameGroupBlock::ForceAddVelocityY(float velocity, bool send) 
 {
-    addVelocity_ += velocity;
+    add_velocity_ += velocity;
 
    if (NETWORK.IsRunning() && send)
     {
-       NETWORK.MoveBlock(static_cast<uint8_t>(Constants::Direction::Bottom), addVelocity_);
+       NETWORK.MoveBlock(static_cast<uint8_t>(Constants::Direction::Bottom), add_velocity_);
     }
 }
 
@@ -830,6 +840,7 @@ void GameGroupBlock::SetGroupBlock(GroupBlock* block)
     }
 
     ResetBlock();
+    SetState(BlockState::Playing);
 
     const auto sourceBlocks = block->GetBlocks();
     for (size_t i = 0; i < Constants::GroupBlock::COUNT; ++i)
@@ -843,10 +854,10 @@ void GameGroupBlock::SetGroupBlock(GroupBlock* block)
     position_ = block->GetPosition();
     size_ = block->GetSize();
     destination_rect_ = block->GetRect();
-    groupBlockType_ = block->GetType();
+    group_block_type_ = block->GetType();
     state_ = block->GetState();
 
-    updateTime_ = SDL_GetTicks();
+    update_time_ = SDL_GetTicks();
 }
 
 void GameGroupBlock::HandleSingleBlockFalling() 
@@ -857,14 +868,14 @@ void GameGroupBlock::HandleSingleBlockFalling()
     SDL_Rect controlRect;
     SDL_Rect targetRect;
 
-    for (const auto& block : *gameBlockList_) 
+    for (const auto& block : *game_block_list_) 
     {
         if (!block)
         {
             continue;
         }
 
-        RectUtils::ConvertFRectToRect(blocks_[fallingIdx_]->GetRect(), &controlRect);
+        RectUtils::ConvertFRectToRect(blocks_[falling_Index_]->GetRect(), &controlRect);
         RectUtils::ConvertFRectToRect(block->GetRect(), &targetRect);
 
         if (SDL_GetRectIntersection(&controlRect,&targetRect, &resultRect) == true)
@@ -876,28 +887,28 @@ void GameGroupBlock::HandleSingleBlockFalling()
 
     if (hasCollision) 
     {
-        blocks_[fallingIdx_]->SetY(resultRect.y - Constants::Block::SIZE);
-        canMove_ = false;
-        isFalling_ = false;
-        NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
+        blocks_[falling_Index_]->SetY(resultRect.y - Constants::Block::SIZE);
+        can_move_ = false;
+        is_falling_ = false;
+        NETWORK.RequireFallingBlock(falling_Index_, is_falling_);
     }
     else 
     {
-        float currentY = blocks_[fallingIdx_]->GetY();
+        float currentY = blocks_[falling_Index_]->GetY();
 
         if (currentY + Constants::Block::SIZE >= Constants::Board::HEIGHT) 
         {
-            blocks_[fallingIdx_]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
-            canMove_ = false;
-            isFalling_ = false;
-            NETWORK.RequireFallingBlock(fallingIdx_, isFalling_);
+            blocks_[falling_Index_]->SetY(Constants::Board::HEIGHT - Constants::Block::SIZE);
+            can_move_ = false;
+            is_falling_ = false;
+            NETWORK.RequireFallingBlock(falling_Index_, is_falling_);
         }
     }
 }
 
 void GameGroupBlock::Rotate() 
 {
-    if (isRotating_ || isFalling_ || checkingCollision_) 
+    if (is_rotating_ || is_falling_ || checking_collision_) 
     {
         return;
     }
@@ -927,7 +938,7 @@ void GameGroupBlock::HandleDefaultTopRotation()
     GetCollisionRect(blocks_[static_cast<size_t>(BlockIndex::Standard)].get(), &leftCollRect, Constants::Direction::Left);
     GetCollisionRect(blocks_[static_cast<size_t>(BlockIndex::Standard)].get(), &rightCollRect, Constants::Direction::Right);
 
-    for (const auto& block : *gameBlockList_) 
+    for (const auto& block : *game_block_list_) 
     {
         if (!block)
         {
@@ -939,14 +950,14 @@ void GameGroupBlock::HandleDefaultTopRotation()
         // 좌측 충돌 체크
         if (SDL_GetRectIntersection(&leftCollRect, &targetRect, &resultRect))
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_[0]);
+            SDL_RectToFRect(&resultRect, &intersect_result_rect_[0]);
             leftColl = true;
         }
 
         // 우측 충돌 체크
         if (SDL_GetRectIntersection(&rightCollRect, &targetRect, &resultRect))
         {
-            SDL_RectToFRect(&resultRect, &intersectResultRect_[1]);
+            SDL_RectToFRect(&resultRect, &intersect_result_rect_[1]);
             rightColl = true;
         }
 
@@ -1000,34 +1011,34 @@ void GameGroupBlock::SetEnableRotState(RotateState state, bool horizontalMoving,
     if (enable) 
     {
         rotateState_ = state;
-        isRotating_ = true;
-        isHorizontalMoving_ = horizontalMoving;
+        is_rotating_ = true;
+        is_horizontal_moving_ = horizontalMoving;
 
         switch (state) {
         case RotateState::Default:
-            rotateVelocity_ = 180.0f;
+            rotate_velocity_ = 180.0f;
             break;
         case RotateState::Right:
-            rotateVelocity_ = 270.0f;
+            rotate_velocity_ = 270.0f;
             break;
         case RotateState::Top:
-            rotateVelocity_ = 0.0f;
+            rotate_velocity_ = 0.0f;
             break;
         case RotateState::Left:
-            rotateVelocity_ = 90.0f;
+            rotate_velocity_ = 90.0f;
             break;
         }
 
-        if (send && NETWORK.IsRunning() && playerID_) 
+        if (send && NETWORK.IsRunning() && player_id_) 
         {
-            NETWORK.RotateBlock(static_cast<uint8_t>(state), isHorizontalMoving_);
+            NETWORK.RotateBlock(static_cast<uint8_t>(state), is_horizontal_moving_);
         }
     }
     else 
     {
         rotateState_ = state;
-        isRotating_ = false;
-        isHorizontalMoving_ = false;
+        is_rotating_ = false;
+        is_horizontal_moving_ = false;
     }
 }
 
@@ -1043,19 +1054,19 @@ int GameGroupBlock::CalculateIdxY(float y) const
 
 void GameGroupBlock::SetPlayerID(uint8_t id)
 {
-    playerID_ = id;
+    player_id_ = id;
 
     if (blocks_[Standard] && blocks_[Satellite])
     {
-        blocks_[Standard]->SetPlayerID(playerID_);
-        blocks_[Satellite]->SetPlayerID(playerID_);
+        blocks_[Standard]->SetPlayerID(player_id_);
+        blocks_[Satellite]->SetPlayerID(player_id_);
     }
 }
 
 void GameGroupBlock::UpdateFallingBlock(uint8_t fallingIdx, bool falling)
 {
-    fallingIdx_ = fallingIdx;
-    isFalling_ = falling;
+    falling_Index_ = fallingIdx;
+    is_falling_ = falling;
 }
 
 void GameGroupBlock::Release()

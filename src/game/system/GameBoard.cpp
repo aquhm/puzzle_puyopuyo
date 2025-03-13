@@ -29,11 +29,11 @@ bool GameBoard::Initialize(float xPos, float yPos, std::list<std::shared_ptr<Blo
 {
     try
     {
-        blockList_ = &blockList;
-        playerID_ = playerId;
+        block_list_ = &blockList;
+        player_id_ = playerId;
 
-        sourceBlock_ = ImageTexture::Create("FIELD/BG_00.png");
-        if (!sourceBlock_)
+        source_block_ = ImageTexture::Create("FIELD/BG_00.png");
+        if (!source_block_)
         {
             throw std::runtime_error("Failed to load background texture");
         }
@@ -52,9 +52,9 @@ bool GameBoard::Initialize(float xPos, float yPos, std::list<std::shared_ptr<Blo
 
 void GameBoard::InitializeRenderTarget() 
 {
-    if (!targetRenderTexture_) 
+    if (!target_render_texture_) 
     {
-        targetRenderTexture_ = SDL_CreateTexture(
+        target_render_texture_ = SDL_CreateTexture(
             GAME_APP.GetRenderer(),
             SDL_PIXELFORMAT_RGBA8888,
             SDL_TEXTUREACCESS_TARGET,
@@ -62,12 +62,12 @@ void GameBoard::InitializeRenderTarget()
             Constants::Board::HEIGHT
         );
 
-        if (!targetRenderTexture_) 
+        if (!target_render_texture_) 
         {
             throw std::runtime_error(std::string("Failed to create render texture: ") + SDL_GetError());
         }
 
-        SDL_SetTextureBlendMode(targetRenderTexture_, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureBlendMode(target_render_texture_, SDL_BLENDMODE_BLEND);
     }
 }
 
@@ -76,7 +76,7 @@ void GameBoard::InitializePositions(float xPos, float yPos)
     renderTargetPos_ = { xPos, yPos };
 
     // 렌더 타겟 rect 초기화
-    targetRenderRect_ = {
+    target_render_rect_ = {
         xPos,
         yPos,
         Constants::Board::WIDTH,
@@ -84,7 +84,7 @@ void GameBoard::InitializePositions(float xPos, float yPos)
     };
 
     // 배경 소스 rect 초기화
-    backgroundSourceRect_ = {
+    background_source_rect_ = {
         Constants::Board::WIDTH_MARGIN,
         0,
         Constants::Board::WIDTH,
@@ -97,24 +97,24 @@ void GameBoard::InitializePositions(float xPos, float yPos)
 
 void GameBoard::SetBlockInfoTexture(const std::shared_ptr<ImageTexture>& texture) 
 {
-    puyoSourceTexture_ = texture;
+    source_texture_ = texture;
 }
 
 void GameBoard::CreateNewBlockInGame(const std::shared_ptr<GroupBlock>& block) 
 {
-    if (activeGroupBlock_ && activeGroupBlock_->GetState() == BlockState::Playing) 
+    if (active_group_block_ && active_group_block_->GetState() == BlockState::Playing) 
     {
         return;
     }
 
-    isTargetMark_ = true;
-    activeGroupBlock_ = block;
+    is_target_mark_ = true;
+    active_group_block_ = block;
 
     // 새 블록 위치 설정
-    activeGroupBlock_->SetPosXY(Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * 2, -Constants::Block::SIZE * 2);
+    active_group_block_->SetPosXY(Constants::Board::WIDTH_MARGIN + Constants::Block::SIZE * 2, -Constants::Block::SIZE * 2);
 
     // 블록 인덱스 업데이트
-    if (auto blocks = activeGroupBlock_->GetBlocks(); blocks.size() > 0)
+    if (auto blocks = active_group_block_->GetBlocks(); blocks.size() > 0)
     {
         for (int i = 0; i < 2; ++i) 
         {
@@ -135,30 +135,30 @@ void GameBoard::UpdateAttackingState(float deltaTime)
 {
     const float speed = deltaTime * Constants::Board::ATTACK_SPEED;
 
-    if (!isRewind_) 
+    if (!is_rewind_) 
     {
-        if (targetRenderRect_.x < renderTargetPos_.x + 30) 
+        if (target_render_rect_.x < renderTargetPos_.x + 30) 
         {
             // 전진 모션
-            targetRenderRect_.x += speed;
-            targetRenderRect_.y -= speed;
-            targetRenderRect_.w -= speed * 2;
-            targetRenderRect_.h += speed;
+            target_render_rect_.x += speed;
+            target_render_rect_.y -= speed;
+            target_render_rect_.w -= speed * 2;
+            target_render_rect_.h += speed;
         }
         else 
         {
-            isRewind_ = true;
+            is_rewind_ = true;
         }
     }
     else 
     {
         // 후퇴 모션
-        targetRenderRect_.x -= speed;
-        targetRenderRect_.y += speed;
-        targetRenderRect_.w += speed * 2;
-        targetRenderRect_.h -= speed;
+        target_render_rect_.x -= speed;
+        target_render_rect_.y += speed;
+        target_render_rect_.w += speed * 2;
+        target_render_rect_.h -= speed;
 
-        if (targetRenderRect_.x <= renderTargetPos_.x) 
+        if (target_render_rect_.x <= renderTargetPos_.x) 
         {
             // 원위치로 복귀
             ResetRenderTargetPosition();
@@ -166,21 +166,21 @@ void GameBoard::UpdateAttackingState(float deltaTime)
         }
     }
 
-    accumTime_ += deltaTime;
+    accumulate_time_ += deltaTime;
 }
 
 void GameBoard::UpdateDamagingState(float deltaTime) 
 {
     const float rotateSpeed = deltaTime * Constants::Board::ROTATE_SPEED;
-    rotAccumAngle_ += rotateSpeed;
+    rotation_Accumulate_angle_ += rotateSpeed;
 
-    if (rotAccumAngle_ < Constants::Math::CIRCLE_ANGLE * 4) 
+    if (rotation_Accumulate_angle_ < Constants::Math::CIRCLE_ANGLE * 4) 
     {
-        targetRenderRect_.x = renderTargetPos_.x + Constants::Board::CURVE_SPEED * std::sin(GameUtils::ToRadians(rotAccumAngle_));
+        target_render_rect_.x = renderTargetPos_.x + Constants::Board::CURVE_SPEED * std::sin(GameUtils::ToRadians(rotation_Accumulate_angle_));
     }
     else 
     {
-        targetRenderRect_.x = renderTargetPos_.x;
+        target_render_rect_.x = renderTargetPos_.x;
         SetState(BoardState::Normal);
     }
 }
@@ -196,9 +196,9 @@ void GameBoard::UpdateLosingState(float deltaTime)
         angle_ -= deltaTime * TILT_SPEED;
     }
 
-    if (targetRenderRect_.y < GAME_APP.GetWindowHeight() + 50) 
+    if (target_render_rect_.y < GAME_APP.GetWindowHeight() + 50) 
     {
-        targetRenderRect_.y += deltaTime * FALL_SPEED;
+        target_render_rect_.y += deltaTime * FALL_SPEED;
     }
 }
 
@@ -223,10 +223,10 @@ void GameBoard::Update(float deltaTime)
 
 void GameBoard::ResetRenderTargetPosition() 
 {
-    targetRenderRect_.x = renderTargetPos_.x;
-    targetRenderRect_.y = renderTargetPos_.y;
-    targetRenderRect_.w = Constants::Board::WIDTH;
-    targetRenderRect_.h = Constants::Board::HEIGHT;
+    target_render_rect_.x = renderTargetPos_.x;
+    target_render_rect_.y = renderTargetPos_.y;
+    target_render_rect_.w = Constants::Board::WIDTH;
+    target_render_rect_.h = Constants::Board::HEIGHT;
 }
 
 void GameBoard::SetState(BoardState newState) 
@@ -236,40 +236,40 @@ void GameBoard::SetState(BoardState newState)
 
     switch (state_) {
     case BoardState::Normal:
-        isRewind_ = false;
-        rotAccumAngle_ = 0.0f;
+        is_rewind_ = false;
+        rotation_Accumulate_angle_ = 0.0f;
         angle_ = 0.0f;
         break;
 
     case BoardState::Attacking:
-        isRewind_ = false;
+        is_rewind_ = false;
         break;
 
     case BoardState::Damaging:
-        rotAccumAngle_ = 0.0f;
+        rotation_Accumulate_angle_ = 0.0f;
         break;
 
     case BoardState::Lose:
         break;
     }
 
-    accumTime_ = 0.0f;
+    accumulate_time_ = 0.0f;
 }
 
 void GameBoard::Render() 
 {
-    if (!is_visible_ || !targetRenderTexture_) 
+    if (!is_visible_ || !target_render_texture_) 
     {
         return;
     }
 
-    if (state_ == BoardState::Lose && targetRenderRect_.y >= GAME_APP.GetWindowHeight() + 50) 
+    if (state_ == BoardState::Lose && target_render_rect_.y >= GAME_APP.GetWindowHeight() + 50) 
     {
         return;
     }
 
     // 렌더 타겟 설정
-    SDL_SetRenderTarget(GAME_APP.GetRenderer(), targetRenderTexture_);
+    SDL_SetRenderTarget(GAME_APP.GetRenderer(), target_render_texture_);
 
     // 배경 렌더링
     RenderBackground();
@@ -278,22 +278,22 @@ void GameBoard::Render()
     RenderTargetMarks();
 
     // 활성 그룹 블록 렌더링
-    if (activeGroupBlock_) 
+    if (active_group_block_) 
     {
-        activeGroupBlock_->Render();
+        active_group_block_->Render();
     }
 
     RenderFixedBlocks();
 
-    GAME_APP.GetParticleManager().RenderForPlayer(playerID_);
+    GAME_APP.GetParticleManager().RenderForPlayer(player_id_);
 
     SDL_SetRenderTarget(GAME_APP.GetRenderer(), nullptr);
 
     SDL_RenderTextureRotated(
         GAME_APP.GetRenderer(),
-        targetRenderTexture_,
+        target_render_texture_,
         nullptr,
-        &targetRenderRect_,
+        &target_render_rect_,
         angle_,
         nullptr,
         flip_
@@ -302,28 +302,28 @@ void GameBoard::Render()
 
 void GameBoard::RenderBackground() 
 {
-    if (sourceBlock_) 
+    if (source_block_) 
     {
-        sourceBlock_->RenderScaled(&backgroundSourceRect_, &destination_rect_);
+        source_block_->RenderScaled(&background_source_rect_, &destination_rect_);
     }
 }
 
 void GameBoard::RenderTargetMarks() 
 {
-    if (puyoSourceTexture_ && isTargetMark_) 
+    if (source_texture_ && is_target_mark_) 
     {
-        for (const auto& mark : targetBlockMarks_) 
+        for (const auto& mark : target_block_marks_) 
         {
-            puyoSourceTexture_->Render(mark.xPos, mark.yPos, &mark.sourceRect);
+            source_texture_->Render(mark.xPos, mark.yPos, &mark.sourceRect);
         }
     }
 }
 
 void GameBoard::RenderFixedBlocks() 
 {
-    if (blockList_->empty() == false) 
+    if (block_list_->empty() == false) 
     {
-        std::ranges::for_each(*blockList_, std::mem_fn(&Block::Render));
+        std::ranges::for_each(*block_list_, std::mem_fn(&Block::Render));
     }
 }
 
@@ -331,21 +331,21 @@ void GameBoard::Release()
 {
     try 
     {
-        sourceBlock_.reset();
+        source_block_.reset();
 
-        if (targetRenderTexture_) 
+        if (target_render_texture_) 
         {
-            SDL_DestroyTexture(targetRenderTexture_);
-            targetRenderTexture_ = nullptr;
+            SDL_DestroyTexture(target_render_texture_);
+            target_render_texture_ = nullptr;
         }
 
-        blockList_->clear();
-        activeGroupBlock_.reset();
-        puyoSourceTexture_.reset();
+        block_list_->clear();
+        active_group_block_.reset();
+        source_texture_.reset();
 
         state_ = BoardState::Normal;
-        isTargetMark_ = false;
-        accumTime_ = 0.0f;
+        is_target_mark_ = false;
+        accumulate_time_ = 0.0f;
         angle_ = 0.0f;
 
     }
@@ -357,7 +357,7 @@ void GameBoard::Release()
 
 void GameBoard::ResetGroupBlock()
 {
-    activeGroupBlock_.reset();
+    active_group_block_.reset();
 }
 
 void GameBoard::UpdateTargetBlockMark(const std::array<BlockTargetMark, 2>& markInfo)
@@ -367,13 +367,13 @@ void GameBoard::UpdateTargetBlockMark(const std::array<BlockTargetMark, 2>& mark
         return;
     }
 
-    targetBlockMarks_ = markInfo;
-    isTargetMark_ = true;
+    target_block_marks_ = markInfo;
+    is_target_mark_ = true;
 
     // 각 마크의 소스 렉트 업데이트
     for (int i = 0; i < 2; ++i) 
     {
-        auto& mark = targetBlockMarks_[i];
+        auto& mark = target_block_marks_[i];
 
         switch (static_cast<BlockType>(mark.type)) 
         {
@@ -427,21 +427,21 @@ void GameBoard::UpdateTargetBlockMark(const std::array<BlockTargetMark, 2>& mark
 
 void GameBoard::UpdateRenderTarget() 
 {
-    if (!targetRenderTexture_) 
+    if (!target_render_texture_) 
     {
         return;
     }
 
     // 렌더 타겟 크기 업데이트
     SDL_FPoint size;
-    SDL_GetTextureSize(targetRenderTexture_, &size.x, &size.y);
+    SDL_GetTextureSize(target_render_texture_, &size.x, &size.y);
 
     // 렌더 타겟 위치 및 크기 업데이트
-    targetRenderRect_.x = renderTargetPos_.x;
-    targetRenderRect_.y = renderTargetPos_.y;
-    targetRenderRect_.w = size.x;
-    targetRenderRect_.h = size.y;
+    target_render_rect_.x = renderTargetPos_.x;
+    target_render_rect_.y = renderTargetPos_.y;
+    target_render_rect_.w = size.x;
+    target_render_rect_.h = size.y;
 
     // 블렌드 모드 설정
-    SDL_SetTextureBlendMode(targetRenderTexture_, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(target_render_texture_, SDL_BLENDMODE_BLEND);
 }
