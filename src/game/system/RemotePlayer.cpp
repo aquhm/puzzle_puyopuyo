@@ -63,6 +63,10 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
             interrupt_view_->SetPosition(Constants::Board::PLAYER_POSITION_X, 0);
         }
 
+#ifdef _APP_DEBUG_
+        CreateBlocksFromFile();
+#endif
+        CreateBlocksFromFile();
         state_info_.current_phase = GamePhase::Playing;
         state_info_.previous_phase = state_info_.current_phase;
 		state_info_.play_time = 0.0f;
@@ -354,6 +358,7 @@ void RemotePlayer::PlayNextBlock()
     {
         control_block_->ResetBlock();
         control_block_->SetGroupBlock(first_block.get());
+        control_block_->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
         control_block_->SetState(BlockState::Playing);
         control_block_->SetEnableRotState(RotateState::Default, false, false);
 

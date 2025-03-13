@@ -848,6 +848,7 @@ void GameGroupBlock::SetGroupBlock(GroupBlock* block)
         if (sourceBlocks[i]) 
         {
             blocks_[i] = sourceBlocks[i]->Clone();
+            blocks_[i]->SetScale(Constants::Block::SIZE, Constants::Block::SIZE);
         }
     }
 
