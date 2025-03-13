@@ -4,21 +4,22 @@
 #include "../core/manager/ResourceManager.hpp"
 #include "../core/manager/PlayerManager.hpp"
 #include "../core/manager/StateManager.hpp"
+#include "../core/common/constants/Constants.hpp"
 
 #include "../ui/TextBox.hpp"
 #include "../ui/Button.hpp"
+#include "../ui/Label.hpp"
 
 #include "../texture/ImageTexture.hpp"
+#include "../utils/Logger.hpp"
 
 #include "../network/packets/GamePackets.hpp"
 #include "../network/NetworkController.hpp"
 
-#include "../core/common/constants/Constants.hpp"
-
 #include <format>
 #include <exception>
 #include <SDL3/SDL_system.h>
-#include "../utils/Logger.hpp"
+
 
 
 LoginState::LoginState()
@@ -96,6 +97,10 @@ bool LoginState::InitializeUI()
         SDL_LOG_ERROR(SDL_LOG_CATEGORY_APPLICATION, "Failed to get button texture");
         return false;
     }
+
+    ui_elements_.ip_label = std::make_unique<Label>();
+    ui_elements_.ip_label->Init((screen_width - 150) / 2.0f, 175.0f, 150.0f, 20.0f);
+    ui_elements_.ip_label->Configure("Server IP Address:", TextAlignment::Center, SDL_Color{ 255, 255, 255, 255 });
 
     // IP 입력 TextBox 초기화
     ui_elements_.ip_input = std::make_unique<TextBox>();
@@ -187,6 +192,9 @@ void LoginState::RenderUI() const
     }
     if (ui_elements_.create_server_button) {
         ui_elements_.create_server_button->Render();
+    }
+    if (ui_elements_.ip_label) {
+        ui_elements_.ip_label->Render();
     }
 }
 

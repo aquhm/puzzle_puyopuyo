@@ -90,6 +90,7 @@
     <ClInclude Include="src\core\manager\StateManager.hpp" />
     <ClInclude Include="src\ui\Button.hpp" />
     <ClInclude Include="src\ui\EditBox.hpp" />
+    <ClInclude Include="src\ui\Label.hpp" />
     <ClInclude Include="src\ui\TextBox.hpp" />
     <ClInclude Include="src\utils\Logger.hpp" />
     <ClInclude Include="src\utils\PathUtil.hpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="src\core\manager\StateManager.cpp" />
     <ClCompile Include="src\ui\Button.cpp" />
     <ClCompile Include="src\ui\EditBox.cpp" />
+    <ClCompile Include="src\ui\Label.cpp" />
     <ClCompile Include="src\ui\TextBox.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
     <ClCompile Include="src\utils\Timer.cpp" />

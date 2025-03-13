@@ -6,6 +6,8 @@
  */
 #include "BaseState.hpp"
 #include "../ui/Button.hpp"
+#include "../ui/Label.hpp"
+#include "../ui/TextBox.hpp"
 #include "../network/PacketProcessor.hpp"
 #include "../network/packets/GamePackets.hpp"
 
@@ -14,6 +16,7 @@
 
 class ImageTexture;
 class TextBox;
+class Label;
 class PacketProcessor;
 
 class LoginState final : public BaseState
@@ -62,6 +65,7 @@ private:
 
     struct UIElements 
     {
+        std::unique_ptr<Label> ip_label;
         std::unique_ptr<TextBox> ip_input;
         std::unique_ptr<Button> login_button;
         std::unique_ptr<Button> create_server_button;

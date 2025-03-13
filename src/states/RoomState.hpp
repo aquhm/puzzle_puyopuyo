@@ -9,6 +9,7 @@
 #include "../network/PacketProcessor.hpp"
 #include "../network/packets/GamePackets.hpp"
 #include "../ui/EditBox.hpp"
+#include "../ui/Label.hpp"
 
 #include <array>
 #include <memory>
@@ -83,14 +84,15 @@ private:
             render_index = 0;
             scroll_offset = 0.0f;
         }
-    }background_animation_;
+    } background_animation_;
 
     struct UIElements 
     {
+        std::unique_ptr<Label> chat_label;
         std::unique_ptr<EditBox> chat_box;
         std::unique_ptr<Button> start_button;
         std::unique_ptr<Button> exit_button;
-    }ui_elements_;
+    } ui_elements_;
 
     std::array<std::shared_ptr<ImageTexture>, BACKGROUND_COUNT> backgrounds_;
 
