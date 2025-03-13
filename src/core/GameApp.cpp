@@ -85,7 +85,7 @@ bool GameApp::InitializeSDL()
         "PuyoPuyo",
         window_width_,
         window_height_,
-        SDL_WINDOW_NOT_FOCUSABLE,
+        SDL_WINDOW_ALWAYS_ON_TOP,
         &window,
         &renderer))
     {
