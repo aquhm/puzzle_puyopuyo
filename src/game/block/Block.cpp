@@ -379,8 +379,8 @@ void Block::SetBlockType(BlockType type)
         break;
 
     case BlockType::Ice:
-        source_rect_.x = baseX + blockOffset * 6;
-        source_rect_.y = baseX + blockOffset * 12;
+        source_rect_.x = 193;
+        source_rect_.y = 385;
         block_origin_Position_.y = source_rect_.y;
         block_origin_Position_.x = source_rect_.x;
         break;

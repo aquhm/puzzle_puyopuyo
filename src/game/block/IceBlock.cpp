@@ -26,6 +26,8 @@ void IceBlock::SetState(BlockState state)
         break;
 
     case BlockState::DownMoving:
+        source_rect_.x = 193.0f;
+        source_rect_.y = 385.0f;
         break;
 
     case BlockState::PlayOut:
