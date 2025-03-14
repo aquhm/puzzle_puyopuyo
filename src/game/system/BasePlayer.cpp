@@ -726,6 +726,12 @@ void BasePlayer::GenerateLargeIceBlockGroup(const std::shared_ptr<ImageTexture>&
 {
     score_info_.total_interrupt_block_count -= 30;    
 
+    if (NETWORK.IsRunning())
+    {
+        std::span<const uint8_t> empty_span;
+        NETWORK.AddInterruptBlock(5, 0, empty_span);
+    }        
+
     for (int y = 0; y < 5; y++) 
     {
         for (int x = 0; x < Constants::Board::BOARD_X_COUNT; x++) 
@@ -784,6 +790,13 @@ void BasePlayer::GenerateSmallIceBlockGroup(const std::shared_ptr<ImageTexture>&
             InitializeIceBlock(iceBlock.get(), texture, pos, yCnt, playerID);
             block_list_.push_back(iceBlock);
         }
+
+
+        if (NETWORK.IsRunning())
+        {
+            NETWORK.AddInterruptBlock(yCnt, xCnt, xIdxList);
+        }
+
     }
 
     score_info_.total_interrupt_block_count = 0;
