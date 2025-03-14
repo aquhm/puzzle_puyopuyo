@@ -51,7 +51,6 @@ bool GroupBlock::Create()
             block->SetBlockType(BlockType::Purple);
 #else
             block->SetBlockType(static_cast<BlockType>(distribution(randEngine)));
-            //block->SetBlockType(BlockType::Purple);
 #endif
 
             block->SetBlockTex(texture);

@@ -66,7 +66,6 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
 #ifdef _APP_DEBUG_
         CreateBlocksFromFile();
 #endif
-        CreateBlocksFromFile();
         SetGamePhase(GamePhase::Playing);
 		state_info_.play_time = 0.0f;
 
