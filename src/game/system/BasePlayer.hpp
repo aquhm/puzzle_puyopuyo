@@ -164,7 +164,7 @@ protected:
     virtual bool ProcessGameOver();
 
     // 상태 전이 메서드
-    virtual void HandlePhaseTransition(GamePhase newPhase);
+    virtual void SetGamePhase(GamePhase newPhase);
 
 
     // 게임 상태 관리 구조체

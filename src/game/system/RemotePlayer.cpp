@@ -67,8 +67,7 @@ bool RemotePlayer::Initialize(const std::span<const uint8_t>& blockType1, const 
         CreateBlocksFromFile();
 #endif
         CreateBlocksFromFile();
-        state_info_.current_phase = GamePhase::Playing;
-        state_info_.previous_phase = state_info_.current_phase;
+        SetGamePhase(GamePhase::Playing);
 		state_info_.play_time = 0.0f;
 
         NotifyEvent(std::make_shared<GameRestartEvent>(player_id_));
@@ -127,8 +126,7 @@ bool RemotePlayer::Restart(const std::span<const uint8_t>& blockType1, const std
 
         InitializeViews();
 
-        state_info_.current_phase = GamePhase::Playing;
-        state_info_.previous_phase = state_info_.current_phase;
+        SetGamePhase(GamePhase::Playing);        
 		state_info_.play_time = 0.0f;
 
         return true;
@@ -224,7 +222,7 @@ void RemotePlayer::UpdateIceBlockDowningState()
 
     if (all_blocks_stationary)
     {
-		state_info_.current_phase = GamePhase::Playing;
+        SetGamePhase(GamePhase::Playing);
         PlayNextBlock();
     }
 }
@@ -316,8 +314,7 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-        state_info_.previous_phase = state_info_.current_phase;
+        SetGamePhase(is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing);
         return;
     }
 
@@ -334,8 +331,7 @@ void RemotePlayer::UpdateAfterBlocksCleared()
 
         if (CheckGameBlockState() == false && !is_game_quit_)
         {
-            state_info_.current_phase = GamePhase::Playing;
-            state_info_.previous_phase = state_info_.current_phase;
+            SetGamePhase(GamePhase::Playing);
         }
     }
 }
@@ -376,14 +372,14 @@ bool RemotePlayer::CheckGameBlockState()
 {
     if (state_info_.should_quit)
     {
-		HandlePhaseTransition(GamePhase::GameOver);
+		SetGamePhase(GamePhase::GameOver);
         return true;
     }
 
     const int block_count = static_cast<int>(block_list_.size());
     if (block_count < Constants::Game::MIN_MATCH_COUNT)
     {
-        HandlePhaseTransition(GamePhase::Playing);
+        SetGamePhase(GamePhase::Playing);
         return false;
     }
 
@@ -394,7 +390,7 @@ bool RemotePlayer::CheckGameBlockState()
 
     if (FindMatchedBlocks(matched_blocks_))
     {
-        HandlePhaseTransition(GamePhase::Shattering);
+        SetGamePhase(GamePhase::Shattering);
         UpdateComboState();
         CollectRemoveIceBlocks();
 
@@ -414,7 +410,7 @@ bool RemotePlayer::CheckGameBlockState()
         ResetComboState();
     }
 
-    HandlePhaseTransition(state_info_.should_quit ? GamePhase::GameOver : GamePhase::Playing);
+    SetGamePhase(state_info_.should_quit ? GamePhase::GameOver : GamePhase::Playing);
 
     return false;
 }
@@ -577,7 +573,7 @@ void RemotePlayer::AddInterruptBlock(uint8_t y_row_cnt, const std::span<const ui
         }
 
         state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
-        state_info_.current_phase = GamePhase::IceBlocking;
+        SetGamePhase(GamePhase::IceBlocking);
     }
     catch (const std::exception& e)
     {

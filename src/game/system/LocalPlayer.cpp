@@ -59,8 +59,9 @@ bool LocalPlayer::Initialize(const std::span<const uint8_t>& blockType1, const s
         }
 
 #ifdef _APP_DEBUG_
-        //CreateBlocksFromFile();
+        CreateBlocksFromFile();
 #endif
+        CreateBlocksFromFile();
 
         state_info_ = GameStateInfo{};
         score_info_ = ScoreInfo{};
@@ -163,14 +164,14 @@ void LocalPlayer::UpdateIceBlockPhase(float deltaTime)
         {
             if (ProcessGameOver() == false)
             {
-                state_info_.current_phase = GamePhase::Playing;
+                SetGamePhase(GamePhase::Playing);
                 CreateNextBlock();
             }            
         }
     }
     else
     {
-        state_info_.current_phase = GamePhase::Playing;
+        SetGamePhase(GamePhase::Playing);        
     }
 }
 
@@ -291,7 +292,7 @@ void LocalPlayer::UpdateShatteringPhase(float deltaTime)
         {
             if (state_info_.should_quit)
             {
-                state_info_.current_phase = GamePhase::GameOver;
+                SetGamePhase(GamePhase::GameOver);                
             }
             else
             {
@@ -763,9 +764,7 @@ bool LocalPlayer::ProcessGameOver()
 
         LoseGame(false);
 
-        NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
-
-		state_info_.current_phase = GamePhase::GameOver;
+        NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));        
 
 		return true;
     }
@@ -795,14 +794,14 @@ bool LocalPlayer::CheckGameBlockState()
 
     if (state_info_.should_quit)
     {
-        HandlePhaseTransition(GamePhase::GameOver);
+        SetGamePhase(GamePhase::GameOver);
         ResetComboState();
         return true;
     }
 
     if (block_list_.size() < Constants::Game::MIN_MATCH_COUNT)
     {
-        HandlePhaseTransition(GamePhase::Playing);
+        SetGamePhase(GamePhase::Playing);
         ResetComboState();
         return false;
     }
@@ -811,7 +810,7 @@ bool LocalPlayer::CheckGameBlockState()
 
     if (FindMatchedBlocks(matched_blocks_))
     {
-        HandlePhaseTransition(GamePhase::Shattering);
+        SetGamePhase(GamePhase::Shattering);
         UpdateComboState();
         CalculateScore();
         CollectRemoveIceBlocks();
@@ -833,11 +832,11 @@ bool LocalPlayer::CheckGameBlockState()
 
     if (ProcessGameOver())
     {
+        SetGamePhase(GamePhase::GameOver);
         return true;
     }
 
-    state_info_.current_phase = GamePhase::Playing;
-    state_info_.previous_phase = GamePhase::Playing;
+    SetGamePhase(GamePhase::Playing);
 
     return false;
 }

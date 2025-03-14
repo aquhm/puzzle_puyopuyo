@@ -275,6 +275,9 @@ void LoginState::Release()
 
 bool LoginState::RequireConnect()
 {
+    NETWORK.Initialize(NetworkRole::Client);
+    NETWORK.SetAddress("127.0.0.1");
+    return NETWORK.Start();
 #ifdef _APP_DEBUG_
     NETWORK.Initialize(NetworkRole::Client);
     NETWORK.SetAddress("127.0.0.1");

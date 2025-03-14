@@ -463,7 +463,7 @@ void BasePlayer::LoseGame(bool isWin)
         result_view_->UpdateResult(result_x, result_y, isWin);
     }
 
-    state_info_.current_phase = GamePhase::GameOver;
+    SetGamePhase(GamePhase::GameOver);
 
     SetGameQuit();
 }
@@ -661,14 +661,7 @@ bool BasePlayer::FindMatchedBlocks(std::list<BlockVector>& matchedGroups)
 
 void BasePlayer::UpdateComboState() 
 {
-    if (state_info_.previous_phase == GamePhase::Shattering) 
-    {
-        score_info_.combo_count++;
-    }
-    else if (state_info_.previous_phase == GamePhase::Playing) 
-    {
-        score_info_.combo_count = 1;
-    }
+    score_info_.combo_count++;    
 }
 
 void BasePlayer::ResetComboState() 
@@ -684,7 +677,7 @@ void BasePlayer::ResetComboState()
     }
 }
 
-void BasePlayer::HandlePhaseTransition(GamePhase newPhase) 
+void BasePlayer::SetGamePhase(GamePhase newPhase) 
 {
     if (state_info_.current_phase == newPhase) 
     {
@@ -723,7 +716,7 @@ void BasePlayer::GenerateIceBlocks()
         interrupt_view_->UpdateInterruptBlock(score_info_.total_interrupt_block_count);
     }
 
-    HandlePhaseTransition(GamePhase::IceBlocking);
+    SetGamePhase(GamePhase::IceBlocking);
 
     state_info_.has_ice_block = score_info_.total_interrupt_block_count > 0;
     state_info_.defense_count = 0;
@@ -853,7 +846,7 @@ bool BasePlayer::ProcessGameOver()
     {
         LoseGame(false);
         NotifyEvent(std::make_shared<GameOverEvent>(player_id_, true));
-        state_info_.current_phase = GamePhase::GameOver;
+        SetGamePhase(GamePhase::GameOver);
         return true;
     }
     return false;
@@ -963,8 +956,7 @@ void BasePlayer::UpdateAfterBlocksCleared()
 
     if (block_list_.empty())
     {
-        state_info_.current_phase = is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing;
-        state_info_.previous_phase = state_info_.current_phase;
+        SetGamePhase(is_game_quit_ ? GamePhase::GameOver : GamePhase::Playing);
         return;
     }
 
@@ -981,8 +973,7 @@ void BasePlayer::UpdateAfterBlocksCleared()
 
         if (!CheckGameBlockState() && !is_game_quit_)
         {
-            state_info_.current_phase = GamePhase::Playing;
-            state_info_.previous_phase = state_info_.current_phase;
+            SetGamePhase(GamePhase::Playing);
 
             if (score_info_.total_interrupt_block_count > 0 && !state_info_.is_combo_attack && !state_info_.is_defending)
             {
