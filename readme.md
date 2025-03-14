@@ -446,6 +446,20 @@ sequenceDiagram
 - 모바일 플랫폼 지원
 - 게임 리플레이 기능 추가
 
+## 참고 링크
+
+### 사용된 라이브러리
+
+- SDL3: [GitHub](https://github.com/libsdl-org/SDL) | [공식 홈페이지](https://www.libsdl.org/)
+- SDL 언어 바인딩: [SDL 지원 언어 목록](https://www.libsdl.org/languages.php)
+- SDL_Image: [GitHub](https://github.com/libsdl-org/SDL_image)
+- SDL_TTF: [GitHub](https://github.com/libsdl-org/SDL_ttf)
+
+### 학습 자료
+
+- [SDL 위키](https://wiki.libsdl.org/)
+- [SDL 포럼](https://discourse.libsdl.org/)
+
 ## 라이선스
 
 이 프로젝트는 개인 포트폴리오용으로 작성되었으며, 상업적 용도로 사용하지 않습니다.
