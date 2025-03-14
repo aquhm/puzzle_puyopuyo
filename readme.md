@@ -34,6 +34,10 @@
 
 ![게임 결과](doc/screenshot/result.png)
 
+## 데모 영상
+
+[![뿌요뿌요 게임 데모](https://img.youtube.com/vi/c-e-KC9jHfY/0.jpg)](https://www.youtube.com/watch?v=c-e-KC9jHfY)
+
 ## 기술 스택
 
 - **언어**: C++17/C++20
